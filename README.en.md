@@ -35,7 +35,7 @@ Different models, contexts, stacks, and implementation skills produce different 
 
 The document set is currently Chinese-led. English documentation will grow over time; the language switch is here so both communities have a clear entry point from the start.
 
-This library is free to access and licensed under [CC BY-NC 4.0](LICENSE). You may share and adapt it for non-commercial use with attribution; resale, paid redistribution, and use primarily intended for commercial advantage require ZY's prior written permission.
+This library is free to access and for non-commercial use only. Resale, paid redistribution, and other commercial uses are prohibited.
 
 ## Quick start
 
