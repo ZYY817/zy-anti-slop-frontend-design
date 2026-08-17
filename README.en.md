@@ -9,7 +9,7 @@ An AI frontend design knowledge base for Chinese and English creative workflows.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: CC--BY--NC--4.0](https://img.shields.io/badge/License-CC--BY--NC--4.0-lightgrey.svg)](LICENSE)
 
 <sub>Maintained by ZY（智宇）</sub>
 
@@ -34,6 +34,8 @@ This is a reference collection distilled from the prompts, visual decisions, and
 Different models, contexts, stacks, and implementation skills produce different results. The library does not guarantee a strong outcome from every model. Use it with your product context, then validate and iterate.
 
 The document set is currently Chinese-led. English documentation will grow over time; the language switch is here so both communities have a clear entry point from the start.
+
+This library is free to access and licensed under [CC BY-NC 4.0](LICENSE). You may share and adapt it for non-commercial use with attribution; resale, paid redistribution, and use primarily intended for commercial advantage require ZY's prior written permission.
 
 ## Quick start
 

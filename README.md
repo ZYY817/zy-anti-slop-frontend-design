@@ -9,7 +9,7 @@ An AI frontend design knowledge base for Chinese and English creative workflows.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: CC--BY--NC--4.0](https://img.shields.io/badge/License-CC--BY--NC--4.0-lightgrey.svg)](LICENSE)
 
 <sub>Maintained by ZY（智宇）</sub>
 
@@ -36,6 +36,8 @@ AI 生成前端最大的问题不是"不会写代码"，而是**默认回到统�
 不必照抄全库。请从你的产品、内容、技术栈和约束出发，取用真正有帮助的部分，形成自己的取舍与表达。
 
 也欢迎你继续补充、修正和深化它：新的视觉维度、可验证的工程规则，或真实项目中踩过的坑，都能让这套库帮助更多人做出更好的前端。
+
+本库免费公开，采用 [CC BY-NC 4.0](LICENSE) 许可：欢迎在非商业场景下署名分享与改编；未经 ZY 书面许可，不得售卖、付费分发或用于以商业利益为主要目的的场景。
 
 ## 快速开始（3 步）
 
