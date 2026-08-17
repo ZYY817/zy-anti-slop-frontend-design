@@ -1,21 +1,25 @@
-# ZY's Anti-Slop Frontend Design
+<div align="center">
 
-### ZY 的反同质化 AI 前端设计知识库
+# ZY 的反同质化 AI 前端设计知识库
 
-> **一个面向中英文创作的反同质化 AI 前端设计知识库。** 165+ 篇由深度调研驱动的设计文档，让 AI 从“生成平均水平界面”进化到“产出有主见、不像 AI 做的顶级前端”。
->
-> **An anti-slop AI frontend design knowledge base for Chinese and English creative workflows.** It helps AI move beyond average-looking interfaces toward distinctive, well-considered, production-ready work.
->
-> 中文与英文创作都可使用；英文文档将持续补充。 / Built for both Chinese and English creative workflows; English documentation will continue to grow.
-> Maintained by ZY（智宇）。
+### ZY's Anti-Slop Frontend Design
+
+一个面向中英文创作的 AI 前端设计知识库。<br>
+An AI frontend design knowledge base for Chinese and English creative workflows.
+
+[简体中文](README.md) · [English](README.en.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+<sub>Maintained by ZY（智宇）</sub>
+
+</div>
+
 ---
 
-## Motivation（为什么有它）
+## 为什么有它
 
-AI 生成前端最大的问题不是"不会写代码"，而是**默认回到统计平均值**：Inter 字体、紫色渐变、三张圆角卡片。这个库用 140 篇可检索、可组合、可验证的深度调研文档，解决三个问题：
+AI 生成前端最大的问题不是"不会写代码"，而是**默认回到统计平均值**：Inter 字体、紫色渐变、三张圆角卡片。这个库用 170+ 篇可检索、可组合、可验证的设计文档，解决三个问题：
 
 1. **品味**：A/B/C/D/E/F/G/H/P/V 板块——把"好看"拆成可执行的设计原理、词库与公式
 2. **差异化**：B82（反 AI 味）、B85（从参考到原创的演化法）——主动偏离 AI 共同分母
