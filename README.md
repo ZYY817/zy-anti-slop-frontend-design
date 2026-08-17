@@ -1,10 +1,12 @@
 # ZY's Anti-Slop Frontend Design
 
-> **一个面向 AI 生成前端的反同质化设计知识库。** 165+ 篇由深度调研驱动的中文设计文档，让 AI 从“生成平均水平界面”进化到“产出有主见、不像 AI 做的顶级前端”。
+### ZY 的反同质化 AI 前端设计知识库
+
+> **一个面向中英文创作的反同质化 AI 前端设计知识库。** 165+ 篇由深度调研驱动的设计文档，让 AI 从“生成平均水平界面”进化到“产出有主见、不像 AI 做的顶级前端”。
 >
-> **A Chinese-first, anti-slop design knowledge base for AI-generated frontends.** It helps AI move beyond average-looking interfaces toward distinctive, well-considered, production-ready work.
+> **An anti-slop AI frontend design knowledge base for Chinese and English creative workflows.** It helps AI move beyond average-looking interfaces toward distinctive, well-considered, production-ready work.
 >
-> 中文优先；英文完整翻译计划中。 / Chinese-first; a complete English translation is planned.
+> 中文与英文创作都可使用；英文文档将持续补充。 / Built for both Chinese and English creative workflows; English documentation will continue to grow.
 > Maintained by ZY（智宇）。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -34,8 +36,8 @@ AI 生成前端最大的问题不是"不会写代码"，而是**默认回到统�
 ## 快速开始（3 步）
 
 1. 克隆本仓库，把 `00-总索引.md` 与 `AGENTS.md` 加入你的项目
-2. 做项目时：整理产品上下文 → 按 [Z2](Z2-Prompt检索与组合编排.md) 检索 5-12 个模块 → 按 [M1](M1-AI生成顶级前端方法论.md) 生成
-3. 生成后：按 [Z3](Z3-前端质量审计与迭代闭环.md) 五轮审计，实际修复 P0/P1 问题
+2. 做项目时：整理产品上下文 → 按 [Z2](docs/Z2-Prompt检索与组合编排.md) 检索 5-12 个模块 → 按 [M1](docs/M1-AI生成顶级前端方法论.md) 生成
+3. 生成后：按 [Z3](docs/Z3-前端质量审计与迭代闭环.md) 五轮审计，实际修复 P0/P1 问题
 
 ## 目录结构
 
