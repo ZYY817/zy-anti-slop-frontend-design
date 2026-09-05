@@ -35,7 +35,7 @@ Different models, contexts, stacks, and implementation skills produce different 
 
 The document set is currently Chinese-led. English documentation will grow over time; the language switch is here so both communities have a clear entry point from the start.
 
-This library is free to access and for non-commercial use only. Resale, paid redistribution, and other commercial uses are prohibited.
+This library is free to access under [CC BY 4.0](LICENSE): copying, sharing, adaptation, and commercial use are allowed with attribution, a link to the license, and an indication of changes.
 
 ## Quick start
 
