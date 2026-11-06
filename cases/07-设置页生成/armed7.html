@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-accent="chen" data-density="default">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设置 · 墨迹 Inkwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   墨迹 Inkwell · 设置页 — 工具页，纸墨系（armed7：SKILL.md 换代回归·新视觉组合）
+   ── 本轮换代（同库两次产出不得落入相同安全组合）──
+   · 签名母题换代：朱印 →「线装缝线」——四眼订线 tick 列（顶栏/6 区头/页脚，≥3 处血缘）
+     高彩度签名点撤场：全页不再有任何饱和色装饰件，彩度只剩语义色（绛/藤黄）语境
+   · accent 五板换新色相：沉香/黛蓝/松墨/缟灰/绛砂——仍全"带色相的灰"（S≤19%·极差≤28）
+     默认板由蓝灰系玄青 → 暖褐灰沉香（纸温同向，书房感；涂满十开关不吵判据不变）
+   · 字阶换代：界面层接入 IBM Plex Sans（拉丁/数字），数据层 IBM Plex Mono；
+     表达层仍 Noto Serif SC——三字体分工不变（宋=表达 Plex=界面 mono=数据）
+   ── 治理沿用（armed3-6 已验证，不改）──
+   工具页无 hero，首屏即操作区；名目层 ≤2；全区滚动每区成卡+scrollspy；
+   状态指征项级 ≤2 通道能 1 不 2；accent-soft 洗面仅 nav.active+listening-chip；
+   全页实色=1（弹窗内"永久删除"）；行内 ghost、重复文字钮；
+   密度序列：顶栏 L3 → 区头安静层 → 卡片行 L3~L4 → 区间隔 sp7 → 页脚 L4。
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#f3f2ec; --surface:#fbf9f4; --surface-2:#ece9df; --surface-3:#e2ddcf;
+  --ink:#262521; --ink-2:#5c594f; --ink-3:#6f6a5a;
+  --line:#ddd7c8; --line-soft:#e6e1d4;
+  --accent:#5a4d3e; --accent-strong:#463b2e; --accent-ink:#fbf9f4;
+  --accent-soft:rgba(90,77,62,.10); --accent-line:rgba(90,77,62,.36);
+  --danger:#a23c2a; --danger-strong:#822d1e; --danger-soft:rgba(162,60,42,.08); --danger-line:rgba(162,60,42,.4);
+  --danger-ink:#fbf9f4;
+  --warn:#7c5c10;
+  --mark:rgba(186,142,38,.24);
+  --stitch:rgba(111,106,90,.55);
+  --radius:10px; --radius-sm:7px;
+  --fs:14px; --fs-meta:12px; --row-min:50px;
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:24px; --sp6:32px; --sp7:44px;
+  --dur:150ms; --ease:cubic-bezier(.2,.7,.3,1);
+  --shadow:0 1px 2px rgba(60,50,30,.06),0 2px 8px rgba(60,50,30,.05);
+}
+[data-density="compact"]{--fs:13px;--fs-meta:11px;--row-min:40px;--sp3:9px;--sp4:12px;--sp5:16px;--sp6:22px;--sp7:30px}
+[data-density="comfortable"]{--fs:15px;--fs-meta:13px;--row-min:60px;--sp3:15px;--sp4:20px;--sp5:32px;--sp6:42px;--sp7:56px}
+[data-theme="dark"]{
+  --paper:#1c1a16; --surface:#26231d; --surface-2:#2e2a22; --surface-3:#383226;
+  --ink:#e9e4d6; --ink-2:#b3ac97; --ink-3:#948c74;
+  --line:#3d382c; --line-soft:#342f25;
+  --accent:#b3a696; --accent-strong:#c4b8a9; --accent-ink:#241f16;
+  --accent-soft:rgba(179,166,150,.14); --accent-line:rgba(179,166,150,.42);
+  --danger:#d08a72; --danger-strong:#e0a28b; --danger-soft:rgba(208,138,114,.1); --danger-line:rgba(208,138,114,.42);
+  --danger-ink:#26231d;
+  --warn:#cfa96a;
+  --mark:rgba(214,172,92,.26);
+  --stitch:rgba(148,140,116,.5);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 10px rgba(0,0,0,.24);
+}
+/* 五色板全部落在功能面彩度预算内：HSL S 4–19% · RGB 极差 7–28（浅色）/ 10–29（深色）
+   色相差异只做"灰的冷暖倾向"，不做彩度差异——选谁都不吵（十开关判据） */
+[data-accent="chen"]{--accent:#5a4d3e;--accent-strong:#463b2e;--accent-soft:rgba(90,77,62,.10);--accent-line:rgba(90,77,62,.36)}
+[data-accent="lan"]{--accent:#46525e;--accent-strong:#354049;--accent-soft:rgba(70,82,94,.10);--accent-line:rgba(70,82,94,.36)}
+[data-accent="song"]{--accent:#49544c;--accent-strong:#38423b;--accent-soft:rgba(73,84,76,.10);--accent-line:rgba(73,84,76,.36)}
+[data-accent="gao"]{--accent:#55524e;--accent-strong:#413e3a;--accent-soft:rgba(85,82,78,.10);--accent-line:rgba(85,82,78,.36)}
+[data-accent="jiang"]{--accent:#5c4a46;--accent-strong:#483836;--accent-soft:rgba(92,74,70,.10);--accent-line:rgba(92,74,70,.36)}
+[data-theme="dark"][data-accent="chen"]{--accent:#b3a696;--accent-strong:#c4b8a9;--accent-soft:rgba(179,166,150,.14);--accent-line:rgba(179,166,150,.42)}
+[data-theme="dark"][data-accent="lan"]{--accent:#a3b1bf;--accent-strong:#b5c1cd;--accent-soft:rgba(163,177,191,.14);--accent-line:rgba(163,177,191,.42)}
+[data-theme="dark"][data-accent="song"]{--accent:#a4b3a9;--accent-strong:#b7c5bb;--accent-soft:rgba(164,179,169,.14);--accent-line:rgba(164,179,169,.42)}
+[data-theme="dark"][data-accent="gao"]{--accent:#b2aea8;--accent-strong:#c3bfb9;--accent-soft:rgba(178,174,168,.14);--accent-line:rgba(178,174,168,.42)}
+[data-theme="dark"][data-accent="jiang"]{--accent:#b7a5a0;--accent-strong:#c8b7b3;--accent-soft:rgba(183,165,160,.14);--accent-line:rgba(183,165,160,.42)}
+*{box-sizing:border-box}
+html{scroll-padding-top:70px}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans","Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:var(--fs);line-height:1.55;
+  transition:background-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.serif{font-family:"Noto Serif SC","Songti SC",serif}
+.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+::selection{background:var(--accent-soft)}
+/* mark = 1 通道（藤黄底色 tint，荧光笔隐喻）；禁下划线/描边（下划线是链接语义） */
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+h1,h2,h3{font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* ─── 签名母题「线装缝线」（×8：顶栏 / 6 区头 / 页脚）───
+   四眼订线：一列 4 段短横 tick，模仿线装书的订线孔位。
+   墨迹=给认真写字的人——签名件取书房物件而非印章色块；
+   中性墨灰零彩度，不占 accent 配额、不做语义色（装饰手法 ≤2 种中的唯一一种） */
+.stitch{
+  display:inline-block;width:13px;height:27px;flex:none;align-self:center;
+  background:repeating-linear-gradient(to bottom,var(--stitch) 0 2px,transparent 2px 8.33px);
+  user-select:none;
+}
+.stitch.sm{width:11px;height:22px;background:repeating-linear-gradient(to bottom,var(--stitch) 0 2px,transparent 2px 6.66px)}
+/* ─── 顶栏（工具页的"hero"就是这个操作条：搜索+保存态）─── */
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:var(--sp4);
+  padding:0 var(--sp5);height:56px;background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:9px;white-space:nowrap}
+.brand b{font-family:"Noto Serif SC",serif;font-weight:900;font-size:16px;letter-spacing:.08em}
+.brand .ver{font-size:10.5px;color:var(--ink-3);font-family:"IBM Plex Mono",ui-monospace,monospace}
+.search-wrap{position:relative;flex:1;max-width:430px;margin:0 auto}
+#search{
+  width:100%;height:34px;padding:0 74px 0 32px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font:inherit;font-size:calc(var(--fs) - 1px);
+}
+#search::placeholder{color:var(--ink-3)}
+#search::-webkit-search-cancel-button{display:none;-webkit-appearance:none}
+#search:focus{outline:none;border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+.search-ic{position:absolute;left:11px;top:50%;translate:0 -50%;color:var(--ink-3);pointer-events:none;display:grid;place-items:center}
+.search-hint{position:absolute;right:8px;top:50%;translate:0 -50%;display:flex;gap:4px;align-items:center;pointer-events:none}
+/* clear 与 hint 互斥（有 query 显 clear，无 query 显 kbd hint）→ 可共用右槽位 */
+.search-clear{
+  position:absolute;right:9px;top:50%;translate:0 -50%;width:22px;height:22px;border-radius:6px;
+  display:none;place-items:center;color:var(--ink-3);font-size:13px;pointer-events:auto;
+}
+.search-clear:hover{background:var(--surface-2)}
+kbd,.kbd-chip{
+  font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;font-size:10.5px;line-height:1;
+  padding:3px 6px;border-radius:5px;border:1px solid var(--line);border-bottom-width:2px;
+  background:var(--surface);color:var(--ink-2);white-space:nowrap;
+}
+.save-state{display:flex;align-items:center;gap:7px;font-size:var(--fs-meta);color:var(--ink-2);white-space:nowrap}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none}
+.save-state.saving .save-dot{background:var(--warn);animation:pulse 1s infinite}
+.save-state.saved .save-dot{background:var(--accent)}
+.save-state time{font-family:"IBM Plex Mono",ui-monospace,monospace}
+@keyframes pulse{50%{opacity:.35}}
+/* ─── 骨架 ─── */
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);max-width:1120px;margin:0 auto;align-items:start}
+/* 侧栏快捷键折叠：连列宽一起收（仅 hidden 会留下 236px 空列） */
+.shell.no-nav{grid-template-columns:minmax(0,1fr)}
+.shell.no-nav .sidenav{display:none}
+.sidenav{
+  position:sticky;top:56px;max-height:calc(100dvh - 56px);overflow:auto;
+  padding:var(--sp5) var(--sp4) var(--sp5) var(--sp5);display:flex;flex-direction:column;gap:2px;
+  scrollbar-width:thin;
+}
+/* 导航项：hover=1通道(bg tint)；active=同色系bg tint+同色字(2通道封顶)；
+   禁左色条/阴影/字重堆叠。全区滚动下导航=进度扶手：scrollspy 回写 active=定向+进度双岗 */
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:8px var(--sp2);min-height:34px;
+  border-radius:var(--radius-sm);color:var(--ink-2);font-size:var(--fs);
+  transition:background var(--dur),color var(--dur);
+}
+.nav-item:hover{background:var(--surface-2)}
+.nav-item .idx{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--ink-3);width:15px;flex:none}
+.nav-item.active{background:var(--accent-soft);color:var(--accent-strong)}
+/* 命中计数走外围通道：mono 灰阶小字，不占 accent 色面 */
+.nav-item .hit{margin-left:auto;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--ink-3)}
+[hidden]{display:none!important}
+.nav-empty{padding:var(--sp3) var(--sp2);color:var(--ink-3);font-size:var(--fs-meta);line-height:1.7}
+.nav-empty .suggest{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.nav-empty .suggest button{border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:11px;color:var(--ink-2);background:var(--surface)}
+.nav-empty .suggest button:hover{background:var(--surface-2)}
+.nav-foot{margin-top:auto;padding:var(--sp5) var(--sp2) 0;font-size:var(--fs-meta);color:var(--ink-3);line-height:1.8}
+/* ─── 主区（无页级 hero：首屏即 01 区头）─── */
+.main{min-width:0;padding:var(--sp5) var(--sp5) var(--sp7)}
+/* 区头=名目层 1 层（编号+区题+一行安静注）；安静注吸纳被删的页题承诺与单卡卡头信息 */
+.sec{padding-bottom:var(--sp7)}
+.sec-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:0 var(--sp2) var(--sp4)}
+.sec-head .no{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+.sec-head h2{font-family:"Noto Serif SC",serif;font-weight:600;font-size:calc(var(--fs) + 7px);margin:0;letter-spacing:.04em}
+.sec-head .sec-desc{flex-basis:100%;color:var(--ink-3);font-size:var(--fs-meta);margin-top:4px;line-height:1.65;max-width:62ch}
+/* ─── 卡片分组（分组容器岗：一块一容器；名目层 2 层只在多卡区出现）─── */
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:var(--sp4);overflow:hidden;
+}
+.card-t{
+  display:flex;align-items:center;gap:8px;margin:0;padding:var(--sp3) var(--sp4);
+  font-size:var(--fs-meta);font-weight:500;color:var(--ink-3);letter-spacing:.1em;
+  border-bottom:1px solid var(--line-soft);background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 34%,var(--surface));
+}
+.row{
+  display:flex;align-items:center;gap:var(--sp4);min-height:var(--row-min);
+  padding:10px var(--sp4);
+}
+.row + .row{border-top:1px solid var(--line-soft)}
+#keyList + .row,#deviceList + .row{border-top:1px solid var(--line-soft)}/* 列表容器与尾随行的分隔补线 */
+.row .txt{flex:1;min-width:0}
+.row .lbl{font-weight:500}
+.row .desc{color:var(--ink-2);font-size:calc(var(--fs) - 1.5px);margin-top:1px;max-width:58ch}
+.row .ctl{flex:none;display:flex;align-items:center;gap:var(--sp3)}
+.row.search-hide{display:none}
+/* ─── 控件 ─── */
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:2px;gap:2px}
+.seg button{
+  padding:5px 13px;border-radius:7px;font-size:calc(var(--fs) - 1px);color:var(--ink-2);white-space:nowrap;
+  transition:background var(--dur),color var(--dur);
+}
+.seg button:hover{color:var(--ink)}
+/* 选中=bg+字色 2 通道；去阴影去字重。暗色 thumb 取更亮的 surface-3 保持"浮起"方向一致 */
+.seg button[aria-checked="true"]{background:var(--surface);color:var(--ink)}
+[data-theme="dark"] .seg button[aria-checked="true"]{background:var(--surface-3)}
+select{
+  font:inherit;font-size:calc(var(--fs) - 1px);color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:6px 28px 6px 10px;appearance:none;transition:border-color var(--dur);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23777' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+select:hover{border-color:var(--ink-3)}
+[data-theme="dark"] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b3a98e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E")}
+.switch{
+  position:relative;width:40px;height:23px;flex:none;border-radius:999px;
+  background:var(--surface-3);border:1px solid var(--line);
+  transition:background var(--dur) var(--ease),border-color var(--dur);
+}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;
+  background:var(--surface);box-shadow:0 1px 3px rgba(60,50,30,.35);
+  transition:translate var(--dur) var(--ease);
+}
+.switch:hover{border-color:var(--ink-3)}/* hover=1通道边框 */
+.switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
+.switch[aria-checked="true"]::after{translate:17px 0;background:var(--accent-ink)}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:7px 16px;min-height:32px;
+  border-radius:8px;border:1px solid var(--line);background:var(--surface);
+  font-size:calc(var(--fs) - 1px);color:var(--ink);transition:border-color var(--dur),background var(--dur);
+}
+.btn:hover{background:var(--surface-2)}
+/* K·控件权重阶梯：accent 实色按钮全页 0 个（工具页 0–3 合法，含 0） */
+.btn.danger{border-color:var(--danger-line);color:var(--danger-strong)}
+.btn.danger:hover{background:var(--danger-soft)}
+/* danger-solid 全页唯一实色：只给弹窗内的不可逆确认本身（"永久删除"） */
+.btn.danger-solid{background:var(--danger);border-color:var(--danger);color:var(--danger-ink);font-weight:500}
+.btn.danger-solid:hover{background:var(--danger-strong);border-color:var(--danger-strong)}
+/* 文字钮（权重最轻）：行内重复动作专级——重新绑定×6 / 设备移除×N；hover=1通道 bg tint */
+.btn-text{
+  display:inline-flex;align-items:center;padding:4px 10px;min-height:26px;border-radius:7px;
+  font-size:var(--fs-meta);color:var(--ink-2);transition:background var(--dur),color var(--dur);
+}
+.btn-text:hover{background:var(--surface-2);color:var(--ink)}
+.btn-text.danger{color:var(--danger-strong)}
+.btn-text.danger:hover{background:var(--danger-soft)}
+/* 诚实回执：disabled 必须有"看起来不能用"的形 */
+.btn:disabled,.btn-text:disabled{opacity:.45}
+.btn.small{padding:4px 11px;min-height:26px;font-size:var(--fs-meta)}
+.btn[aria-busy="true"]{opacity:.65;pointer-events:none}
+.swatches{display:flex;gap:10px}
+.swatch{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+  display:grid;place-items:center;position:relative;transition:border-color var(--dur);
+}
+.swatch:hover{border-color:var(--ink-3)}/* hover=1通道边框；不用位移（尺寸变化是最贵通道） */
+.swatch i{width:20px;height:20px;border-radius:6px;display:block}
+/* 选中=1通道：色块上的勾图标 */
+.swatch[aria-checked="true"]::after{content:"";position:absolute;inset:0;display:grid;place-items:center;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5' fill='none' stroke='%23fdfaf2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.swatch[data-a="chen"] i{background:#5a4d3e}.swatch[data-a="lan"] i{background:#46525e}
+.swatch[data-a="song"] i{background:#49544c}.swatch[data-a="gao"] i{background:#55524e}
+.swatch[data-a="jiang"] i{background:#5c4a46}
+/* 色板是"所见即所应用"：暗色下 tile 与 check 一起换暗色版（诚实预览，不假显色） */
+[data-theme="dark"] .swatch[data-a="chen"] i{background:#b3a696}
+[data-theme="dark"] .swatch[data-a="lan"] i{background:#a3b1bf}
+[data-theme="dark"] .swatch[data-a="song"] i{background:#a4b3a9}
+[data-theme="dark"] .swatch[data-a="gao"] i{background:#b2aea8}
+[data-theme="dark"] .swatch[data-a="jiang"] i{background:#b7a5a0}
+[data-theme="dark"] .swatch[aria-checked="true"]::after{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5' fill='none' stroke='%232a2517' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E")}
+.swatch .sname{position:absolute;bottom:calc(100% + 5px);left:50%;translate:-50% 0;font-size:10px;color:var(--ink-3);white-space:nowrap;opacity:0;transition:opacity var(--dur)}
+.swatch:hover .sname,.swatch:focus-visible .sname{opacity:1}
+/* ─── 编辑器预览（演示件：可输入）─── */
+.preview-card{background:var(--surface)}
+.preview{
+  padding:var(--sp5) var(--sp5) var(--sp6);outline:none;caret-color:var(--accent);
+  max-width:100%;
+}
+/* contenteditable 键盘焦点也要可见（a11y：outline:none 只去鼠标态） */
+.preview:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.preview .pw-inner{margin:0 auto;transition:max-width .25s var(--ease)}
+.preview p{margin:0 0 .9em;transition:opacity var(--dur)}
+.preview p:last-child{margin-bottom:0}
+.preview h4{font-family:"Noto Serif SC",serif;margin:0 0 .7em;font-size:1.25em}
+.preview.typewriter p{opacity:.38}
+.preview.typewriter p.cur{opacity:1}
+.preview-meta{display:flex;gap:14px;padding:8px var(--sp5);border-top:1px solid var(--line-soft);font-size:var(--fs-meta);color:var(--ink-3);flex-wrap:wrap}
+.preview-meta .mono{color:var(--ink-2)}
+/* ─── 同步 ─── */
+.sync-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.sync-dot.syncing{background:var(--warn);animation:pulse .8s infinite}
+.sync-bar{height:3px;border-radius:2px;background:var(--surface-3);overflow:hidden;margin-top:9px}
+.sync-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s linear}
+.device{display:flex;align-items:center;gap:var(--sp3)}
+.device .dic{width:34px;height:34px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;flex:none;color:var(--ink-2)}
+.device .dtxt{flex:1;min-width:0}
+.device .dname{font-weight:500;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.device .dmeta{font-size:var(--fs-meta);color:var(--ink-3);font-family:"IBM Plex Mono",ui-monospace,monospace;margin-top:1px}
+/* 设备标签走外围通道：mono 小字纯文字，零底色洗面 */
+.badge{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.04em}
+.badge.me{color:var(--ink-3)}
+.badge.stale{color:var(--warn)}/* 语义：警示色+文字 ≥2 通道（豁免，非堆叠） */
+.dev-remove{position:relative}
+.dev-confirm{display:flex;gap:6px;align-items:center}
+.dev-confirm .ask{font-size:var(--fs-meta);color:var(--danger-strong)}
+/* ─── 快捷键 ─── */
+.kbd-row .ctl{gap:10px}
+/* 捕获态=同色系bg+同色字(2通道)+呼吸脉冲（时间维信号，与 sync-dot 同源；非静态通道） */
+.listening-chip{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;padding:5px 10px;border-radius:6px;
+  background:var(--accent-soft);color:var(--accent-strong);
+  animation:pulse 1.1s infinite;
+}
+.keyerr{font-size:var(--fs-meta);color:var(--danger-strong);margin-top:4px}
+.conflict-bar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px var(--sp4);background:var(--danger-soft);border-top:1px solid var(--danger-line);
+  font-size:var(--fs-meta);color:var(--ink-2);
+}
+.conflict-bar .who{color:var(--danger-strong);font-weight:500}
+/* ─── 危险区 ─── */
+.card.danger{border-color:var(--danger-line)}
+.card.danger .card-t{color:var(--danger-strong);background:var(--danger-soft);border-bottom-color:var(--danger-line)}
+/* ─── Toast ─── */
+.toasts{position:fixed;left:18px;bottom:18px;z-index:60;display:flex;flex-direction:column;gap:8px;max-width:min(380px,calc(100vw - 36px))}
+.toast{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;
+  background:var(--ink);color:var(--paper);font-size:var(--fs-meta);box-shadow:0 6px 24px rgba(30,25,15,.28);
+  animation:tin .22s var(--ease);transition:opacity .18s ease;
+}
+.toast button{color:var(--paper);text-decoration:underline;text-underline-offset:3px;font-weight:500;flex:none}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+/* ─── Dialog ─── */
+dialog{
+  border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);
+  padding:0;max-width:430px;width:calc(100vw - 40px);box-shadow:0 24px 70px rgba(30,25,15,.3);
+}
+dialog::backdrop{background:rgba(35,30,18,.45)}
+.dlg-body{padding:var(--sp5)}
+.dlg-body h3{margin:0 0 8px;font-family:"Noto Serif SC",serif;font-size:18px}
+.dlg-body p{margin:0 0 var(--sp4);color:var(--ink-2);font-size:var(--fs);line-height:1.7}
+.dlg-body .counts{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--danger-strong);font-weight:600}
+.dlg-check{display:flex;gap:9px;align-items:flex-start;font-size:var(--fs-meta);color:var(--ink-2);margin-bottom:var(--sp5);cursor:pointer}
+.dlg-check input{margin-top:2px;accent-color:var(--danger)}
+.dlg-actions{display:flex;justify-content:flex-end;gap:10px;padding:var(--sp4) var(--sp5);border-top:1px solid var(--line-soft)}
+/* ─── 页脚 ─── */
+.page-foot{display:flex;align-items:center;gap:12px;padding:var(--sp5) var(--sp2) 0;color:var(--ink-3);font-size:var(--fs-meta);border-top:1px solid var(--line-soft)}
+.page-foot .mono{font-size:11px}
+/* ─── 响应式 ─── */
+@media (width < 860px){
+  .shell{grid-template-columns:1fr}
+  .topbar{height:auto;flex-wrap:wrap;padding:10px var(--sp4);gap:10px}
+  .search-wrap{order:3;flex-basis:100%;max-width:none}
+  /* 全区滚动下移动导航=随身的跳转扶手：sticky 钉在实测顶栏高度处（topbar 折行高度由 --tbh 实测回写） */
+  .sidenav{
+    position:sticky;top:var(--tbh,0);z-index:25;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;
+    padding:10px var(--sp3);gap:6px;border-bottom:1px solid var(--line);background:var(--paper);
+    scrollbar-width:none;
+  }
+  .sidenav::-webkit-scrollbar{display:none}
+  /* 锚定落点=实测顶栏高+横条 nav 高：写死 70px 会让区头被双层 sticky 盖住 */
+  html{scroll-padding-top:calc(var(--tbh,110px) + 54px)}
+  .nav-foot{display:none}
+  .nav-item{flex:none;min-height:32px}/* 移动态同规则：bg tint+同色字，禁底边条（旋转的左色条） */
+  .main{padding:var(--sp5) var(--sp4) var(--sp7)}
+  .row{flex-wrap:wrap;row-gap:8px}
+  .row .ctl{flex-basis:100%;justify-content:flex-start}
+  #search{font-size:16px} /* iOS 聚焦缩放规避 */
+}
+@media (pointer:coarse){
+  .switch{width:46px;height:27px}
+  .switch::after{width:21px;height:21px}
+  .switch[aria-checked="true"]::after{translate:19px 0}
+  .nav-item{min-height:40px}
+  .seg button{min-height:32px;padding:5px 14px}
+  .btn{min-height:38px}
+  .btn-text{min-height:36px}
+  .swatch{width:40px;height:40px}
+}
+body.rm *,body.rm *::before,body.rm *::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+/* ─── 输出视图（K·输出视图）：打印=静态内容流——隐导航/控件/浮层，全区展开，防截断 ─── */
+@media print{
+  .topbar,.sidenav,.toasts,dialog,.search-hint{display:none!important}
+  .shell{grid-template-columns:1fr;max-width:none}
+  .sec[hidden]{display:block!important}
+  .row.search-hide{display:flex!important}
+  .card,.dlg-body{break-inside:avoid}
+  .btn,.btn-text,.switch,.seg,.swatches,.dev-remove,.conflict-bar{visibility:hidden}
+  body{background:#fff;color:#1a1a1a}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="stitch" aria-hidden="true"></span><b data-i18n="app.name">墨迹</b><span class="ver">v2.4.1</span></div>
+  <div class="search-wrap" role="search">
+    <span class="search-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <input id="search" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" data-i18n-ph="search.ph" placeholder="搜索设置" data-i18n-aria="search.ph" aria-label="搜索设置">
+    <button class="search-clear" id="searchClear" aria-label="清空搜索" data-i18n-aria="search.clear">×</button>
+    <span class="search-hint"><kbd id="searchKbd">Ctrl K</kbd></span>
+  </div>
+  <div class="save-state saved" id="saveState" role="status" aria-live="polite">
+    <span class="save-dot" aria-hidden="true"></span><span id="saveTxt" data-i18n="save.done">已保存</span><time id="saveTime"></time>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidenav" id="sidenav" data-i18n-aria="nav.label" aria-label="设置分类">
+    <button class="nav-item active" data-sec="general"><span class="idx">01</span><span data-i18n="nav.general">通用</span><span class="hit" hidden></span></button>
+    <button class="nav-item" data-sec="editor"><span class="idx">02</span><span data-i18n="nav.editor">编辑器</span><span class="hit" hidden></span></button>
+    <button class="nav-item" data-sec="appearance"><span class="idx">03</span><span data-i18n="nav.appearance">外观</span><span class="hit" hidden></span></button>
+    <button class="nav-item" data-sec="sync"><span class="idx">04</span><span data-i18n="nav.sync">同步</span><span class="hit" hidden></span></button>
+    <button class="nav-item" data-sec="keys"><span class="idx">05</span><span data-i18n="nav.keys">快捷键</span><span class="hit" hidden></span></button>
+    <button class="nav-item" data-sec="storage"><span class="idx">06</span><span data-i18n="nav.storage">存储与数据</span><span class="hit" hidden></span></button>
+    <div class="nav-empty" id="navEmpty" hidden>
+      <span data-i18n="nav.empty">没有匹配的分类</span>
+      <div class="suggest" id="navSuggest"></div>
+    </div>
+    <div class="nav-foot">
+      <span data-i18n="nav.local">本地优先 · 设置仅存于本机</span><br>
+      <span class="mono">Inkwell v2.4.1</span>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <!-- 页级 h1 降为屏幕阅读器件：工具页首屏不留名目块（B87 工具页 hero 禁令） -->
+    <h1 class="sr-only" data-i18n="page.title">设置</h1>
+
+    <!-- 01 通用（单卡区：名目 1 层——区头；原卡头"语言与启动"并入安静注） -->
+    <section class="sec" id="sec-general" data-sec="general">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">01</span><h2 data-i18n="nav.general">通用</h2><div class="sec-desc" data-i18n="sec.general.d">语言、启动行为与自动保存间隔——改动即时生效</div></div>
+      <div class="card">
+        <div class="row" data-kw="语言 language 界面界面语言 english 简体中文 ui">
+          <div class="txt"><div class="lbl" data-i18n="g.lang">界面语言</div><div class="desc" data-i18n="g.lang.d">切换后界面文字立即翻译，文稿内容不受影响</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="g.lang" aria-label="界面语言" id="segLang">
+            <button role="radio" data-v="zh" aria-checked="true">简体中文</button>
+            <button role="radio" data-v="en" aria-checked="false">English</button>
+          </div></div>
+        </div>
+        <div class="row" data-kw="启动 startup 打开 launch 上次 新建">
+          <div class="txt"><div class="lbl" data-i18n="g.start">启动时</div><div class="desc" data-i18n="g.start.d">每次打开墨迹时先做什么</div></div>
+          <div class="ctl"><select id="selStartup" data-i18n-aria="g.start" aria-label="启动时">
+            <option value="restore" data-i18n="g.start.restore">恢复上次的文档</option>
+            <option value="new" data-i18n="g.start.new">新建空白笔记</option>
+            <option value="welcome" data-i18n="g.start.welcome">显示欢迎页</option>
+          </select></div>
+        </div>
+        <div class="row" data-kw="自动保存 autosave 间隔 保存 save">
+          <div class="txt"><div class="lbl" data-i18n="g.save">自动保存间隔</div><div class="desc" data-i18n="g.save.d">编辑停止后多久写入磁盘，可在下方预览中实测</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="g.save" aria-label="自动保存间隔" id="segSave">
+            <button role="radio" data-v="0" aria-checked="false" data-i18n="g.save.0">即时</button>
+            <button role="radio" data-v="3" aria-checked="true">3s</button>
+            <button role="radio" data-v="10" aria-checked="false">10s</button>
+            <button role="radio" data-v="-1" aria-checked="false" data-i18n="g.save.m">仅手动</button>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 编辑器（多卡区：名目 2 层——区头+卡组头） -->
+    <section class="sec" id="sec-editor" data-sec="editor">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">02</span><h2 data-i18n="nav.editor">编辑器</h2><div class="sec-desc" data-i18n="sec.editor.d">排版与编辑行为，附一块可直接输入的实时预览</div></div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="e.card1">排版</h3>
+        <div class="row" data-kw="字号 正文字号 字体大小 font size">
+          <div class="txt"><div class="lbl" data-i18n="e.size">正文字号</div><div class="desc" data-i18n="e.size.d">正文与预览实时联动</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="e.size" aria-label="正文字号" id="segSize">
+            <button role="radio" data-v="14" aria-checked="false">14px</button>
+            <button role="radio" data-v="16" aria-checked="true">16px</button>
+            <button role="radio" data-v="18" aria-checked="false">18px</button>
+          </div></div>
+        </div>
+        <div class="row" data-kw="行宽 栏宽 行长 line width">
+          <div class="txt"><div class="lbl" data-i18n="e.width">行宽</div><div class="desc" data-i18n="e.width.d">每行最大字符数，影响长文阅读节奏</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="e.width" aria-label="行宽" id="segWidth">
+            <button role="radio" data-v="54" aria-checked="false" data-i18n="e.width.n">窄 54</button>
+            <button role="radio" data-v="64" aria-checked="true" data-i18n="e.width.m">标准 64</button>
+            <button role="radio" data-v="76" aria-checked="false" data-i18n="e.width.w">宽 76</button>
+          </div></div>
+        </div>
+        <div class="row" data-kw="字体 字体族 宋体 黑体 文楷 等宽 font family typeface">
+          <div class="txt"><div class="lbl" data-i18n="e.font">正文字体</div><div class="desc" data-i18n="e.font.d">编辑器正文使用的字体族</div></div>
+          <div class="ctl"><select id="selFont" data-i18n-aria="e.font" aria-label="正文字体">
+            <option value="serif" data-i18n="e.font.serif">思源宋体</option>
+            <option value="sans" data-i18n="e.font.sans">思源黑体</option>
+            <option value="kai" data-i18n="e.font.kai">系统楷体</option>
+            <option value="mono" data-i18n="e.font.mono">等宽</option>
+          </select></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="e.card2">行为</h3>
+        <div class="row" data-kw="打字机 typewriter 聚焦 当前行 focus">
+          <div class="txt"><div class="lbl" data-i18n="e.type">打字机模式</div><div class="desc" data-i18n="e.type.d">淡出非当前段落，让注意力留在正在写的那一行</div></div>
+          <div class="ctl"><button class="switch" id="swType" role="switch" aria-checked="false" data-i18n-aria="e.type" aria-label="打字机模式"></button></div>
+        </div>
+        <div class="row" data-kw="拼写检查 spellcheck spell 拼写">
+          <div class="txt"><div class="lbl" data-i18n="e.spell">拼写检查</div><div class="desc" data-i18n="e.spell.d">对英文内容标出可能的拼写错误（试试在预览里拼错单词）</div></div>
+          <div class="ctl"><button class="switch" id="swSpell" role="switch" aria-checked="true" data-i18n-aria="e.spell" aria-label="拼写检查"></button></div>
+        </div>
+        <div class="row" data-kw="tab 缩进 焦点 indent 按键">
+          <div class="txt"><div class="lbl" data-i18n="e.tab">Tab 键行为</div><div class="desc" data-i18n="e.tab.d">在编辑器里按 Tab 是插入缩进，还是移到下一个控件</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="e.tab" aria-label="Tab 键行为" id="segTab">
+            <button role="radio" data-v="indent" aria-checked="true" data-i18n="e.tab.i">插入缩进</button>
+            <button role="radio" data-v="focus" aria-checked="false" data-i18n="e.tab.f">移动焦点</button>
+          </div></div>
+        </div>
+      </div>
+      <div class="card preview-card" data-kw="预览 preview 实时 输入 live">
+        <h3 class="card-t" data-i18n="e.preview">实时预览 — 可直接输入测试</h3>
+        <div class="preview" id="preview" contenteditable="true" spellcheck="true" data-i18n-aria="e.pv.aria" aria-label="编辑器预览，可直接输入">
+          <div class="pw-inner" id="pwInner">
+            <h4>东京八平米 · 摘记</h4>
+            <p>八平米的房间没有冰箱，于是我每天去街角的豆腐店。店主认得我的脚步，总会留一块木棉豆腐。空间小了，城市反而变大。</p>
+            <p>吉井忍写：“你的‘小’不是问题，因为外面的世界足够大。” 我在这句话下面画了线——本地优先的笔记也一样：把最小的一块地方照顾好，剩下的交给同步。</p>
+          </div>
+        </div>
+        <div class="preview-meta">
+          <span id="pvStat"><span class="mono">0</span> <span data-i18n="e.pv.chars">字</span></span>
+          <span id="pvSave"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 外观（多卡区：名目 2 层） -->
+    <section class="sec" id="sec-appearance" data-sec="appearance">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">03</span><h2 data-i18n="nav.appearance">外观</h2><div class="sec-desc" data-i18n="sec.appearance.d">主题模式、主题色板与界面密度</div></div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="a.card1">主题</h3>
+        <div class="row" data-kw="主题 深浅 暗色 浅色 系统 theme dark light mode">
+          <div class="txt"><div class="lbl" data-i18n="a.mode">主题模式</div><div class="desc" data-i18n="a.mode.d">跟随系统时随 macOS / Windows 明暗自动切换</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="a.mode" aria-label="主题模式" id="segTheme">
+            <button role="radio" data-v="system" aria-checked="false" data-i18n="a.mode.sys">跟随系统</button>
+            <button role="radio" data-v="light" aria-checked="true" data-i18n="a.mode.l">浅色</button>
+            <button role="radio" data-v="dark" aria-checked="false" data-i18n="a.mode.dk">深色</button>
+          </div></div>
+        </div>
+        <div class="row" data-kw="色板 主题色 强调色 accent color palette 沉香 黛蓝 松墨 缟灰 绛砂 slate gray">
+          <div class="txt"><div class="lbl" data-i18n="a.accent">主题色板</div><div class="desc" data-i18n="a.accent.d">用于当前态与开关等控件——五色皆为带色相的灰，彩度让给语义色</div></div>
+          <div class="ctl"><div class="swatches" role="radiogroup" data-i18n-aria="a.accent" aria-label="主题色板" id="swAccent">
+            <button class="swatch" role="radio" data-a="chen" data-i18n-aria="a.chen" aria-checked="true" aria-label="沉香"><i></i><span class="sname" data-i18n="a.chen">沉香</span></button>
+            <button class="swatch" role="radio" data-a="lan" data-i18n-aria="a.lan" aria-checked="false" aria-label="黛蓝"><i></i><span class="sname" data-i18n="a.lan">黛蓝</span></button>
+            <button class="swatch" role="radio" data-a="song" data-i18n-aria="a.song" aria-checked="false" aria-label="松墨"><i></i><span class="sname" data-i18n="a.song">松墨</span></button>
+            <button class="swatch" role="radio" data-a="gao" data-i18n-aria="a.gao" aria-checked="false" aria-label="缟灰"><i></i><span class="sname" data-i18n="a.gao">缟灰</span></button>
+            <button class="swatch" role="radio" data-a="jiang" data-i18n-aria="a.jiang" aria-checked="false" aria-label="绛砂"><i></i><span class="sname" data-i18n="a.jiang">绛砂</span></button>
+          </div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="a.card2">界面</h3>
+        <div class="row" data-kw="密度 间距 紧凑 宽松 density compact comfortable spacing">
+          <div class="txt"><div class="lbl" data-i18n="a.density">界面密度</div><div class="desc" data-i18n="a.density.d">改变全页行高与间距，立即生效</div></div>
+          <div class="ctl"><div class="seg" role="radiogroup" data-i18n-aria="a.density" aria-label="界面密度" id="segDensity">
+            <button role="radio" data-v="compact" aria-checked="false" data-i18n="a.d.c">紧凑</button>
+            <button role="radio" data-v="default" aria-checked="true" data-i18n="a.d.d">标准</button>
+            <button role="radio" data-v="comfortable" aria-checked="false" data-i18n="a.d.w">宽松</button>
+          </div></div>
+        </div>
+        <div class="row" data-kw="动效 减弱 动画 motion reduce 晕">
+          <div class="txt"><div class="lbl" data-i18n="a.motion">减弱动效</div><div class="desc" data-i18n="a.motion.d">关闭过渡与脉冲动画（系统开启减弱动效时自动启用）</div></div>
+          <div class="ctl"><button class="switch" id="swMotion" role="switch" aria-checked="false" data-i18n-aria="a.motion" aria-label="减弱动效"></button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 同步（多卡区：名目 2 层） -->
+    <section class="sec" id="sec-sync" data-sec="sync">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">04</span><h2 data-i18n="nav.sync">同步</h2><div class="sec-desc" data-i18n="sec.sync.d">端到端加密同步与已连接设备</div></div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="s.card1">状态</h3>
+        <div class="row" data-kw="同步状态 sync status 上次同步 端到端加密 e2e encrypt">
+          <div class="txt">
+            <div class="sync-line">
+              <span class="sync-dot" id="syncDot" aria-hidden="true"></span>
+              <div class="lbl" id="syncLabel" data-i18n="s.ok">已同步</div>
+              <span class="mono" id="syncTime" style="font-size:var(--fs-meta);color:var(--ink-3)"></span>
+            </div>
+            <div class="desc" id="syncSub">端到端加密已开启，密钥不出本机</div>
+            <div class="sync-bar" id="syncBar" role="progressbar" data-i18n-aria="s.progress" aria-label="同步进度" hidden><i></i></div>
+          </div>
+          <!-- 控件权重：日常同步动作 = ghost（K18·控件权重阶梯②） -->
+          <div class="ctl"><button class="btn" id="btnSync" data-i18n="s.now">立即同步</button></div>
+        </div>
+        <div class="row" data-kw="加密 e2e 端到端 密钥 encrypt">
+          <div class="txt"><div class="lbl" data-i18n="s.e2e">端到端加密</div><div class="desc" data-i18n="s.e2e.d">关闭后服务器可读取文稿内容，仅建议排查同步问题时临时关闭</div></div>
+          <div class="ctl"><button class="switch" id="swE2e" role="switch" aria-checked="true" data-i18n-aria="s.e2e" aria-label="端到端加密"></button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="s.card2">已连接设备</h3>
+        <div id="deviceList"></div>
+      </div>
+    </section>
+
+    <!-- 05 快捷键（单卡区：名目 1 层——区头；原卡头承诺并入安静注） -->
+    <section class="sec" id="sec-keys" data-sec="keys">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">05</span><h2 data-i18n="nav.keys">快捷键</h2>
+        <div class="sec-desc" data-i18n="sec.keys.d">全局快捷键，绑定后立即生效——点击「重新绑定」后按下新组合</div>
+      </div>
+      <div class="card">
+        <div id="keyList"></div>
+        <div class="row" data-kw="恢复默认 reset 快捷键">
+          <div class="txt"><div class="lbl" data-i18n="k.reset">恢复默认</div><div class="desc" data-i18n="k.reset.d">全部快捷键回到出厂绑定</div></div>
+          <div class="ctl"><button class="btn small" id="btnKeyReset" data-i18n="k.reset.b">恢复默认</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 存储与数据（多卡区：名目 2 层；危险区头=安全语义件非装饰名目） -->
+    <section class="sec" id="sec-storage" data-sec="storage">
+      <div class="sec-head"><span class="stitch" aria-hidden="true"></span><span class="no">06</span><h2 data-i18n="nav.storage">存储与数据</h2><div class="sec-desc" data-i18n="sec.storage.d">本地用量、导入导出与危险区</div></div>
+      <div class="card">
+        <h3 class="card-t" data-i18n="d.card1">本地用量</h3>
+        <div class="row" data-kw="用量 文稿 空间 存储 storage usage mb 统计">
+          <div class="txt">
+            <div class="lbl"><span class="mono" id="statDocs">0</span> <span data-i18n="d.docs">篇文稿</span> · <span class="mono" id="statSize">0 KB</span></div>
+            <div class="desc" data-i18n="d.usage.d">文稿以 Markdown 纯文本保存在本机 inkwell/ 目录</div>
+          </div>
+          <div class="ctl"><span class="mono" id="statBar" style="font-size:var(--fs-meta);color:var(--ink-3)"></span></div>
+        </div>
+        <div class="row" data-kw="导出 export 备份 markdown zip 下载">
+          <div class="txt"><div class="lbl" data-i18n="d.export">导出全部文稿</div><div class="desc" data-i18n="d.export.d">打包为 Markdown 文件的 zip 归档下载</div></div>
+          <div class="ctl"><button class="btn" id="btnExport" data-i18n="d.export.b">导出 .zip</button></div>
+        </div>
+        <div class="row" data-kw="导入 import markdown 文件">
+          <div class="txt"><div class="lbl" data-i18n="d.import">导入文稿</div><div class="desc" data-i18n="d.import.d">选择 .md / .txt 文件导入为本地文稿</div></div>
+          <div class="ctl">
+            <input type="file" id="fileInput" accept=".md,.markdown,.txt" multiple hidden>
+            <button class="btn" id="btnImport" data-i18n="d.import.b">选择文件…</button>
+          </div>
+        </div>
+      </div>
+      <div class="card danger">
+        <h3 class="card-t" data-i18n="d.danger">危险区</h3>
+        <div class="row" data-kw="清空 删除 危险 clear delete data 数据">
+          <div class="txt"><div class="lbl" data-i18n="d.clear">清空本地数据</div><div class="desc" data-i18n="d.clear.d">永久删除本机全部文稿与同步记录，不可恢复；设置项保留</div></div>
+          <div class="ctl"><button class="btn danger" id="btnClear" data-i18n="d.clear.b">清空…</button></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-foot">
+      <span class="stitch sm" aria-hidden="true"></span>
+      <span data-i18n="foot">墨迹 Inkwell · 本地优先的 Markdown 笔记</span>
+      <span class="mono" style="margin-left:auto" id="footStat"></span>
+    </footer>
+  </main>
+</div>
+
+<dialog id="dlgClear" aria-labelledby="dlgT" aria-describedby="dlgD">
+  <div class="dlg-body">
+    <h3 id="dlgT" data-i18n="dlg.t">清空本地数据？</h3>
+    <p id="dlgD"><span data-i18n="dlg.p1">将永久删除</span> <span class="counts" id="dlgCounts"></span><br><span data-i18n="dlg.p2">已同步到其他设备的内容不受影响；此操作无法撤销。</span></p>
+    <label class="dlg-check"><input type="checkbox" id="dlgCheck"><span data-i18n="dlg.check">我已了解后果，确认删除这台设备上的全部文稿</span></label>
+    <div class="dlg-actions">
+      <button class="btn" id="dlgCancel" data-i18n="dlg.cancel">取消</button>
+      <!-- 全页唯一实色：不可逆确认本身是唯一的承诺时刻（K18·控件权重阶梯①④） -->
+      <button class="btn danger-solid" id="dlgConfirm" disabled data-i18n="dlg.ok">永久删除</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ═══════════ 状态与持久化 ═══════════ */
+const LS='inkwell-v4';
+const DEF={
+  lang:'zh',theme:'light',accent:'chen',density:'default',startup:'restore',autosave:3,
+  fontSize:16,lineWidth:64,fontFamily:'serif',typewriter:false,spellcheck:true,tabIndent:true,
+  reduceMotion:false,e2e:true,navCollapsed:false,lastSync:Date.now()-138000,syncing:false,
+  docs:[
+    {name:'东京八平米-摘记.md',body:'# 东京八平米 · 摘记\n\n八平米的房间没有冰箱，于是我每天去街角的豆腐店。店主认得我的脚步，总会留一块木棉豆腐。空间小了，城市反而变大。\n\n吉井忍写：「你的『小』不是问题，因为外面的世界足够大。」\n'},
+    {name:'周报-2026-W18.md',body:'# 周报 2026-W18\n\n- 完成同步协议的冲突合并方案评审\n- 编辑器打字机模式进入内测\n- 下周：端对端加密轮换密钥\n'},
+    {name:'菜谱-葱油拌面.md',body:'# 葱油拌面\n\n小葱一把分葱白葱绿，冷油下葱白，小火熬到微焦再下葱绿。生抽老抽糖 3:1:1，浇在面上拌开。\n'},
+    {name:'本地优先笔记的边界.md',body:'# 本地优先笔记的边界\n\n本地存储给了用户主权，也把备份的责任推回给产品。同步不是功能，是承诺。\n'},
+    {name:'日记-谷雨.md',body:'# 谷雨\n\n雨下了一整天。改完设置页最后一处对齐，泡了今年的第一杯明前茶。\n'}
+  ],
+  devices:[
+    {id:'mbp',icon:'laptop',this:true,seen:null},
+    {id:'iphone',icon:'phone',this:false,seen:Date.now()-138000},
+    {id:'oldair',icon:'laptop',this:false,seen:Date.now()-32*864e5},
+  ],
+  bindings:{search:'Ctrl+K',theme:'Ctrl+Shift+L',sidebar:'Ctrl+\\',sync:'Ctrl+Alt+S',export:'Ctrl+Shift+E',goto:'Ctrl+,'}
+};
+let S; try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){S=Object.assign({},DEF)}
+/* 深度脱离 DEF：浅拷贝会共享 DEF.bindings/docs/devices 引用，改 S 即污染出厂默认 */
+S.bindings=Object.assign({},DEF.bindings,S.bindings||{});
+S.docs=(S.docs||[]).map(d=>Object.assign({},d));
+S.devices=(S.devices||[]).map(d=>Object.assign({},d));
+/* 色板迁移（armed7 五板换色相）：历代板名映射到最近的新"灰"板 */
+const ACC_OLD={vermilion:'jiang',ochre:'chen',aubergine:'gao',xuan:'lan',pine:'song',tea:'chen',dai:'lan',ou:'jiang'};
+if(!['chen','lan','song','gao','jiang'].includes(S.accent))S.accent=ACC_OLD[S.accent]||'chen';
+S.syncing=false;
+function persist(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ═══════════ i18n ═══════════ */
+const I18N={
+zh:{'app.name':'墨迹','search.ph':'搜索设置','search.clear':'清空搜索','nav.label':'设置分类',
+'nav.general':'通用','nav.editor':'编辑器','nav.appearance':'外观','nav.sync':'同步','nav.keys':'快捷键','nav.storage':'存储与数据',
+'nav.empty':'没有匹配的分类','nav.local':'本地优先 · 改动即时生效 · 仅存本机',
+'page.title':'设置',
+'sec.general.d':'语言、启动行为与自动保存间隔——改动即时生效','sec.editor.d':'排版与编辑行为，附一块可直接输入的实时预览',
+'sec.appearance.d':'主题模式、主题色板与界面密度','sec.sync.d':'端到端加密同步与已连接设备',
+'sec.keys.d':'全局快捷键，绑定后立即生效——点击「重新绑定」后按下新组合','sec.storage.d':'本地用量、导入导出与危险区',
+'save.done':'已保存','save.ing':'保存中…','save.dirty':'未保存','save.idle':'更改即时生效',
+'g.lang':'界面语言','g.lang.d':'切换后界面文字立即翻译，文稿内容不受影响',
+'g.start':'启动时','g.start.d':'每次打开墨迹时先做什么','g.start.restore':'恢复上次的文档','g.start.new':'新建空白笔记','g.start.welcome':'显示欢迎页',
+'g.save':'自动保存间隔','g.save.d':'编辑停止后多久写入磁盘，可在下方预览中实测','g.save.0':'即时','g.save.m':'仅手动',
+'e.card1':'排版','e.size':'正文字号','e.size.d':'正文与预览实时联动','e.width':'行宽','e.width.d':'每行最大字符数，影响长文阅读节奏',
+'e.width.n':'窄 54','e.width.m':'标准 64','e.width.w':'宽 76',
+'e.font':'正文字体','e.font.d':'编辑器正文使用的字体族','e.font.serif':'思源宋体','e.font.sans':'思源黑体','e.font.kai':'系统楷体','e.font.mono':'等宽',
+'e.card2':'行为','e.type':'打字机模式','e.type.d':'淡出非当前段落，让注意力留在正在写的那一行',
+'e.spell':'拼写检查','e.spell.d':'对英文内容标出可能的拼写错误（试试在预览里拼错单词）',
+'e.tab':'Tab 键行为','e.tab.d':'在编辑器里按 Tab 是插入缩进，还是移到下一个控件','e.tab.i':'插入缩进','e.tab.f':'移动焦点',
+'e.preview':'实时预览 — 可直接输入测试','e.pv.aria':'编辑器预览，可直接输入','e.pv.chars':'字','e.pv.saved':'已保存','e.pv.wait':'将于 {n}s 内保存','e.pv.manual':'未保存 · Ctrl+S 手动保存',
+'a.card1':'主题','a.mode':'主题模式','a.mode.d':'跟随系统时随 macOS / Windows 明暗自动切换','a.mode.sys':'跟随系统','a.mode.l':'浅色','a.mode.dk':'深色',
+'a.accent':'主题色板','a.accent.d':'用于当前态与开关等控件——五色皆为带色相的灰，彩度让给语义色','a.chen':'沉香','a.lan':'黛蓝','a.song':'松墨','a.gao':'缟灰','a.jiang':'绛砂',
+'a.card2':'界面','a.density':'界面密度','a.density.d':'改变全页行高与间距，立即生效','a.d.c':'紧凑','a.d.d':'标准','a.d.w':'宽松',
+'a.motion':'减弱动效','a.motion.d':'关闭过渡与脉冲动画（系统开启减弱动效时自动启用）',
+'s.card1':'状态','s.ok':'已同步','s.syncing':'同步中…','s.sub':'端到端加密已开启，密钥不出本机','s.sub.off':'端到端加密已关闭，服务器可读取文稿','s.now':'立即同步','s.progress':'同步进度',
+'s.e2e':'端到端加密','s.e2e.d':'关闭后服务器可读取文稿内容，仅建议排查同步问题时临时关闭',
+'s.card2':'已连接设备','s.dev.mbp':'这台 MacBook Pro','s.dev.iphone':'iPhone 15','s.dev.oldair':'旧 MacBook Air',
+'s.dev.this':'本机','s.dev.stale':'久未同步','s.dev.last':'上次同步 {t}','s.dev.now':'当前设备','s.dev.rm':'移除','s.dev.rm.q':'确认移除？','s.dev.rm.y':'移除','s.dev.rm.n':'取消',
+'s.dev.this.no':'本机设备不可移除',
+'k.reset':'恢复默认','k.reset.d':'全部快捷键回到出厂绑定','k.reset.b':'恢复默认',
+'k.rebind':'重新绑定','k.listening':'按下新组合…','k.esc':'Esc 取消','k.err.mod':'需要修饰键：Ctrl / Alt / ⌘，或单独功能键','k.err.sys':'系统或浏览器保留键，无法占用',
+'k.conflict':'已被「{n}」占用','k.replace':'替换','k.cancel':'取消','k.bound':'已绑定 {k} → 「{n}」',
+'k.a.search':'聚焦搜索','k.a.search.d':'光标进入顶部搜索框','k.a.theme':'切换深浅色','k.a.theme.d':'浅色 / 深色主题间切换','k.a.sidebar':'折叠侧栏','k.a.sidebar.d':'收起或展开左侧导航','k.a.sync':'立即同步','k.a.sync.d':'等同同步区的同步按钮','k.a.export':'导出全部文稿','k.a.export.d':'等同存储区的导出按钮','k.a.goto':'打开快捷键设置','k.a.goto.d':'跳转到快捷键区','d.card1':'本地用量','d.docs':'篇文稿',
+'d.usage.d':'文稿以 Markdown 纯文本保存在本机 inkwell/ 目录','d.export':'导出全部文稿','d.export.d':'打包为 Markdown 文件的 zip 归档下载','d.export.b':'导出 .zip',
+'d.import':'导入文稿','d.import.d':'选择 .md / .txt 文件导入为本地文稿','d.import.b':'选择文件…',
+'d.danger':'危险区','d.clear':'清空本地数据','d.clear.d':'永久删除本机全部文稿与同步记录，不可恢复；设置项保留','d.clear.b':'清空…',
+'dlg.t':'清空本地数据？','dlg.p1':'将永久删除','dlg.p2':'已同步到其他设备的内容不受影响；此操作无法撤销。',
+'dlg.check':'我已了解后果，确认删除这台设备上的全部文稿','dlg.cancel':'取消','dlg.ok':'永久删除',
+'t.saved':'已保存更改','t.synced':'同步完成 · {n} 台设备最新','t.dev.rm':'已移除 {n}','t.dev.undo':'撤销','t.dev.back':'已恢复 {n}',
+'t.export':'已导出 {n} 篇文稿（{s}）','t.import':'已导入 {n} 篇文稿','t.clear':'已清空本地数据','t.reset':'快捷键已恢复默认','t.empty':'没有文稿可导出',
+'t.search.none':'「{q}」没有匹配的设置项','foot':'墨迹 Inkwell · 本地优先的 Markdown 笔记',
+'time.m':'{n} 分钟前','time.h':'{n} 小时前','time.d':'{n} 天前','time.just':'刚刚'},
+en:{'app.name':'Inkwell','search.ph':'Search settings','search.clear':'Clear search','nav.label':'Settings categories',
+'nav.general':'General','nav.editor':'Editor','nav.appearance':'Appearance','nav.sync':'Sync','nav.keys':'Shortcuts','nav.storage':'Storage & Data',
+'nav.empty':'No matching category','nav.local':'Local-first · instant effect · on this device only',
+'page.title':'Settings',
+'sec.general.d':'Language, launch behavior, and autosave — changes apply instantly','sec.editor.d':'Typography and editing behavior, plus a typeable live preview',
+'sec.appearance.d':'Theme mode, accent palette, and interface density','sec.sync.d':'End-to-end encrypted sync and connected devices',
+'sec.keys.d':'Global shortcuts — effective right after binding; press Rebind, then the new combo','sec.storage.d':'Local usage, import/export, and the danger zone',
+'save.done':'Saved','save.ing':'Saving…','save.dirty':'Unsaved','save.idle':'Changes apply instantly',
+'g.lang':'Interface language','g.lang.d':'UI text translates immediately; your documents are untouched',
+'g.start':'On launch','g.start.d':'What Inkwell does when it opens','g.start.restore':'Reopen last document','g.start.new':'Create a blank note','g.start.welcome':'Show welcome screen',
+'g.save':'Autosave interval','g.save.d':'How long after typing stops before writing to disk — test it in the preview below','g.save.0':'Instant','g.save.m':'Manual only',
+'e.card1':'Typography','e.size':'Body font size','e.size.d':'Body text and the preview update together','e.width':'Line width','e.width.d':'Max characters per line; sets long-form reading rhythm',
+'e.width.n':'Narrow 54','e.width.m':'Standard 64','e.width.w':'Wide 76',
+'e.font':'Body typeface','e.font.d':'Typeface family for editor body text','e.font.serif':'Source Serif','e.font.sans':'Source Sans','e.font.kai':'System Kai','e.font.mono':'Monospace',
+'e.card2':'Behavior','e.type':'Typewriter mode','e.type.d':'Fades non-active paragraphs so focus stays on the line you are writing',
+'e.spell':'Spell check','e.spell.d':'Flags possible misspellings in English (try one in the preview)',
+'e.tab':'Tab key behavior','e.tab.d':'Inside the editor, Tab inserts an indent or moves focus','e.tab.i':'Insert indent','e.tab.f':'Move focus',
+'e.preview':'Live preview — type to test','e.pv.aria':'Editor preview, editable','e.pv.chars':'chars','e.pv.saved':'Saved','e.pv.wait':'Saves in {n}s','e.pv.manual':'Unsaved · Ctrl+S to save',
+'a.card1':'Theme','a.mode':'Theme mode','a.mode.d':'“System” follows macOS / Windows light & dark','a.mode.sys':'System','a.mode.l':'Light','a.mode.dk':'Dark',
+'a.accent':'Accent palette','a.accent.d':'For current state and controls — all five are hued grays; chroma is reserved for semantic colors','a.chen':'Aloeswood','a.lan':'Indigo Ash','a.song':'Pine Ink','a.gao':'Silk Gray','a.jiang':'Cinnabar Ash',
+'a.card2':'Interface','a.density':'Interface density','a.density.d':'Changes row heights and spacing across the page, instantly','a.d.c':'Compact','a.d.d':'Default','a.d.w':'Comfortable',
+'a.motion':'Reduce motion','a.motion.d':'Turns off transitions and pulse animations (auto-on with system reduce-motion)',
+'s.card1':'Status','s.ok':'Synced','s.syncing':'Syncing…','s.sub':'End-to-end encryption on; keys never leave this device','s.sub.off':'E2E off; the server can read your documents','s.now':'Sync now','s.progress':'Sync progress',
+'s.e2e':'End-to-end encryption','s.e2e.d':'Turn off only temporarily when debugging sync issues',
+'s.card2':'Connected devices','s.dev.mbp':'This MacBook Pro','s.dev.iphone':'iPhone 15','s.dev.oldair':'Old MacBook Air',
+'s.dev.this':'This device','s.dev.stale':'Long idle','s.dev.last':'Synced {t}','s.dev.now':'Current device','s.dev.rm':'Remove','s.dev.rm.q':'Remove it?','s.dev.rm.y':'Remove','s.dev.rm.n':'Cancel',
+'s.dev.this.no':'This device cannot be removed',
+'k.reset':'Reset','k.reset.d':'Restore all shortcuts to factory bindings','k.reset.b':'Reset',
+'k.rebind':'Rebind','k.listening':'Press new combo…','k.esc':'Esc to cancel','k.err.mod':'Needs a modifier: Ctrl / Alt / ⌘, or a lone function key','k.err.sys':'Reserved by system or browser',
+'k.conflict':'Already used by “{n}”','k.replace':'Replace','k.cancel':'Cancel','k.bound':'Bound {k} → “{n}”',
+'k.a.search':'Focus search','k.a.search.d':'Moves caret to the search box','k.a.theme':'Toggle light/dark','k.a.theme.d':'Switches between light and dark themes','k.a.sidebar':'Toggle sidebar','k.a.sidebar.d':'Collapses or expands the left navigation','k.a.sync':'Sync now','k.a.sync.d':'Same as the Sync button','k.a.export':'Export all notes','k.a.export.d':'Same as the export button in Storage','k.a.goto':'Open shortcuts','k.a.goto.d':'Scrolls to the shortcuts section','d.card1':'Local usage','d.docs':'notes',
+'d.usage.d':'Notes are stored as plain Markdown in the local inkwell/ folder','d.export':'Export all notes','d.export.d':'Downloads a zip archive of Markdown files','d.export.b':'Export .zip',
+'d.import':'Import notes','d.import.d':'Pick .md / .txt files to import as local notes','d.import.b':'Choose files…',
+'d.danger':'Danger zone','d.clear':'Clear local data','d.clear.d':'Permanently deletes all notes and sync records on this device; settings are kept','d.clear.b':'Clear…',
+'dlg.t':'Clear local data?','dlg.p1':'This permanently deletes','dlg.p2':'Content already synced to other devices is unaffected. This cannot be undone.',
+'dlg.check':'I understand the consequences — delete all notes on this device','dlg.cancel':'Cancel','dlg.ok':'Delete forever',
+'t.saved':'Changes saved','t.synced':'Sync complete · {n} devices up to date','t.dev.rm':'Removed {n}','t.dev.undo':'Undo','t.dev.back':'Restored {n}',
+'t.export':'Exported {n} notes ({s})','t.import':'Imported {n} notes','t.clear':'Local data cleared','t.reset':'Shortcuts reset to defaults','t.empty':'Nothing to export',
+'t.search.none':'No settings match “{q}”','foot':'Inkwell · local-first Markdown notes',
+'time.m':'{n} min ago','time.h':'{n} h ago','time.d':'{n} d ago','time.just':'just now'}};
+function T(k){return (I18N[S.lang]&&I18N[S.lang][k])||I18N.zh[k]||k}
+function TF(k,o){let s=T(k);for(const p in o)s=s.replace('{'+p+'}',o[p]);return s}
+function applyLang(){
+  document.documentElement.lang=S.lang==='zh'?'zh-CN':'en';
+  $$('[data-i18n]').forEach(el=>el.textContent=T(el.dataset.i18n));
+  $$('[data-i18n-ph]').forEach(el=>el.placeholder=T(el.dataset.i18nPh));
+  $$('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',T(el.dataset.i18nAria)));
+  renderDevices();renderKeys();relSync();pvCount();searchFilter(searchEl.value);renderStats();
+  $('#syncSub').textContent=T(S.e2e?'s.sub':'s.sub.off');
+  document.title=T('page.title')+' · '+T('app.name')+(S.lang==='zh'?' Inkwell':'');
+  if(S.lang==='en'&&!pwEn){swapPreview('en')}else if(S.lang==='zh'&&pwEn){swapPreview('zh')}
+}
+
+/* ═══════════ Toast ═══════════ */
+function toast(msg,action){
+  const t=document.createElement('div');t.className='toast';
+  const s=document.createElement('span');s.textContent=msg;t.appendChild(s);
+  let timer;
+  if(action){const b=document.createElement('button');b.textContent=action.label;
+    b.onclick=()=>{action.fn();dismiss()};t.appendChild(b)}
+  $('#toasts').appendChild(t);
+  function dismiss(){t.style.opacity='0';setTimeout(()=>t.remove(),180)}
+  timer=setTimeout(dismiss,5000);
+  t.addEventListener('pointerenter',()=>clearTimeout(timer));
+  t.addEventListener('pointerleave',()=>timer=setTimeout(dismiss,2500));
+}
+
+/* ═══════════ 保存状态 ═══════════ */
+let saveTimer;
+function markSaved(delay){
+  const el=$('#saveState');clearTimeout(saveTimer);
+  el.className='save-state saving';$('#saveTxt').textContent=T('save.ing');
+  saveTimer=setTimeout(()=>{
+    el.className='save-state saved';$('#saveTxt').textContent=T('save.done');
+    $('#saveTime').textContent=new Date().toTimeString().slice(0,5);
+  },Math.max(delay,260));
+}
+function relTime(ts){
+  const d=Date.now()-ts;
+  if(d<60e3)return T('time.just');
+  if(d<3600e3)return TF('time.m',{n:Math.floor(d/60e3)});
+  if(d<864e5)return TF('time.h',{n:Math.floor(d/3600e3)});
+  return TF('time.d',{n:Math.floor(d/864e5)});
+}
+function relSync(){$('#syncTime').textContent=relTime(S.lastSync)}
+setInterval(relSync,30000);
+
+/* ═══════════ 应用层（skin/density/motion） ═══════════ */
+const mqDark=matchMedia('(prefers-color-scheme: dark)');
+const mqRM=matchMedia('(prefers-reduced-motion: reduce)');
+function applyTheme(){
+  const mode=S.theme;
+  const dark=mode==='dark'||(mode==='system'&&mqDark.matches);
+  document.documentElement.dataset.theme=dark?'dark':'light';
+}
+mqDark.addEventListener('change',()=>{if(S.theme==='system')applyTheme()});
+mqRM.addEventListener('change',applyMotion);
+function applyMotion(){
+  document.body.classList.toggle('rm',S.reduceMotion||mqRM.matches);
+  setSw('#swMotion',S.reduceMotion);
+}
+function applyAccent(){
+  document.documentElement.dataset.accent=S.accent;
+  /* 选中态与持久值同步（roving tabindex：radiogroup 单 Tab 位） */
+  $$('#swAccent .swatch').forEach(s=>{const on=s.dataset.a===S.accent;s.setAttribute('aria-checked',String(on));s.tabIndex=on?0:-1});
+}
+function applyDensity(){document.documentElement.dataset.density=S.density}
+/* 侧栏折叠进状态（K·死控件反例：快捷键切了但不持久=半接） */
+function applyNav(){$('.shell').classList.toggle('no-nav',S.navCollapsed)}
+
+/* ═══════════ 控件工厂 ═══════════ */
+function seg(id,get,set){
+  const el=$(id);
+  function sync(){let any=false;el.querySelectorAll('button').forEach(b=>{const on=b.dataset.v==String(get());if(on)any=true;b.setAttribute('aria-checked',String(on));b.tabIndex=on?0:-1});
+    if(!any)el.querySelector('button').tabIndex=0}
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;set(b.dataset.v);sync();markSaved(0);persist()});
+  el.addEventListener('keydown',e=>{
+    if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||e.isComposing)return;
+    e.preventDefault();
+    const bs=[...el.querySelectorAll('button')];let i=bs.findIndex(b=>b.getAttribute('aria-checked')==='true');
+    i=(i+(e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1)+bs.length)%bs.length;
+    bs[i].click();bs[i].focus();
+  });
+  sync();
+}
+function switchEl(id,get,set){
+  const el=$(id);
+  el.addEventListener('click',()=>{set(!get());setSw(id,get());markSaved(0);persist()});
+  setSw(id,get());
+}
+function setSw(id,v){const el=$(id);el.setAttribute('aria-checked',String(!!v))}
+
+/* ═══════════ 导航 / 全区滚动锚定（B87§十一·同屏内容量 对策①）═══════════
+   单区聚焦已废：六区全部在流中成卡陈列。导航点击=滚动锚定，
+   scrollspy 回写 active=导航的"定向+进度"双岗（B87§十一·导航岗）。 */
+let activeSec='general',searching=false;
+function setNavActive(name){
+  $$('.nav-item').forEach(n=>{const on=n.dataset.sec===name;n.classList.toggle('active',on);
+    if(on)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});
+}
+function goSec(name){
+  /* 先清搜索还原全流（命中过滤时目标区可能 hidden，不还原就锚不到） */
+  $('#search').value='';searchFilter('');
+  const sec=document.querySelector('.sec[data-sec="'+name+'"]');if(!sec)return;
+  activeSec=name;setNavActive(name);
+  sec.scrollIntoView({behavior:document.body.classList.contains('rm')?'auto':'smooth',block:'start'});
+}
+/* 滚动探针：视口内当前区回写导航激活态（搜索过滤态跳过——那时 visible 集合≠导航全集） */
+let spyTick=false;
+function updateSpy(){
+  if(searching)return;
+  const y=window.scrollY+140;
+  let cur=null;
+  $$('.sec').forEach(s=>{if(!s.hidden&&s.offsetTop<=y)cur=s});
+  if(!cur)cur=$$('.sec').find(s=>!s.hidden);
+  /* 页底兜底：末区顶到不了阈值线时 active 归最后可见区（否则停在 05 快捷键） */
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-8){
+    const vis=$$('.sec').filter(s=>!s.hidden);if(vis.length)cur=vis[vis.length-1];
+  }
+  if(cur&&cur.dataset.sec!==activeSec){activeSec=cur.dataset.sec;setNavActive(activeSec)}
+}
+window.addEventListener('scroll',()=>{
+  if(spyTick)return;spyTick=true;
+  requestAnimationFrame(()=>{updateSpy();spyTick=false});
+},{passive:true});
+$$('.nav-item').forEach(n=>n.addEventListener('click',()=>goSec(n.dataset.sec)));
+/* 移动端 sticky nav 的 top=实测顶栏高（顶栏折行后高度不定，写死即错） */
+const topbarEl=$('.topbar');
+function setTbh(){document.documentElement.style.setProperty('--tbh',topbarEl.offsetHeight+'px')}
+if('ResizeObserver' in window)new ResizeObserver(setTbh).observe(topbarEl);
+setTbh();
+
+/* ═══════════ 搜索触发链（K·搜索 + K·IME） ═══════════ */
+const searchEl=$('#search');let composing=false,debT,lastToastQ='';
+searchEl.addEventListener('compositionstart',()=>composing=true);
+searchEl.addEventListener('compositionend',()=>{composing=false;queueSearch()});
+searchEl.addEventListener('input',()=>{if(!composing)queueSearch()});
+searchEl.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if(e.key==='Escape'){searchEl.value='';searchFilter('');searchEl.blur()}
+  if(e.key==='Enter'){const m=$('main mark');if(m)m.scrollIntoView({block:'center',behavior:document.body.classList.contains('rm')?'auto':'smooth'})}
+});
+$('#searchClear').addEventListener('click',()=>{searchEl.value='';searchFilter('');searchEl.focus()});
+function queueSearch(){clearTimeout(debT);debT=setTimeout(()=>searchFilter(searchEl.value),120)}
+function searchFilter(q){
+  q=q.trim();$('#searchClear').style.display=q?'grid':'none';
+  $('.search-hint').style.display=q?'none':'flex';
+  const rows=$$('.row[data-kw]');
+  clearMarks();
+  if(!q){
+    /* 清空=全量复位：行/卡/区/导航全部还原（armed5 漏复位 .search-hide 行，实修） */
+    $$('.card').forEach(c=>c.hidden=false);
+    rows.forEach(r=>r.classList.remove('search-hide'));
+    $$('.sec').forEach(s=>s.hidden=false);
+    $$('.nav-item').forEach(n=>{n.hidden=false;n.querySelector('.hit').hidden=true});
+    $('#navEmpty').hidden=true;
+    if(searching){searching=false;updateSpy()}
+    return;
+  }
+  searching=true;
+  const ql=q.toLowerCase();const hitSec={};
+  rows.forEach(r=>{
+    const kw=(r.dataset.kw+' '+r.textContent).toLowerCase();
+    const hit=kw.includes(ql);
+    r.classList.toggle('search-hide',!hit);
+    const sec=r.closest('.sec');sec.hidden=false;
+    if(hit){hitSec[sec.dataset.sec]=(hitSec[sec.dataset.sec]||0)+1;markRow(r,ql)}
+  });
+  $$('.card').forEach(c=>{
+    const rs=[...c.querySelectorAll('.row')];
+    const cardHit=(c.dataset.kw||'').toLowerCase().includes(ql);
+    c.hidden=cardHit?false:(rs.length>0&&!rs.some(r=>!r.classList.contains('search-hide')))||(rs.length===0&&!cardHit);
+  });
+  $$('.sec').forEach(s=>{
+    const any=[...s.querySelectorAll('.card')].some(c=>!c.hidden);
+    s.hidden=!any;
+  });
+  let any=false;
+  $$('.nav-item').forEach(n=>{
+    const c=hitSec[n.dataset.sec]||0;
+    const secVisible=!document.querySelector('.sec[data-sec="'+n.dataset.sec+'"]').hidden;
+    n.hidden=c===0&&!secVisible;
+    const badge=n.querySelector('.hit');badge.hidden=c===0;badge.textContent=c;
+    if(!n.hidden)any=true;
+  });
+  $('#navEmpty').hidden=any;
+  if(!any){
+    if(lastToastQ!==q){lastToastQ=q;toast(TF('t.search.none',{q}))}
+    const sg=$('#navSuggest');sg.innerHTML='';
+    ['sync','keys','storage'].forEach(sec=>{
+      const b=document.createElement('button');b.textContent=T('nav.'+sec);
+      b.onclick=()=>goSec(sec);sg.appendChild(b);
+    });
+  }
+}
+function markRow(r,ql){
+  /* 只在文本区打 mark：.ctl 内的按钮/select/chip 不渲染高亮（避免 option/按钮里塞 mark） */
+  r.querySelectorAll('.txt,.dtxt').forEach(zone=>{
+  const walker=document.createTreeWalker(zone,NodeFilter.SHOW_TEXT);
+  const nodes=[];let n;while(n=walker.nextNode())nodes.push(n);
+  nodes.forEach(node=>{
+    const txt=node.nodeValue,low=txt.toLowerCase();let i=low.indexOf(ql);
+    if(i<0)return;
+    const frag=document.createDocumentFragment();let last=0;
+    while(i>=0){
+      frag.appendChild(document.createTextNode(txt.slice(last,i)));
+      const m=document.createElement('mark');m.textContent=txt.slice(i,i+ql.length);frag.appendChild(m);
+      last=i+ql.length;i=low.indexOf(ql,last);
+    }
+    frag.appendChild(document.createTextNode(txt.slice(last)));
+    node.parentNode.replaceChild(frag,node);
+  });
+  });
+}
+function clearMarks(){
+  $$('main mark').forEach(m=>{
+    const p=m.parentNode;p.replaceChild(document.createTextNode(m.textContent),m);p.normalize();
+  });
+}
+
+/* ═══════════ 通用 / 编辑器 / 外观 控件 ═══════════ */
+seg('#segLang',()=>S.lang,v=>{S.lang=v;applyLang()});
+seg('#segSave',()=>String(S.autosave),v=>{S.autosave=+v});
+$('#selStartup').addEventListener('change',e=>{S.startup=e.target.value;markSaved(0);persist()});
+seg('#segSize',()=>String(S.fontSize),v=>{S.fontSize=+v;applyEditor()});
+seg('#segWidth',()=>String(S.lineWidth),v=>{S.lineWidth=+v;applyEditor()});
+$('#selFont').addEventListener('change',e=>{S.fontFamily=e.target.value;applyEditor();markSaved(0);persist()});
+switchEl('#swType',()=>S.typewriter,v=>{S.typewriter=v;applyEditor()});
+switchEl('#swSpell',()=>S.spellcheck,v=>{S.spellcheck=v;$('#preview').spellcheck=v});
+seg('#segTab',()=>S.tabIndent?'indent':'focus',v=>{S.tabIndent=v==='indent'});
+seg('#segTheme',()=>S.theme,v=>{S.theme=v;applyTheme()});
+seg('#segDensity',()=>S.density,v=>{S.density=v;applyDensity()});
+switchEl('#swMotion',()=>S.reduceMotion,v=>{S.reduceMotion=v;applyMotion()});
+switchEl('#swE2e',()=>S.e2e,v=>{S.e2e=v;$('#syncSub').textContent=T(v?'s.sub':'s.sub.off')});
+$('#swAccent').addEventListener('click',e=>{
+  const b=e.target.closest('.swatch');if(!b)return;
+  S.accent=b.dataset.a;applyAccent();markSaved(0);persist();
+});
+$('#swAccent').addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||e.isComposing)return;
+  e.preventDefault();
+  const bs=[...$('#swAccent').querySelectorAll('.swatch')];
+  let i=bs.findIndex(b=>b.getAttribute('aria-checked')==='true');
+  i=(i+(e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1)+bs.length)%bs.length;
+  bs[i].click();bs[i].focus();
+});
+
+/* ─── 编辑器预览（可输入演示件）─── */
+const preview=$('#preview'),pwInner=$('#pwInner');let pwEn=false,pvTimer;
+const PV={
+ zh:'<h4>东京八平米 · 摘记</h4><p>八平米的房间没有冰箱，于是我每天去街角的豆腐店。店主认得我的脚步，总会留一块木棉豆腐。空间小了，城市反而变大。</p><p>吉井忍写：“你的‘小’不是问题，因为外面的世界足够大。” 我在这句话下面画了线——本地优先的笔记也一样：把最小的一块地方照顾好，剩下的交给同步。</p>',
+ en:'<h4>Tokyo in Eight Tatami — notes</h4><p>No fridge in an eight-tatami room, so I walked to the corner tofu shop every day. The owner knew my footsteps and always saved me a block of cotton tofu. The smaller the room, the bigger the city.</p><p>“Your smallness is not a problem, because the world outside is big enough.” I underlined that sentence — local-first notes work the same way: take care of the smallest piece well, and let sync handle the rest.</p>'
+};
+function swapPreview(l){pwInner.innerHTML=PV[l];pwEn=(l==='en');pvCount()}
+const FONTMAP={serif:'"Noto Serif SC","Songti SC",serif',sans:'"Noto Sans SC",system-ui,sans-serif',kai:'"Kaiti SC","STKaiti",KaiTi,serif',mono:'"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace'};
+function applyEditor(){
+  preview.style.fontSize=S.fontSize+'px';
+  pwInner.style.maxWidth=S.lineWidth+'ch';
+  preview.style.fontFamily=FONTMAP[S.fontFamily];
+  preview.classList.toggle('typewriter',S.typewriter);
+  preview.spellcheck=S.spellcheck;
+  markCurPara();
+}
+function markCurPara(){
+  if(!S.typewriter)return;
+  const ps=pwInner.querySelectorAll('p');let cur=null;
+  const sel=getSelection();
+  if(sel&&sel.anchorNode){cur=sel.anchorNode.nodeType===1?sel.anchorNode:sel.anchorNode.parentElement;cur=cur&&cur.closest?cur.closest('p'):null}
+  ps.forEach(p=>p.classList.toggle('cur',p===cur||(cur===null&&p===ps[0])));
+}
+document.addEventListener('selectionchange',()=>{if(S.typewriter&&document.activeElement===preview)markCurPara()});
+preview.addEventListener('input',()=>{pvCount();pvDirty();markCurPara()});
+preview.addEventListener('paste',e=>{ /* K11·粘贴处理：Markdown 预览剥格式，只进纯文本 */
+  e.preventDefault();
+  const t=(e.clipboardData||window.clipboardData).getData('text/plain');
+  document.execCommand('insertText',false,t);
+});
+preview.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if(e.key==='Tab'&&S.tabIndent){e.preventDefault();document.execCommand('insertText',false,'  ')}
+  if(e.key==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();pvSaved()}
+});
+function pvCount(){$('#pvStat .mono').textContent=(pwInner.textContent||'').length}
+function pvDirty(){
+  $('#pvSave').textContent=T('save.dirty')+'…';
+  clearTimeout(pvTimer);
+  if(S.autosave<0){$('#pvSave').textContent=T('e.pv.manual');return}
+  const d=S.autosave===0?400:S.autosave*1000;
+  $('#pvSave').textContent=S.autosave===0?T('e.pv.wait').replace('{n}','0.4'):TF('e.pv.wait',{n:S.autosave});
+  pvTimer=setTimeout(pvSaved,d);
+}
+function pvSaved(){$('#pvSave').textContent=T('e.pv.saved')+' · '+new Date().toTimeString().slice(0,5)}
+
+/* ═══════════ 同步 ═══════════ */
+function doSync(){
+  if(S.syncing)return;S.syncing=true;
+  const b=$('#btnSync');b.setAttribute('aria-busy','true');b.textContent=T('s.syncing');
+  $('#syncDot').classList.add('syncing');$('#syncLabel').textContent=T('s.syncing');
+  const bar=$('#syncBar');bar.hidden=false;const fill=bar.querySelector('i');fill.style.width='0';
+  let p=0;const iv=setInterval(()=>{
+    p=Math.min(100,p+8+Math.random()*14);fill.style.width=p+'%';bar.setAttribute('aria-valuenow',Math.round(p));
+    if(p>=100){
+      clearInterval(iv);bar.hidden=true;S.syncing=false;S.lastSync=Date.now();persist();
+      b.removeAttribute('aria-busy');b.textContent=T('s.now');$('#syncDot').classList.remove('syncing');
+      $('#syncLabel').textContent=T('s.ok');relSync();renderDevices();
+      toast(TF('t.synced',{n:S.devices.length}));
+    }
+  },160);
+}
+$('#btnSync').addEventListener('click',doSync);
+
+/* ─── 设备列表（可移除 + 撤销）─── */
+const ICONS={laptop:'<svg width="17" height="17" viewBox="0 0 17 17" fill="none"><rect x="2" y="3.5" width="13" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 14.5h15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+phone:'<svg width="17" height="17" viewBox="0 0 17 17" fill="none"><rect x="4.5" y="1.5" width="8" height="14" rx="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M7 13h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'};
+function renderDevices(){
+  const list=$('#deviceList');list.innerHTML='';
+  S.devices.forEach((d,i)=>{
+    const row=document.createElement('div');row.className='row device';
+    row.dataset.kw='设备 device '+d.id+' 移除 remove';
+    const stale=d.seen&&(Date.now()-d.seen>14*864e5);
+    row.innerHTML=
+      '<span class="dic" aria-hidden="true">'+ICONS[d.icon]+'</span>'+
+      '<div class="dtxt"><div class="dname">'+esc(T('s.dev.'+d.id))+
+      (d.this?' <span class="badge me">'+esc(T('s.dev.this'))+'</span>':'')+
+      (stale?' <span class="badge stale">'+esc(T('s.dev.stale'))+'</span>':'')+'</div>'+
+      '<div class="dmeta">'+esc(d.this?T('s.dev.now'):TF('s.dev.last',{t:relTime(d.seen)}))+'</div></div>';
+    const ctl=document.createElement('div');ctl.className='ctl dev-remove';
+    if(d.this){
+      const b=document.createElement('button');b.className='btn-text';b.disabled=true;
+      b.textContent=T('s.dev.rm');b.title=T('s.dev.this.no');ctl.appendChild(b);
+    }else{
+      /* 行内重复动作=文字钮（K18③）；两步确认时升到 ghost 但仍无实色（④） */
+      const b=document.createElement('button');b.className='btn-text';b.textContent=T('s.dev.rm');
+      b.addEventListener('click',()=>{
+        ctl.innerHTML='';
+        const cf=document.createElement('span');cf.className='dev-confirm';
+        cf.innerHTML='<span class="ask">'+esc(T('s.dev.rm.q'))+'</span>';
+        const y=document.createElement('button');y.className='btn small danger';y.textContent=T('s.dev.rm.y');
+        const n=document.createElement('button');n.className='btn small';n.textContent=T('s.dev.rm.n');
+        y.onclick=()=>removeDevice(i);
+        n.onclick=()=>renderDevices();
+        cf.appendChild(n);cf.appendChild(y);ctl.appendChild(cf);y.focus();
+      });
+      ctl.appendChild(b);
+    }
+    row.appendChild(ctl);list.appendChild(row);
+  });
+}
+function removeDevice(i){
+  const d=S.devices.splice(i,1)[0];persist();renderDevices();
+  toast(TF('t.dev.rm',{n:T('s.dev.'+d.id)}),{label:T('t.dev.undo'),fn:()=>{
+    S.devices.splice(i,0,d);persist();renderDevices();toast(TF('t.dev.back',{n:T('s.dev.'+d.id)}));
+  }});
+}
+
+/* ═══════════ 快捷键体系（K·快捷键：捕获/校验/冲突/分发） ═══════════ */
+const ACTIONS=['search','theme','sidebar','sync','export','goto'];
+/* 浏览器/OS 保留键：用户可绑 Ctrl+S→sync 又在预览里 Ctrl+S=保存 → 一键两动，故保留表拦截 */
+const RESERVED=new Set(['ctrl+w','ctrl+q','ctrl+t','ctrl+n','ctrl+r','ctrl+shift+w','ctrl+shift+q','ctrl+shift+t','ctrl+shift+n','ctrl+shift+r','ctrl+l','ctrl+d','ctrl+tab','ctrl+s','ctrl+f','ctrl+p','ctrl+o','ctrl+h','ctrl+j','ctrl+u','ctrl+g','ctrl+b','ctrl+i','alt+f4','alt+d','alt+left','alt+right','alt+home','meta+q','meta+w','meta+m','meta+h','meta+p','ctrl+shift+i','ctrl+shift+o','ctrl+shift+b','ctrl+shift+del','f3','f5','f6','f10','f11','f12','ctrl+f5','shift+f5','ctrl+shift+f5','meta+,']);
+function comboFromEvent(e){
+  const k=e.key;
+  if(['Control','Shift','Alt','Meta'].includes(k))return null;
+  const parts=[];if(e.ctrlKey)parts.push('Ctrl');if(e.altKey)parts.push('Alt');if(e.shiftKey)parts.push('Shift');if(e.metaKey)parts.push('⌘');
+  let key=k.length===1?k.toUpperCase():k;
+  const KN={' ':'Space','\\':'\\',',':',','.':'.','/':'/',';':';',"'":"'",'[':'[',']':']','-':'-','=':'=','`':'`','ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→','Enter':'Enter','Escape':'Esc','Tab':'Tab','Backspace':'⌫','Delete':'Del','Home':'Home','End':'End','PageUp':'PgUp','PageDown':'PgDn'};
+  key=KN[k]||key;
+  return parts.concat([key]).join('+');
+}
+function comboValid(c){
+  if(!c)return{ok:false,why:'mod'};
+  const parts=c.split('+');const last=parts[parts.length-1];
+  const mods=parts.slice(0,-1);
+  if(['Esc','Tab','Enter','Space','Backspace','Del','↑','↓','←','→','Home','End','PgUp','PgDn'].includes(last)&&mods.length===0)return{ok:false,why:'mod'};
+  if(/^F\d{1,2}$/.test(last))return{ok:true};
+  if(mods.some(m=>['Ctrl','Alt','⌘'].includes(m)))return{ok:true};
+  return{ok:false,why:'mod'};
+}
+function comboKey(c){return c.toLowerCase().replace('⌘','meta').replace(' ','')}
+let capture=null; // {action,row,chip,btn}
+function renderKeys(){
+  capture=null; // 重建即取消在途捕获：旧 chip/btn 已脱离 DOM，防"按 Esc 焦点进尸体节点"
+  const list=$('#keyList');list.innerHTML='';
+  ACTIONS.forEach(a=>{
+    const row=document.createElement('div');row.className='row kbd-row';
+    row.dataset.kw='快捷键 shortcut key 绑定 bind rebind '+a+' '+T('k.a.'+a);
+    row.innerHTML='<div class="txt"><div class="lbl">'+esc(T('k.a.'+a))+'</div><div class="desc">'+esc(T('k.a.'+a+'.d'))+'</div><div class="keyerr" hidden></div></div>';
+    const ctl=document.createElement('div');ctl.className='ctl';
+    const chip=document.createElement('kbd');chip.className='kbd-chip';chip.dataset.act=a;chip.textContent=S.bindings[a]||'—';
+    const btn=document.createElement('button');btn.className='btn-text';btn.textContent=T('k.rebind');
+    btn.setAttribute('aria-label',T('k.rebind')+' · '+T('k.a.'+a));
+    btn.onclick=()=>startCapture(a,row,chip,btn);
+    ctl.appendChild(chip);ctl.appendChild(btn);row.appendChild(ctl);list.appendChild(row);
+  });
+  $('#searchKbd').textContent=(S.bindings.search||'—').split('+').join(' ');
+}
+function startCapture(a,row,chip,btn){
+  endCapture();
+  capture={action:a,row,chip,btn};
+  chip.className='listening-chip';chip.textContent=T('k.listening');
+  btn.textContent=T('k.esc');
+  row.querySelector('.keyerr').hidden=true;
+  btn.onclick=e=>{e.stopPropagation();endCapture()};
+}
+function endCapture(){
+  if(!capture)return;
+  const{action,row,chip,btn}=capture;capture=null;
+  chip.className='kbd-chip';chip.textContent=S.bindings[action]||'—';
+  btn.textContent=T('k.rebind');
+  btn.onclick=()=>startCapture(action,row,chip,btn);
+}
+function keyErr(row,why){
+  const el=row.querySelector('.keyerr');el.textContent=T('k.err.'+why);el.hidden=false;
+  clearTimeout(el._kt);el._kt=setTimeout(()=>{el.hidden=true},2600);
+}
+document.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  /* 捕获态：吃掉一切按键 */
+  if(capture){
+    e.preventDefault();e.stopPropagation();
+    if(e.key==='Escape'){const b=capture.btn;endCapture();b.focus();return}
+    const c=comboFromEvent(e);if(!c)return;
+    const v=comboValid(c);
+    if(!v.ok){keyErr(capture.row,v.why);return}
+    if(RESERVED.has(comboKey(c))){keyErr(capture.row,'sys');return}
+    const other=ACTIONS.find(x=>x!==capture.action&&S.bindings[x]===c);
+    if(other){showConflict(capture,other,c);return}
+    bindKey(capture.action,c);endCapture();
+    return;
+  }
+  /* 分发：输入域内仅放行修饰键组合 */
+  const inField=e.target.closest('input,textarea,select,[contenteditable="true"]');
+  const combo=comboFromEvent(e);if(!combo)return;
+  const hasMod=/Ctrl|Alt|⌘/.test(combo);
+  if(inField&&!hasMod)return;
+  const act=ACTIONS.find(a=>S.bindings[a]===combo);
+  if(!act)return;
+  e.preventDefault();runAction(act);
+},true);
+function showConflict(cap,other,combo){
+  endCapture();
+  const bar=document.createElement('div');bar.className='conflict-bar';
+  bar.innerHTML='<span>'+esc(TF('k.conflict',{n:T('k.a.'+other)}))+'</span>';
+  const rep=document.createElement('button');rep.className='btn small danger';rep.textContent=T('k.replace');
+  const no=document.createElement('button');no.className='btn small';no.textContent=T('k.cancel');
+  rep.onclick=()=>{S.bindings[other]=null;bindKey(cap.action,combo);bar.remove();renderKeys()};
+  no.onclick=()=>{bar.remove();renderKeys()};
+  bar.appendChild(rep);bar.appendChild(no);
+  cap.row.after(bar);rep.focus();
+}
+function bindKey(a,c){
+  S.bindings[a]=c;persist();renderKeys();
+  toast(TF('k.bound',{k:c,n:T('k.a.'+a)}));
+}
+$('#btnKeyReset').addEventListener('click',()=>{S.bindings=Object.assign({},DEF.bindings);persist();renderKeys();toast(T('t.reset'))});
+function runAction(a){
+  if(a==='search'){searchEl.focus();searchEl.select()}
+  else if(a==='theme'){S.theme=S.theme==='dark'?'light':'dark';applyTheme();
+    $$('#segTheme button').forEach(b=>{const on=b.dataset.v===S.theme;b.setAttribute('aria-checked',String(on));b.tabIndex=on?0:-1});persist();markSaved(0)}
+  else if(a==='sidebar'){S.navCollapsed=!S.navCollapsed;applyNav();persist()}
+  else if(a==='sync'){goSec('sync');doSync()}
+  else if(a==='export'){doExport()}
+  else if(a==='goto'){goSec('keys')}
+}
+
+/* ═══════════ 存储：统计 / 导出 zip / 导入 / 清空 ═══════════ */
+function fmtSize(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(2)+' MB';
+}
+function docSize(d){return new Blob([d.body]).size}
+function renderStats(){
+  const bytes=S.docs.reduce((s,d)=>s+docSize(d),0);
+  $('#statDocs').textContent=S.docs.length;
+  $('#statSize').textContent=fmtSize(bytes);
+  $('#statBar').textContent=S.docs.length?fmtSize(bytes)+' / inkwell/':'—';
+  $('#footStat').textContent=S.docs.length+(S.lang==='zh'?' 篇':' notes')+' · '+fmtSize(bytes);
+}
+/* ── 最小 ZIP 写入（store 法 + CRC32）── */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c}return t})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function makeZip(files){
+  const enc=new TextEncoder();const parts=[],central=[];let off=0;
+  files.forEach(f=>{
+    const name=enc.encode(f.name),data=enc.encode(f.body),crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true);
+    parts.push(lh.buffer,name,data);
+    const cd=new DataView(new ArrayBuffer(46));
+    cd.setUint32(0,0x02014b50,true);cd.setUint16(4,20,true);cd.setUint16(6,20,true);cd.setUint16(8,0x0800,true);
+    cd.setUint32(16,crc,true);cd.setUint32(20,data.length,true);cd.setUint32(24,data.length,true);
+    cd.setUint16(28,name.length,true);cd.setUint32(42,off,true);
+    central.push(cd.buffer,name);off+=30+name.length+data.length;
+  });
+  let cdOff=off,cdSize=0;central.forEach(p=>cdSize+=p.byteLength);
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true);eo.setUint16(8,files.length,true);eo.setUint16(10,files.length,true);
+  eo.setUint32(12,cdSize,true);eo.setUint32(16,cdOff,true);
+  return new Blob([...parts,...central,eo.buffer],{type:'application/zip'});
+}
+function doExport(){
+  if(!S.docs.length){toast(T('t.empty'));return}
+  const files=S.docs.map(d=>({name:d.name,body:d.body}));
+  const blob=makeZip(files);
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='inkwell-export-'+new Date().toISOString().slice(0,10)+'.zip';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast(TF('t.export',{n:S.docs.length,s:fmtSize(blob.size)}));
+}
+$('#btnExport').addEventListener('click',doExport);
+$('#btnImport').addEventListener('click',()=>$('#fileInput').click());
+$('#fileInput').addEventListener('change',async e=>{
+  const files=[...e.target.files];let n=0;
+  for(const f of files){
+    const body=await f.text();
+    S.docs.push({name:f.name.replace(/\.(txt|markdown)$/i,'.md'),body});n++;
+  }
+  if(n){persist();renderStats();markSaved(0);toast(TF('t.import',{n}))}
+  e.target.value='';
+});
+/* ── 清空（不可逆 → 原生 dialog + 勾选门槛）── */
+const dlg=$('#dlgClear'),dlgCheck=$('#dlgCheck'),dlgOk=$('#dlgConfirm');
+$('#btnClear').addEventListener('click',()=>{
+  const bytes=S.docs.reduce((s,d)=>s+docSize(d),0);
+  $('#dlgCounts').textContent=S.docs.length+' '+(S.lang==='zh'?'篇文稿':' notes')+' · '+fmtSize(bytes);
+  dlgCheck.checked=false;dlgOk.disabled=true;dlg.showModal();
+});
+dlgCheck.addEventListener('change',()=>dlgOk.disabled=!dlgCheck.checked);
+$('#dlgCancel').addEventListener('click',()=>dlg.close());
+dlg.addEventListener('close',()=>$('#btnClear').focus());
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+dlgOk.addEventListener('click',()=>{
+  S.docs=[];S.lastSync=Date.now();persist();renderStats();renderDevices();dlg.close();
+  toast(T('t.clear'));
+});
+
+/* ═══════════ 初始化 ═══════════ */
+$('#selStartup').value=S.startup;
+$('#selFont').value=S.fontFamily;
+setNavActive(activeSec);
+applyTheme();applyAccent();applyDensity();applyMotion();applyEditor();applyLang();applyNav();
+relSync();renderStats();
+if(!$('#pvSave').textContent)$('#pvSave').textContent=T('save.idle');
+$('#saveTime').textContent=new Date().toTimeString().slice(0,5);
+$('#syncSub').textContent=T(S.e2e?'s.sub':'s.sub.off');
+</script>
+</body>
+</html>

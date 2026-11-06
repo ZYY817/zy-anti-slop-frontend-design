@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>任务优先级 · 拖拽排序基线</title>
+<style>
+  /* ===== 基线：典型 AI 生成的 HTML5 拖拽排序，保留真实缺陷 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh; color: #fff;
+  }
+  .container { max-width: 560px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 32px; margin-bottom: 8px; }
+  .subtitle { color: rgba(255,255,255,.7); font-size: 14px; margin-bottom: 28px; }
+
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .item {
+    background: rgba(255,255,255,.12); backdrop-filter: blur(12px);
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    user-select: none;                        /* 为拖拽禁了选中，但文本也选不了 */
+  }
+  .item .rank {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,.15); display: grid; place-items: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .item .title { flex: 1; font-size: 15px; }
+  .item .tag {
+    font-size: 12px; padding: 3px 10px; border-radius: 12px;
+    background: rgba(255,255,255,.15);
+  }
+  /* 缺陷：整行 draggable，无抓手提示，cursor 不变 */
+  .item:active { cursor: inherit; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>本周任务优先级</h1>
+  <p class="subtitle">拖拽调整顺序，自上而下为执行优先级</p>
+
+  <div class="list" id="list">
+    <div class="item" draggable="true"><span class="rank">1</span><span class="title">修复登录页在 Safari 的白屏问题</span><span class="tag">紧急</span></div>
+    <div class="item" draggable="true"><span class="rank">2</span><span class="title">完成 Q4 数据报表的数据校验</span><span class="tag">本周</span></div>
+    <div class="item" draggable="true"><span class="rank">3</span><span class="title">设计评审：新版仪表盘视觉稿</span><span class="tag">本周</span></div>
+    <div class="item" draggable="true"><span class="rank">4</span><span class="title">编写 API 接口文档 v2.3</span><span class="tag">常规</span></div>
+    <div class="item" draggable="true"><span class="rank">5</span><span class="title">重构用户设置的表单组件</span><span class="tag">常规</span></div>
+    <div class="item" draggable="true"><span class="rank">6</span><span class="title">整理竞品分析笔记同步给团队</span><span class="tag">低优</span></div>
+  </div>
+</div>
+
+<script>
+/* ===== 缺陷行为清单 =====
+   1. 整行 draggable：想选中标题文字 → 直接拖起来了（无抓手区）
+   2. dragstart 后原位置瞬间塌陷（display:none）→ 目标位置跟着跑
+   3. 无插入指示线：拖到哪要放哪全凭猜
+   4. 落下后元素瞬移：无 FLIP/重排动画，看不出"挪到了哪"
+   5. 触屏完全失效：HTML5 DnD 在移动端静默死
+   6. 键盘不可达：无上下移操作的替代路径
+   7. 无自动滚动：拖出视口边缘不会滚
+   8. 读屏零反馈：顺序变了 SR 用户不知道
+*/
+const list = document.getElementById('list');
+let dragEl = null;
+
+list.addEventListener('dragstart', e => {
+  dragEl = e.target.closest('.item');
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => dragEl.style.display = 'none', 0);   // 塌陷：列表当场重排
+});
+list.addEventListener('dragover', e => {
+  e.preventDefault();                                    // 必须的，但没给任何指示
+});
+list.addEventListener('drop', e => {
+  e.preventDefault();
+  const target = e.target.closest('.item');
+  if (!target || target === dragEl) return;
+  // 简单插到目标前面——没有"放上面还是放下面"的判定
+  list.insertBefore(dragEl, target);
+});
+list.addEventListener('dragend', () => {
+  if (dragEl) { dragEl.style.display = ''; dragEl = null; }
+  // 重排序号——但不更新任何可访问性信息
+  [...list.children].forEach((el, i) => el.querySelector('.rank').textContent = i + 1);
+});
+</script>
+</body>
+</html>

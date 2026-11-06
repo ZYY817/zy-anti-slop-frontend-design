@@ -9,7 +9,7 @@ An AI frontend design knowledge base for Chinese and English creative workflows.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![License: CC--BY--NC--4.0](https://img.shields.io/badge/License-CC--BY--NC--4.0-lightgrey.svg)](LICENSE)
+[![License: CC--BY--4.0](https://img.shields.io/badge/License-CC--BY--4.0-lightgrey.svg)](LICENSE)
 
 <sub>Maintained by ZY（智宇）</sub>
 
@@ -17,13 +17,39 @@ An AI frontend design knowledge base for Chinese and English creative workflows.
 
 ---
 
+| Left: AI default output (purple gradient + glass cards) | Right: same page after this library's audit + decision objects |
+|---|---|
+| ![before](assets/case01-before.png) | ![after](assets/case01-after.png) |
+
+<sub>Same interface, same data — the only difference is whether every detail had someone make a decision about it. Full comparison in [cases/](cases/README.md)</sub>
+
 ## Why this exists
 
-The central problem with AI-generated frontends is rarely the ability to write code. It is the tendency to regress to statistical averages: Inter, a purple-blue gradient, and three rounded cards. This library turns 170+ research-informed design documents into three practical capabilities:
+The central problem with AI-generated frontends is rarely the ability to write code. It is the tendency to regress to statistical averages: Inter, a purple-blue gradient, three rounded cards, and uniform medium density everywhere. This library turns 210+ research-informed design documents into four practical capabilities:
 
-1. **Taste** — visual principles, vocabulary, and formulas that make “looks good” actionable.
-2. **Differentiation** — anti-genericness and reference-to-originality methods that help a design move beyond common defaults.
-3. **Validation** — an audit loop and measurement system that make quality reviewable and iterative.
+1. **Taste & inspiration** — style vocabularies, visual descriptors, and paste-ready prompts that make “looks good” actionable.
+2. **Decision objects** — the K board (K0–K18, 92 entries): interaction and visual concepts decomposed into “symptoms → decision points → implementation → acceptance” entries.
+3. **Differentiation** — anti-slop checks and reference-to-originality methods that move a design beyond common defaults.
+4. **Validation** — an audit loop plus evidence cases that make quality reviewable and provable.
+
+## Measured evidence
+
+Two agents received the same brief: one ran bare, the other ran this library's pipeline (AGENTS.md → retrieval → term decisions → audit). A third agent scored both blind across nine dimensions:
+
+| | Bare run (no library) | Armed run (library pipeline) |
+|---|---|---|
+| ![v0](assets/v0-bare.png) | ![v1c](assets/v1c-armed.png) |
+| Blind score 65.5/90 | **79.5/90 (+14, won all nine dimensions)** |
+| Density rhythm 5.5 | 9.0 |
+| Behavioral detail 6.5 | 9.5 |
+
+Honest caveat: one task, same-family judge — indicative evidence, not a statistical claim. Full process and reports: [cases/04-生成AB对照](cases/04-生成AB对照/record.md).
+
+## Three ways to use it
+
+- **Find inspiration** — browse the style vocabularies (B16, B86, B87) and the paste-ready visual prompt library (R0–R18).
+- **Feed your AI as context** — drop `AGENTS.md` plus 5–12 relevant docs into your project; the model then considers nine dimensions (visual, information, spatial, interaction, motion, behavior, engineering, performance, acceptance) before writing code.
+- **Upgrade an existing page** — run the K10 nine-dimension audit prompt, hit K-term decision points, verify against acceptance criteria.
 
 ## A note from ZY
 
@@ -51,6 +77,7 @@ This library is free to access under [CC BY 4.0](LICENSE): copying, sharing, ada
 | `A`–`B` | Visual fundamentals and deep visual craft |
 | `C`–`D` | UX/content patterns and design systems |
 | `E`–`H` | Trends, engineering resources, product contexts, behavior and conversion |
+| `K` | Term-level decision objects: symptoms → decision points → acceptance (K0 index, K10 nine-dimension audit) |
 | `M` / `P` | Methods, governance, typography, and layout |
 | `R` | Directly usable visual-prompt vocabulary, composition rules, and technical constraints |
 | `S` / `T` / `V` / `Z` | Desktop design, measurement, visual effects, and prompt control |

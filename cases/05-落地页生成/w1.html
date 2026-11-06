@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墨迹 Inkwell — 打开，即写</title>
+<meta name="description" content="墨迹是给写作者的极简桌面笔记本。打开即写、无文件夹、双向链接。macOS 与 Windows 可用。">
+<style>
+/* ══════════════════════════════════════════════════
+   案上墨 DESK INK
+   色板来源：宣纸 + 松烟墨 + 朱砂印泥
+   职责分工：朱砂=动作岗(≤5处) / 墨=信息岗 / mono=数据层
+   ══════════════════════════════════════════════════ */
+:root{
+  --paper:#F4F0E6;
+  --paper-2:#ECE6D8;
+  --ink:#221F1A;
+  --ink-70:rgba(34,31,26,.72);
+  --ink-55:rgba(34,31,26,.66);   /* 次级文字，纸上 ~4.6:1 */
+  --ink-40:rgba(34,31,26,.42);   /* 仅装饰线/点，不承载文字 */
+  --ink-14:rgba(34,31,26,.14);
+  --ink-08:rgba(34,31,26,.08);
+  --verm:#8E3B24;          /* 朱砂（浅底用） */
+  --verm-dk:#6E2C1B;
+  --verm-lt:#C05A44;       /* 朱砂（暗底校准 +14%） */
+  --night:#1B1813;         /* 深墨底 */
+  --night-ink:#F2EDE2;
+  --night-70:rgba(242,237,226,.68);   /* 深底正文 ~7.6:1 */
+  --night-55:rgba(242,237,226,.56);   /* 深底辅助 ~5.5:1 */
+  --night-40:rgba(242,237,226,.38);   /* 深底装饰线 */
+  --verm-cta:#B04E38;                 /* 深底按钮底：纸白字 ~5.0:1 */
+  --verm-cta-hov:#9A4533;
+  --ease:cubic-bezier(0.19,1,0.22,1);   /* 签名缓动·从容 */
+  --serif:"STZhongsong","Songti SC","STSong","Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","SimSun",serif;
+  --sans:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,"Courier New",monospace;
+  --wrap:1120px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:88px;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  font-family:var(--sans);
+  font-size:15.5px;
+  line-height:1.8;
+  color:var(--ink);
+  background:var(--paper);
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:"palt" 1;      /* CJK 标点挤压 */
+  line-break:strict;                    /* 行首行尾禁则 */
+  overflow-x:hidden;
+}
+/* 纸张噪点：单层 ≤4% */
+body::after{
+  content:"";position:fixed;inset:0;z-index:60;pointer-events:none;
+  opacity:.038;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection{background:rgba(142,59,36,.20)}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 32px}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:.03em;text-wrap:balance}
+h1{word-break:keep-all}   /* 仅超短 h1；h2/h3 有逗号长句，keep-all 会在 375px 溢出 */
+p{text-wrap:pretty;hanging-punctuation:first allow-end}
+.mono{font-family:var(--mono);font-feature-settings:"tnum" 1}
+.skip{
+  position:absolute;left:16px;top:-64px;z-index:100;
+  padding:10px 18px;background:var(--ink);color:var(--paper);
+  font-size:14px;text-decoration:none;border-radius:4px;
+  transition:top .2s var(--ease);
+}
+.skip:focus{top:12px}
+:focus-visible{outline:2px solid var(--verm);outline-offset:3px;border-radius:2px}
+@media (hover:hover) and (pointer:fine){
+  a,button{transition-property:color,background-color,border-color,transform,opacity;transition-duration:150ms;transition-timing-function:var(--ease)}
+}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+
+/* ── 顶栏 ─────────────────────────────── */
+.top{
+  display:flex;align-items:center;gap:28px;
+  padding-block:22px;border-bottom:1px solid var(--ink-08);
+}
+.brand{
+  display:flex;align-items:baseline;gap:8px;text-decoration:none;
+  font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.04em;
+}
+.brand .en{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--ink-55)}
+.top nav{display:flex;gap:24px;margin-left:auto}
+.top nav a{
+  font-size:13.5px;color:var(--ink-70);text-decoration:none;
+  padding:12px 4px;position:relative;
+}
+@media (hover:hover){
+  .top nav a::after{
+    content:"";position:absolute;left:0;right:0;bottom:4px;height:1px;
+    background:var(--ink);transform:scaleX(0);transform-origin:left;
+    transition:transform 200ms var(--ease);
+  }
+  .top nav a:hover{color:var(--ink)}
+  .top nav a:hover::after{transform:scaleX(1)}
+}
+.top .ver{font-family:var(--mono);font-size:11px;color:var(--ink-55);letter-spacing:.08em}
+
+/* ── 按钮（朱砂=动作岗） ─────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;padding:12px 30px;
+  background:var(--verm);color:#F7F2E8;
+  font-size:15px;font-weight:600;letter-spacing:.06em;
+  text-decoration:none;border-radius:6px;border:1px solid var(--verm-dk);
+  box-shadow:0 2px 8px rgba(30,24,16,.14);
+}
+@media (hover:hover){
+  .btn:hover{background:var(--verm-dk);transform:translateY(-2px);box-shadow:0 6px 16px rgba(30,24,16,.14)}
+}
+.btn:active{transform:translateY(0);transition-duration:0ms}
+.btn--small{min-height:44px;padding:9px 18px;font-size:13px}
+
+/* ── 编辑题组语法 ──────────────────────── */
+.kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+  color:var(--ink-55);text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+}
+.kicker::before{content:"";width:22px;height:1px;background:var(--ink-40)}
+.deck{font-size:17px;line-height:1.75;color:var(--ink-70);max-width:34em}
+
+/* ── Hero（呼吸峰 L1.5 · signature 峰值） ─── */
+.hero{padding:96px 0 120px;position:relative}
+.hero-grid{
+  display:grid;grid-template-columns:minmax(0,6.2fr) minmax(0,4.8fr);
+  gap:56px;align-items:end;
+}
+.hero h1{
+  font-size:clamp(52px,8.6vw,104px);
+  line-height:1.12;margin:26px 0 30px;
+}
+.hero h1 .line{display:block;overflow:hidden}
+.hero h1 .line>span{display:block}
+.hero .deck{margin-bottom:38px}
+.hero-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero-meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-55);letter-spacing:.04em}
+
+/* 印章：朱砂落款，手的痕迹（-4° 微斜） */
+.seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:34px;margin-left:14px;vertical-align:-6px;
+  background:var(--verm);color:#F7F2E8;border-radius:3px;
+  font-family:var(--serif);font-size:12px;line-height:1.1;letter-spacing:.05em;
+  writing-mode:vertical-rl;transform:rotate(-4deg);
+}
+
+/* 产品截图占位（CSS 绘制的编辑器窗口） */
+.shot{
+  position:relative;z-index:2;
+  margin-right:-56px;             /* 破格①：右悬出，左缘仍锚列线 */
+  background:#FBF8F0;
+  border:1px solid var(--ink-14);
+  border-radius:10px;
+  box-shadow:0 24px 60px rgba(30,24,16,.12),0 2px 8px rgba(30,24,16,.08);
+  overflow:hidden;
+}
+.shot-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:11px 14px;border-bottom:1px solid var(--ink-08);
+  background:var(--paper-2);
+}
+.shot-bar i{width:9px;height:9px;border-radius:50%;background:var(--ink-14)}
+.shot-bar i:first-child{background:rgba(34,31,26,.22)}
+.shot-title{
+  margin-left:8px;font-family:var(--mono);font-size:10.5px;
+  color:var(--ink-55);letter-spacing:.05em;
+}
+.shot-saved{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-55)}
+.shot-body{padding:22px 24px 18px;font-size:13.5px;line-height:1.85}
+.shot-date{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  color:var(--ink-55);margin-bottom:14px;
+}
+.shot-body p+p{margin-top:10px}
+.shot-body .lk{color:var(--ink);border-bottom:1px solid var(--ink-40);font-family:var(--mono);font-size:12.5px}
+.shot-ghost{color:var(--ink-40)}
+.caret{
+  display:inline-block;width:1.5px;height:1em;margin-left:2px;
+  background:var(--ink);vertical-align:-2px;
+  animation:blink 1.15s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.shot-foot{
+  display:flex;justify-content:space-between;
+  padding:9px 14px;border-top:1px solid var(--ink-08);
+  font-family:var(--mono);font-size:10px;color:var(--ink-55);letter-spacing:.06em;
+}
+.shot-cap{
+  margin:10px 2px 0;font-family:var(--mono);font-size:10.5px;
+  color:var(--ink-55);letter-spacing:.05em;text-align:right;
+}
+
+/* ── 特性区（递进 scene） ─────────────────── */
+.features{padding-top:40px}
+.sec-head{margin-bottom:88px}
+.sec-head h2{
+  font-size:clamp(34px,4.6vw,52px);line-height:1.2;margin-top:22px;
+}
+.feat{
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  gap:64px;align-items:center;
+  padding:64px 0;
+  border-top:1px solid var(--ink-08);
+}
+.feat--flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.feat--flip .feat-copy{order:2}
+.feat--flip .feat-fig{order:1}
+.feat h3{font-size:clamp(24px,3vw,30px);line-height:1.3;margin:20px 0 18px}
+.feat .feat-copy>p{max-width:30em;color:var(--ink-70)}
+.feat .meta{
+  margin-top:22px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--ink-55);
+  display:flex;align-items:center;gap:8px;
+}
+.feat .meta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink-40)}
+
+/* 特性1 图形：启动时间轴（mono 数据感） */
+.boot{
+  border:1px solid var(--ink-14);border-radius:8px;background:#FBF8F0;
+  padding:26px 28px;box-shadow:0 2px 8px rgba(30,24,16,.08);
+}
+.boot-row{
+  display:grid;grid-template-columns:64px 1fr;gap:20px;
+  padding:16px 0;
+}
+.boot-row+.boot-row{border-top:1px solid var(--ink-08)}
+.boot-t{font-family:var(--mono);font-size:12px;color:var(--ink-55);padding-top:3px}
+.boot-row:last-child .boot-t{color:var(--ink);font-weight:600}
+.boot-d{font-size:14px}
+.boot-d small{display:block;font-size:12px;color:var(--ink-55);margin-top:3px}
+.boot-line{
+  margin-top:8px;display:flex;align-items:center;
+  border:1px solid var(--ink-14);border-radius:4px;background:#fff;
+  padding:7px 12px;font-size:12.5px;color:var(--ink-55);
+}
+
+/* 特性2 图形：时间流（无文件夹） */
+.stream{
+  border:1px solid var(--ink-14);border-radius:8px;background:#FBF8F0;
+  box-shadow:0 2px 8px rgba(30,24,16,.08);
+}
+.stream-item{
+  display:grid;grid-template-columns:64px 1fr;gap:18px;
+  padding:17px 22px;
+}
+.stream-item+.stream-item{border-top:1px solid var(--ink-08)}
+.stream-item time{
+  font-family:var(--mono);font-size:11px;color:var(--ink-55);padding-top:4px;
+}
+.stream-item h4{font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:.01em}
+.stream-item p{font-size:12.5px;color:var(--ink-55);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stream-item.is-untitled h4{color:var(--ink-55);font-weight:400;font-style:normal}
+
+/* 特性3：上文下满幅图谱（破格②：右悬出至视口边） */
+.feat--wide{grid-template-columns:1fr;gap:48px}
+.feat--wide .feat-copy{max-width:560px}
+.map{
+  /* 悬出至视口右缘：(vw - wrap盒)/2 + 32px 内边距 */
+  margin-right:calc(-1 * ((100vw - min(1120px, 100vw)) / 2 + 32px));
+  border-top:1px solid var(--ink-14);border-bottom:1px solid var(--ink-14);
+  background:#FBF8F0;
+}
+.map svg{width:100%;height:auto}
+.map .edge{stroke:rgba(34,31,26,.22);stroke-width:1}
+.map .edge-dash{stroke:rgba(34,31,26,.14);stroke-width:1;stroke-dasharray:3 4}
+.map .node{fill:var(--ink)}
+.map .node-hot{fill:var(--verm)}
+.map .ring{fill:none;stroke:var(--verm);stroke-width:1;opacity:.5}
+.map text{font-family:var(--sans);font-size:12.5px;fill:var(--ink-70)}
+.map .lbl-hot{fill:var(--verm);font-weight:600}
+.map .lbl-dim{fill:var(--ink-55);font-size:11px}
+
+/* ── 页脚 CTA（收束·全页唯一深底） ─────────── */
+.cta{
+  background:var(--night);color:var(--night-ink);
+  margin-top:120px;padding:128px 0 120px;
+  position:relative;overflow:hidden;
+}
+.cta .kicker{color:var(--night-70)}
+.cta .kicker::before{background:var(--night-40)}
+.cta h2{
+  font-size:clamp(36px,5.4vw,58px);line-height:1.22;
+  margin:24px 0 22px;font-weight:600;
+}
+.cta .deck{color:var(--night-70);margin-bottom:40px}
+.cta .btn{
+  background:var(--verm-cta);border-color:#93402E;color:#FFF6E8;
+  box-shadow:0 2px 8px rgba(12,9,6,.32);
+}
+@media (hover:hover){
+  .cta .btn:hover{background:var(--verm-cta-hov);transform:translateY(-2px)}
+}
+.cta .fine{
+  margin-top:26px;font-family:var(--mono);font-size:11px;
+  color:var(--night-55);letter-spacing:.08em;
+}
+.cta .fine a{color:var(--night-70);text-underline-offset:4px}
+.cta :focus-visible{outline-color:var(--verm-lt)}
+.cta .seal-big{
+  position:absolute;right:8%;bottom:14%;
+  width:56px;height:78px;border-radius:5px;
+  background:var(--verm-lt);color:var(--night);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:26px;line-height:1.15;font-weight:600;
+  writing-mode:vertical-rl;letter-spacing:.1em;
+  transform:rotate(5deg);opacity:.92;
+}
+
+/* ── 页脚行 ────────────────────────────── */
+.foot{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  padding-top:30px;padding-bottom:40px;font-size:13px;color:var(--ink-55);
+}
+.foot nav{display:flex;gap:22px;margin-left:auto}
+.foot nav a{color:var(--ink-70);text-decoration:none}
+@media (hover:hover){.foot nav a:hover{color:var(--ink)}}
+.foot .colophon{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-55);width:100%;margin-top:6px}
+
+/* ── 动效：hero 入场（expressive 唯一处） ───── */
+@media (prefers-reduced-motion:no-preference){
+  .js .hero .kicker{animation:rise-in .72s var(--ease) 0s backwards}
+  .js .hero h1 .line>span{animation:mask-up .9s var(--ease) backwards}
+  .js .hero h1 .line:nth-child(1)>span{animation-delay:.12s}
+  .js .hero h1 .line:nth-child(2)>span{animation-delay:.24s}
+  .js .hero .seal{animation:seal-in .48s var(--ease) .78s backwards}
+  .js .hero .deck{animation:rise-in .72s var(--ease) .48s backwards}
+  .js .hero-actions{animation:rise-in .72s var(--ease) .6s backwards}
+  .js .shot{animation:float-up .9s var(--ease) .36s backwards}
+  .js .shot-cap{animation:rise-in .72s var(--ease) .72s backwards}
+  @keyframes mask-up{from{transform:translateY(112%)}to{transform:translateY(0)}}
+  @keyframes rise-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes float-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  @keyframes seal-in{from{opacity:0;transform:rotate(-4deg) scale(1.5)}to{opacity:1;transform:rotate(-4deg) scale(1)}}
+  /* 滚动入场：只播一次 */
+  .js .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+  .js .reveal.in{opacity:1;transform:none}
+  .js .reveal.d1{transition-delay:.06s}
+  .js .reveal.d2{transition-delay:.12s}
+}
+
+/* ── reduced-motion：零自动运动 ───────────── */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .caret{animation:none;opacity:1}
+  .js .reveal{opacity:1;transform:none}
+}
+
+/* ── 响应式 ────────────────────────────── */
+@media (max-width:960px){
+  .hero{padding:72px 0 96px}
+  .hero-grid{grid-template-columns:1fr;gap:48px;align-items:start}
+  .shot{margin-right:0}
+  .feat,.feat--flip{grid-template-columns:1fr;gap:40px;padding:56px 0}
+  .feat--flip .feat-copy{order:1}
+  .feat--flip .feat-fig{order:2}
+  .map{margin-right:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .map svg{min-width:600px}
+  .cta .seal-big{right:6%;bottom:8%;width:46px;height:64px;font-size:21px}
+}
+@media (max-width:560px){
+  .wrap{padding:0 20px}
+  .top{gap:16px;padding-block:18px}
+  .top nav a{padding:10px 0}
+  .top .ver{display:none}
+  .hero{padding:56px 0 72px}
+  .hero h1{margin:20px 0 24px}
+  .hero-actions{gap:14px}
+  .btn{min-height:46px;padding:11px 24px}
+  .sec-head{margin-bottom:56px}
+  .feat{padding:44px 0}
+  .boot,.stream{margin:0 -4px}
+  .boot{padding:20px}
+  .boot-row{grid-template-columns:52px 1fr;gap:14px}
+  .stream-item{grid-template-columns:52px 1fr;gap:14px;padding:15px 18px}
+  .cta{margin-top:80px;padding:88px 0 84px}
+  .cta .seal-big{display:none}
+  .foot{gap:14px}
+}
+@media print{
+  .top,.btn,.cta .seal-big{display:none}
+  body::after{display:none}
+  .cta{background:#fff;color:#000}
+  .cta .kicker,.cta .deck,.cta .fine,.cta .fine a{color:#444}
+  .cta h2{color:#000}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top wrap">
+  <a class="brand" href="#" aria-label="墨迹 Inkwell 首页">墨迹 <span class="en">INKWELL</span></a>
+  <nav aria-label="页面导航">
+    <a href="#features">特性</a>
+    <a href="#">更新日志</a>
+  </nav>
+  <a class="btn btn--small" href="#download">下载</a>
+  <span class="ver" aria-hidden="true">v2.4</span>
+</header>
+
+<main id="main">
+
+  <!-- 第一幕 · 开场：呼吸峰 + signature 峰值 -->
+  <section class="hero" data-act="1" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">INKWELL · 写作者的笔记本</p>
+        <h1 id="hero-title"><span class="line"><span>打开，</span></span><span class="line"><span>即写。<span class="seal" aria-hidden="true">墨迹</span></span></span></h1>
+        <p class="deck">墨迹是一款安静的桌面笔记本。没有文件夹要建，没有格式要调——坐下三秒，你已经在写第一句了。</p>
+        <div class="hero-actions">
+          <a class="btn" href="#download">下载墨迹</a>
+          <p class="hero-meta">macOS 12+ · Windows 10+ · 免费 30 天</p>
+        </div>
+      </div>
+      <div>
+        <figure class="shot" role="img" aria-label="墨迹编辑器界面示意：一篇正在书写的笔记">
+          <div class="shot-bar" aria-hidden="true">
+            <i></i><i></i><i></i>
+            <span class="shot-title">十月十四日 · 雨</span>
+            <span class="shot-saved">已保存 12:04</span>
+          </div>
+          <div class="shot-body" aria-hidden="true">
+            <p class="shot-date">10 月 14 日 · 星期二 · 雨</p>
+            <p>重读《禅与摩托车维修艺术》。波西格说，一旦想要求快，就表示你再也不关心它。</p>
+            <p>下午把这段和 <span class="lk">[[城市漫游]]</span> 接上——那篇写的正是"慢"。<span class="caret"></span></p>
+            <p class="shot-ghost">……</p>
+          </div>
+          <div class="shot-foot" aria-hidden="true"><span>142 字</span><span>纯文本 · 本地存储</span></div>
+        </figure>
+        <p class="shot-cap" aria-hidden="true">macOS 版实界面 · 默认主题 · 等宽正文</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第二至四幕 · 递进：三个特性 -->
+  <section class="features wrap" id="features" data-act="2-4" aria-labelledby="feat-title">
+    <div class="sec-head reveal">
+      <p class="kicker">为什么是墨迹</p>
+      <h2 id="feat-title">只做三件事。</h2>
+    </div>
+
+    <!-- 特性 01 · 打开即写 -->
+    <article class="feat" aria-labelledby="f1-t">
+      <div class="feat-copy reveal">
+        <p class="kicker">其一 · 打开即写</p>
+        <h3 id="f1-t">光标在等你，不是加载条。</h3>
+        <p>从按下图标到落下第一个字，0.8 秒。没有欢迎页，没有模板市场——墨迹记得你上次停在哪一行，光标就在那儿闪。</p>
+        <p class="meta">冷启动 0.8s · 安装包 9.6 MB · 全程离线</p>
+      </div>
+      <div class="feat-fig reveal d1">
+        <div class="boot" role="img" aria-label="启动时间轴：按下图标到光标就位共 0.8 秒">
+          <div class="boot-row">
+            <span class="boot-t">0.0s</span>
+            <div class="boot-d">按下图标<small>Dock 或开始菜单，随你</small></div>
+          </div>
+          <div class="boot-row">
+            <span class="boot-t">0.4s</span>
+            <div class="boot-d">窗口就绪<small>空白稿纸，已经铺开</small></div>
+          </div>
+          <div class="boot-row">
+            <span class="boot-t">0.8s</span>
+            <div class="boot-d">光标就位
+              <span class="boot-line" aria-hidden="true">接着上次的句子往下写<span class="caret"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 特性 02 · 无文件夹（反转） -->
+    <article class="feat feat--flip" aria-labelledby="f2-t">
+      <div class="feat-copy reveal">
+        <p class="kicker">其二 · 无文件夹</p>
+        <h3 id="f2-t">不用收拾的桌子，才敢随便放东西。</h3>
+        <p>所有笔记躺在同一条时间流里，按到达的先后排好。找东西不用记它"在哪"——搜一句话、一个日期、一个模糊的印象就够了。找不到，不是你没整理，是工具该换。</p>
+        <p class="meta">全文搜索 · 按天归档 · 零整理成本</p>
+      </div>
+      <div class="feat-fig reveal d1">
+        <div class="stream" role="img" aria-label="时间流示意：四条笔记按日期排列">
+          <div class="stream-item">
+            <time datetime="2026-03-14">03.14</time>
+            <div><h4>散步时想到的比喻</h4><p>雨后的巷子像被水抄写过一遍。</p></div>
+          </div>
+          <div class="stream-item">
+            <time datetime="2026-03-11">03.11</time>
+            <div><h4>《夜航西飞》书摘</h4><p>"她学会了在黑暗中辨认方向。"</p></div>
+          </div>
+          <div class="stream-item">
+            <time datetime="2026-03-07">03.07</time>
+            <div><h4>给编辑的第三封信 · 草稿</h4><p>关于结尾，我想再试一次倒叙。</p></div>
+          </div>
+          <div class="stream-item is-untitled">
+            <time datetime="2026-03-02">03.02</time>
+            <div><h4>（无标题）</h4><p>只有三行，先放着。</p></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 特性 03 · 双向链接（上文下满幅图谱） -->
+    <article class="feat feat--wide" aria-labelledby="f3-t">
+      <div class="feat-copy reveal">
+        <p class="kicker">其三 · 双向链接</p>
+        <h3 id="f3-t">想法会自己找到彼此。</h3>
+        <p>敲 <span class="mono" style="font-size:.92em">[[</span> ，就能提起另一篇笔记；被提起的那篇会留下回音。三个月后你会发现，那篇随笔早已和书摘、草稿长在了一起。</p>
+        <p class="meta">反向链接 · 关联图谱 · 不写也能连</p>
+      </div>
+      <div class="map reveal d1" role="img" aria-label="关联图谱示意：笔记“城市漫游”与四篇笔记互相连接">
+        <svg viewBox="0 0 920 340" aria-hidden="true">
+          <!-- 连线 -->
+          <g>
+            <line class="edge" x1="460" y1="170" x2="208" y2="82"/>
+            <line class="edge" x1="460" y1="170" x2="716" y2="74"/>
+            <line class="edge" x1="460" y1="170" x2="196" y2="252"/>
+            <line class="edge" x1="460" y1="170" x2="726" y2="258"/>
+            <line class="edge-dash" x1="208" y1="82" x2="716" y2="74"/>
+            <line class="edge-dash" x1="196" y1="252" x2="726" y2="258"/>
+            <line class="edge-dash" x1="208" y1="82" x2="196" y2="252"/>
+          </g>
+          <!-- 节点 -->
+          <g>
+            <circle class="node" cx="208" cy="82" r="5"/>
+            <text x="196" y="60">《夜航西飞》书摘</text>
+            <circle class="node" cx="716" cy="74" r="5"/>
+            <text x="664" y="52">散步时想到的比喻</text>
+            <circle class="node" cx="196" cy="252" r="5"/>
+            <text x="160" y="286">第三封信 · 草稿</text>
+            <circle class="node" cx="726" cy="258" r="5"/>
+            <text x="696" y="292">巷子的尺度</text>
+            <!-- 中心热节点：朱砂，全页唯一强调节点 -->
+            <circle class="ring" cx="460" cy="170" r="14"/>
+            <circle class="node-hot" cx="460" cy="170" r="6"/>
+            <text class="lbl-hot" x="416" y="146">城市漫游</text>
+            <text class="lbl-dim" x="400" y="204">被 4 篇笔记提起</text>
+          </g>
+        </svg>
+      </div>
+    </article>
+  </section>
+
+  <!-- 第五幕 · 收束：回到墨调，印章最后一次变奏 -->
+  <section class="cta" id="download" data-act="5" aria-labelledby="cta-t">
+    <div class="wrap">
+      <p class="kicker reveal">现在开始</p>
+      <h2 id="cta-t" class="reveal d1">第一张稿纸，<br>已经铺好了。</h2>
+      <p class="deck reveal d2">墨迹支持 macOS 与 Windows。免费 30 天，不注册也能用。</p>
+      <div class="reveal d2">
+        <a class="btn" href="inkwell-2.4.1-macos.dmg" download>下载墨迹</a>
+      </div>
+      <p class="fine reveal d2">v2.4.1 · 9.6 MB · 本地存储，无跟踪　·　<a href="inkwell-2.4.1-win.exe">获取 Windows 版 →</a></p>
+      <div class="seal-big" aria-hidden="true">墨迹</div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot wrap">
+  <span>© 2026 墨迹 Inkwell</span>
+  <nav aria-label="页脚链接">
+    <a href="#features">特性</a>
+    <a href="#download">下载</a>
+    <a href="#">更新日志</a>
+    <a href="mailto:hi@inkwell.app">写信给我们</a>
+  </nav>
+  <span class="colophon">为写字的人而做 · 本页无追踪脚本 · 排版：宋体标题 / 系统等宽数据</span>
+</footer>
+
+<script>
+/* 渐进增强：有 JS 才启用入场隐藏态；无 JS / reduced-motion 全部直接可见 */
+(function(){
+  var d = document.documentElement;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  d.classList.add('js');
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(function(e){ e.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.22, rootMargin: '0px 0px -6% 0px' });
+  els.forEach(function(e){ io.observe(e); });
+})();
+</script>
+</body>
+</html>

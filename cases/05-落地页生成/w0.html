@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墨迹 Inkwell — 打开即写，想到即得</title>
+<meta name="description" content="墨迹 Inkwell：为写作者做的极简桌面笔记。打开即写、无文件夹、双向链接。macOS 与 Windows 客户端。">
+<meta name="theme-color" content="#f5f2ea">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23b93a24'/%3E%3Ctext x='32' y='46' font-size='38' text-anchor='middle' fill='%23f5f2ea' font-family='serif'%3E%E5%A2%A8%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#f5f2ea;
+  --paper2:#ece8db;
+  --card:#fcfbf6;
+  --ink:#211f1b;
+  --ink2:#565247;
+  --ink3:#8f887b;
+  --line:#dcd5c4;
+  --seal:#b93a24;
+  --seal-soft:rgba(185,58,36,.09);
+  --serif:"Source Han Serif SC","Source Han Serif CN","Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);color:var(--ink);
+  font:16px/1.75 var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+::selection{background:var(--seal);color:#fff}
+a{outline:none}
+a:focus-visible,.btn:focus-visible{outline:2px solid var(--seal);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+.mono{font-family:var(--mono)}
+section[id],footer[id]{scroll-margin-top:84px}
+
+/* ── 顶栏 ─────────────────────────────── */
+.top{
+  position:sticky;top:0;z-index:60;
+  background:rgba(245,242,234,.86);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.top-in{display:flex;align-items:center;gap:28px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.seal{
+  display:inline-grid;place-items:center;width:28px;height:28px;flex:none;
+  background:var(--seal);color:var(--paper);border-radius:4px;
+  font-family:var(--serif);font-size:15px;font-weight:600;line-height:1;
+}
+.brand b{font-family:var(--serif);font-size:1.05rem;font-weight:600;letter-spacing:.04em}
+.brand i{font-style:normal;font-family:var(--mono);font-size:.62rem;letter-spacing:.22em;color:var(--ink3);margin-left:2px}
+.nav{display:flex;gap:26px;margin-left:auto}
+.nav a{
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;
+  color:var(--ink2);text-decoration:none;
+}
+.nav a:hover{color:var(--seal)}
+
+/* ── 按钮 ─────────────────────────────── */
+.btn{
+  display:inline-block;padding:.85em 1.75em;border-radius:6px;
+  background:var(--ink);border:1px solid var(--ink);color:var(--paper);
+  font-weight:600;font-size:.93rem;letter-spacing:.04em;text-decoration:none;
+}
+.btn:hover{background:var(--seal);border-color:var(--seal);color:#fff}
+.btn.sm{padding:.55em 1.15em;font-size:.8rem}
+.btn.paper{background:var(--paper);border-color:var(--paper);color:var(--ink)}
+.btn.paper:hover{background:var(--seal);border-color:var(--seal);color:#fff}
+.btn.ghost-dark{background:transparent;border-color:#565247;color:#e9e6dd}
+.btn.ghost-dark:hover{border-color:#e9e6dd;color:#fff;background:transparent}
+.tlink{
+  color:var(--ink);font-weight:600;font-size:.92rem;letter-spacing:.03em;
+  text-decoration:none;border-bottom:1px solid var(--ink3);padding-bottom:.1em;
+}
+.tlink:hover{color:var(--seal);border-color:var(--seal)}
+
+/* ── Hero ─────────────────────────────── */
+.hero{padding:clamp(72px,9vw,116px) 0 0;text-align:center}
+.eyebrow{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.24em;
+  color:var(--seal);
+}
+.hero h1{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(2.5rem,7vw,4.6rem);
+  line-height:1.2;letter-spacing:.02em;
+  margin:.45em 0 .4em;
+}
+.hero h1 .u{border-bottom:.075em solid var(--seal)}
+.lede{
+  max-width:36em;margin:0 auto;
+  font-size:clamp(1rem,1.6vw,1.12rem);color:var(--ink2);
+}
+.cta-row{
+  display:flex;gap:20px;justify-content:center;align-items:center;
+  flex-wrap:wrap;margin-top:34px;
+}
+.micro{
+  margin-top:18px;font-family:var(--mono);font-size:.7rem;
+  letter-spacing:.06em;color:var(--ink3);
+}
+/* 产品截图占位（纯 CSS 窗口） */
+.stage{
+  margin-top:clamp(48px,7vw,76px);
+  background:var(--paper2);border-top:1px solid var(--line);
+  padding-top:clamp(36px,5vw,60px);
+}
+.win{
+  max-width:920px;margin:0 auto;text-align:left;
+  background:var(--card);border:1px solid var(--line);border-bottom:none;
+  border-radius:12px 12px 0 0;
+  box-shadow:0 -18px 50px -30px rgba(33,31,27,.35);
+  overflow:hidden;
+}
+.win-bar{
+  display:flex;align-items:center;gap:14px;
+  padding:11px 16px;border-bottom:1px solid var(--line);
+}
+.dots{display:flex;gap:7px;flex:none}
+.dots i{width:10px;height:10px;border-radius:50%;display:block}
+.dots i:nth-child(1){background:#e0604f}
+.dots i:nth-child(2){background:#e5b93e}
+.dots i:nth-child(3){background:#54b95e}
+.win-title{
+  flex:1;text-align:center;font-family:var(--mono);
+  font-size:.68rem;letter-spacing:.08em;color:var(--ink3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.win-meta{font-family:var(--mono);font-size:.66rem;color:var(--ink3);flex:none}
+.win-body{padding:clamp(24px,4vw,44px) clamp(20px,5vw,64px) clamp(28px,4vw,48px)}
+.w-date{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--ink3);margin-bottom:14px}
+.w-h{font-family:var(--serif);font-size:clamp(1.2rem,2.4vw,1.5rem);font-weight:600;letter-spacing:.02em;margin-bottom:14px}
+.w-p{color:var(--ink2);font-size:clamp(.88rem,1.5vw,.97rem);margin-bottom:.9em;max-width:62ch}
+.w-cur{margin-bottom:0}
+.lk{color:var(--ink3);white-space:nowrap}
+.lk b{font-weight:600;color:var(--seal);background:var(--seal-soft);border-radius:3px;padding:0 .14em}
+.caret{
+  display:inline-block;width:2px;height:1.1em;background:var(--ink);
+  vertical-align:-.18em;margin-left:1px;
+}
+.win-foot{
+  display:flex;gap:22px;align-items:center;
+  padding:10px 18px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;color:var(--ink3);
+}
+.win-foot .wr{margin-left:auto}
+
+/* ── 特性区块 ─────────────────────────── */
+.feat{padding:clamp(80px,10vw,124px) 0}
+.feat.first{padding-top:clamp(72px,9vw,112px)}
+.feat+.feat{border-top:1px solid var(--line)}
+.f-grid{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:clamp(44px,6vw,92px);align-items:center;
+}
+.f-eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.2em}
+.f-eyebrow .n{color:var(--seal)}
+.f-eyebrow .t{color:var(--ink3);margin-left:.6em}
+.f-title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.65rem,3.4vw,2.35rem);line-height:1.32;
+  letter-spacing:.02em;margin:.5em 0 .6em;
+}
+.f-body{color:var(--ink2);max-width:44ch}
+.pts{list-style:none;margin-top:1.5em}
+.pts li{position:relative;padding-left:1.6em;margin-top:.7em;color:var(--ink2);font-size:.94rem}
+.pts li::before{
+  content:"";position:absolute;left:0;top:.78em;
+  width:1em;height:1.5px;background:var(--seal);
+}
+.pts b{color:var(--ink);font-weight:600}
+
+/* 面板通用 */
+.panel{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 28px 52px -34px rgba(33,31,27,.35);
+  padding:clamp(20px,3vw,30px);
+}
+.p-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--ink3)}
+
+/* 面板 1：开盖即写 */
+.p1-top{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.p1-top b{font-family:var(--mono);font-weight:600;font-size:clamp(2rem,4.5vw,2.9rem);letter-spacing:-.03em}
+.p1-top b i{font-style:normal;font-size:.42em;color:var(--ink3);margin-left:.1em}
+.p1-mid{
+  display:flex;align-items:center;gap:12px;
+  margin:22px 0;padding:16px 18px;
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;
+}
+.key{
+  display:inline-block;font-family:var(--mono);font-size:.82rem;color:var(--ink);
+  background:var(--card);border:1px solid var(--line);border-bottom-width:3px;
+  border-radius:7px;padding:.3em .62em;line-height:1.4;
+}
+.p1-arrow{color:var(--ink3);flex:none}
+.p1-field{
+  flex:1;min-width:0;display:flex;align-items:center;gap:2px;
+  font-size:.9rem;color:var(--ink3);
+}
+.p1-field .caret{background:var(--seal)}
+.p1-field .ghost{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.no{list-style:none;display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:4px}
+.no li{font-family:var(--mono);font-size:.72rem;color:var(--ink3)}
+.no li::before{content:"× ";color:var(--seal)}
+
+/* 面板 2：无文件夹 */
+.p2-head{display:flex;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.p2-search{
+  display:flex;align-items:center;gap:2px;
+  padding:14px 2px 12px;border-bottom:1px solid var(--line);
+}
+.p2-search .q{font-size:1.02rem;font-weight:600;color:var(--ink)}
+.p2-search .ms{margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--ink3);flex:none}
+.hits{list-style:none}
+.hits li{padding:14px 2px;border-bottom:1px solid var(--line)}
+.hits .h-t{display:flex;justify-content:space-between;gap:14px;font-weight:600;font-size:.92rem}
+.hits .h-t span{font-family:var(--mono);font-weight:400;font-size:.68rem;color:var(--ink3);flex:none;padding-top:.2em}
+.hits p{font-size:.82rem;color:var(--ink3);margin-top:.3em}
+.hits em{
+  font-style:normal;color:var(--seal);background:var(--seal-soft);
+  border-radius:2px;padding:0 .12em;
+}
+.p2-foot{padding-top:14px;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;color:var(--ink3)}
+
+/* 面板 3：双向链接 */
+.p3-cols{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(18px,3vw,28px)}
+.p3-doc p:last-child{margin-top:12px;font-size:.92rem;color:var(--ink2)}
+.p3-back{border-left:1px solid var(--line);padding-left:clamp(16px,2.4vw,24px)}
+.p3-back ul{list-style:none;margin-top:12px}
+.p3-back li{font-size:.86rem;color:var(--ink2);margin-top:.55em}
+.p3-back li::before{content:"←";color:var(--seal);margin-right:.55em}
+.p3-graph{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:16px}
+.p3-graph svg{flex:1;min-width:0;height:auto;display:block}
+.p3-graph .p-label{flex:none}
+.g-edge{stroke:#d8d1c0;stroke-width:1}
+.g-edge.c{stroke:rgba(185,58,36,.45)}
+.g-node{fill:#8f887b}
+.g-core{fill:var(--seal)}
+.g-ring{fill:none;stroke:rgba(185,58,36,.35);stroke-width:1}
+
+/* ── 页脚 CTA（深墨带） ────────────────── */
+.end{background:var(--ink);color:#ece9e0;padding:clamp(84px,10vw,128px) 0 0}
+.end .eyebrow{color:#cf7a5f}
+.end h2{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(2.1rem,5.6vw,3.5rem);line-height:1.25;
+  letter-spacing:.02em;color:#f4f1e8;margin:.45em 0 .4em;
+}
+.end .sub{color:#a49d8f;max-width:34em;margin:0 auto}
+.end .cta-row{margin-top:36px}
+.end .micro{color:#7d776b}
+.spec{
+  max-width:760px;margin:clamp(56px,8vw,80px) auto 0;
+  border-top:1px solid rgba(236,233,224,.14);
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.spec div{
+  display:flex;gap:14px;padding:16px 8px 16px 0;
+  border-bottom:1px solid rgba(236,233,224,.14);
+  font-size:.82rem;
+}
+.spec dt{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;color:#ece9e0;flex:none;min-width:5.5em;padding-top:.15em}
+.spec dd{color:#8f887b}
+.foot{
+  margin-top:clamp(56px,8vw,80px);
+  border-top:1px solid rgba(236,233,224,.14);
+  padding:26px 0 30px;
+}
+.foot-in{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.foot .brand{color:#ece9e0}
+.foot .brand i{color:#8f887b}
+.foot-note{font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;color:#7d776b}
+.foot-links{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+.foot-links a{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;
+  color:#8f887b;text-decoration:none;
+}
+.foot-links a:hover{color:#ece9e0}
+
+/* ── 动效（全部可降级） ─────────────────── */
+@media (prefers-reduced-motion: no-preference){
+  html{scroll-behavior:smooth}
+  .js .reveal{
+    opacity:0;transform:translateY(24px);
+    transition:opacity .8s cubic-bezier(.19,.6,.22,1),transform .8s cubic-bezier(.19,.6,.22,1);
+  }
+  .js .reveal.in{opacity:1;transform:none}
+  .d1{transition-delay:.06s}.d2{transition-delay:.14s}
+  .d3{transition-delay:.22s}.d4{transition-delay:.3s}
+  .btn,.tlink,.nav a,.foot-links a{transition:color .25s,background .25s,border-color .25s}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .caret{animation:blink 1.15s steps(1) infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.9}}
+  .g-ring{animation:pulse 2.6s ease-in-out infinite}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* ── 响应式 ───────────────────────────── */
+@media (min-width:861px){
+  .feat.rev .f-visual{order:-1}
+}
+@media (max-width:860px){
+  .f-grid{grid-template-columns:1fr;gap:44px}
+  .nav{display:none}
+  .top .btn{margin-left:auto}
+}
+@media (max-width:560px){
+  .cta-row{flex-direction:column;align-items:stretch;gap:16px}
+  .cta-row .btn{text-align:center}
+  .cta-row .tlink{text-align:center;border:none;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:var(--ink3)}
+  .win-meta,.win-foot .wr{display:none}
+  .win-foot{gap:16px;flex-wrap:wrap}
+  .p3-cols{grid-template-columns:1fr}
+  .p3-back{border-left:none;border-top:1px solid var(--line);padding-left:0;padding-top:18px}
+  .spec{grid-template-columns:1fr}
+  .foot-in{flex-direction:column;align-items:flex-start;gap:14px}
+  .foot-links{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#top" aria-label="墨迹 Inkwell 首页">
+      <span class="seal" aria-hidden="true">墨</span>
+      <span><b>墨迹</b><i>INKWELL</i></span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a href="#f-write">开盖即写</a>
+      <a href="#f-flat">无文件夹</a>
+      <a href="#f-link">双向链接</a>
+      <a href="#dl">下载</a>
+    </nav>
+    <a class="btn sm" href="#dl">免费下载</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ── Hero ─────────────────────────── -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow reveal">为写作者做的桌面笔记 · MAC / WINDOWS</p>
+      <h1 class="reveal d1">打开即写，<br><span class="u">想到即得</span>。</h1>
+      <p class="lede reveal d2">
+        墨迹没有欢迎页，没有文件夹，也不问你「该放哪儿」。<br>
+        只有一个光标、一屏文字，和文字之间慢慢织起来的网。
+      </p>
+      <div class="cta-row reveal d3">
+        <a class="btn" href="#dl">免费下载 macOS 版</a>
+        <a class="tlink" href="#dl">下载 Windows 版 →</a>
+      </div>
+      <p class="micro reveal d4">免费版含全部核心功能 · macOS 12+ / Windows 10+ · 约 18 MB · 不注册也能用</p>
+    </div>
+
+    <!-- 产品截图占位：纯 CSS 构建的 App 窗口 -->
+    <div class="stage reveal d3">
+      <div class="wrap">
+        <div class="win" role="img" aria-label="墨迹应用界面示意：一篇名为「九月刊·截稿前备忘」的笔记，正文中有两处双方括号链接">
+          <div class="win-bar">
+            <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="win-title">九月刊 · 截稿前备忘 — 墨迹</span>
+            <span class="win-meta" aria-hidden="true">⌘K</span>
+          </div>
+          <div class="win-body">
+            <p class="w-date">9月12日 · 周五 · 晨</p>
+            <h2 class="w-h">九月刊 · 截稿前备忘</h2>
+            <p class="w-p">终稿还差结尾一段。昨天在 <span class="lk">[[<b>晨间写作流程</b>]]</span> 里记的办法，今早试了一次：先删后补，确实快。</p>
+            <p class="w-p">给编辑的回信草稿放在 <span class="lk">[[<b>截稿日备忘</b>]]</span>，发出前再读一遍。</p>
+            <p class="w-p w-cur"><span class="caret" aria-hidden="true"></span></p>
+          </div>
+          <div class="win-foot">
+            <span>342 字</span>
+            <span>Markdown</span>
+            <span>已保存 09:41</span>
+            <span class="wr">⌘K 搜索 · ⌘N 新建</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 特性 01：开盖即写 ─────────────── -->
+  <section class="feat first" id="f-write">
+    <div class="wrap f-grid">
+      <div class="f-copy reveal">
+        <p class="f-eyebrow"><span class="n">01</span><span class="t">开盖即写</span></p>
+        <h2 class="f-title">冷启动 0.4 秒，<br>光标比你先就位。</h2>
+        <p class="f-body">
+          没有启动页，没有模板市场，也没有「先建个文件夹吧」。按下 ⌘N，光标已经在闪——在墨迹里，「开始写」这件事没有任何前置动作。
+        </p>
+        <ul class="pts">
+          <li><b>全局唤起：</b>⌘⇧J 在任何窗口呼出速记面板</li>
+          <li><b>逐字落盘：</b>每个字即时写入本地，退出不用确认</li>
+          <li><b>崩溃兜底：</b>恢复到上一次按键，而不是上一次保存</li>
+        </ul>
+      </div>
+      <div class="f-visual reveal d2">
+        <div class="panel">
+          <div class="p1-top">
+            <span class="p-label">冷启动实测 · APPLE SILICON</span>
+            <b>0.4<i>s</i></b>
+          </div>
+          <div class="p1-mid">
+            <span aria-hidden="true"><span class="key">⌘</span> <span class="key">N</span></span>
+            <span class="p1-arrow" aria-hidden="true">→</span>
+            <span class="p1-field"><span class="caret" aria-hidden="true"></span><span class="ghost">想到什么，先写下来</span></span>
+          </div>
+          <ul class="no" aria-label="这些步骤在墨迹中不存在">
+            <li>启动页</li>
+            <li>模板选择</li>
+            <li>文件夹向导</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 特性 02：无文件夹 ─────────────── -->
+  <section class="feat rev" id="f-flat">
+    <div class="wrap f-grid">
+      <div class="f-copy reveal">
+        <p class="f-eyebrow"><span class="n">02</span><span class="t">无文件夹</span></p>
+        <h2 class="f-title">没有「该放哪儿」，<br>只有「搜不搜得到」。</h2>
+        <p class="f-body">
+          文件夹要求你在动笔之前先做图书管理员。墨迹只有一条按时间排列的笔记流，和毫秒级的全文搜索——写下来的事，永远找得回来。
+        </p>
+        <ul class="pts">
+          <li><b>全文检索：</b>20ms 内返回，标题、正文一并命中</li>
+          <li><b>够用就好：</b>#标签、日期、字数，三种筛法</li>
+          <li><b>置顶手记：</b>常用的钉在最上面，层级到此为止</li>
+        </ul>
+      </div>
+      <div class="f-visual reveal d2">
+        <div class="panel">
+          <div class="p2-head">
+            <span class="p-label">全部笔记 · 128 篇 · 按时间</span>
+            <span class="p-label" aria-hidden="true">⌘K</span>
+          </div>
+          <div class="p2-search">
+            <span class="q">截稿</span><span class="caret" aria-hidden="true"></span>
+            <span class="ms">↵ 18ms · 3 篇命中</span>
+          </div>
+          <ul class="hits">
+            <li>
+              <div class="h-t">九月刊 · 终稿备忘<span>9月12日</span></div>
+              <p>……结尾还差一段，<em>截稿</em>前把引用再过一遍……</p>
+            </li>
+            <li>
+              <div class="h-t">晨间写作流程<span>9月10日</span></div>
+              <p>……赶在<em>截稿</em>日前定稿，先删后补是正道……</p>
+            </li>
+            <li>
+              <div class="h-t">编辑来信 · 修改意见<span>9月8日</span></div>
+              <p>……<em>截稿</em>时间提前到周五，专栏配图从简……</p>
+            </li>
+          </ul>
+          <div class="p2-foot">没有侧边栏，没有层级。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 特性 03：双向链接 ─────────────── -->
+  <section class="feat" id="f-link">
+    <div class="wrap f-grid">
+      <div class="f-copy reveal">
+        <p class="f-eyebrow"><span class="n">03</span><span class="t">双向链接</span></p>
+        <h2 class="f-title">写下 <span class="lk">[[<b>一个词</b>]]</span>，<br>它自己会长出回路。</h2>
+        <p class="f-body">
+          行文里用双方括号提起任何一篇笔记，对方会默默记下这次引用。写得越久，笔记越不像一摞纸，越像一张网——研究员叫它卡片盒，写作者叫它「原来我早就想过」。
+        </p>
+        <ul class="pts">
+          <li><b>输入 [[ ：</b>即时联想补全，不用记标题全称</li>
+          <li><b>被引用于：</b>每篇笔记自带反向引用面板</li>
+          <li><b>图谱在角落：</b>关系图只读，不站在你和稿子中间</li>
+        </ul>
+      </div>
+      <div class="f-visual reveal d2">
+        <div class="panel">
+          <div class="p3-cols">
+            <div class="p3-doc">
+              <p class="p-label">正在编辑 · 九月刊 · 终稿备忘</p>
+              <p>……如果截稿日提前，<span class="lk">[[<b>晨间写作流程</b>]]</span> 就得整个重来；回信草稿照旧放在 <span class="lk">[[<b>截稿日备忘</b>]]</span>。</p>
+            </div>
+            <div class="p3-back">
+              <p class="p-label">「晨间写作流程」被引用于</p>
+              <ul>
+                <li>九月刊 · 终稿备忘</li>
+                <li>截稿日备忘</li>
+                <li>十月选题清单</li>
+              </ul>
+            </div>
+          </div>
+          <div class="p3-graph">
+            <svg viewBox="0 0 360 96" role="img" aria-label="笔记关系图谱示意：中心节点连接周围七篇笔记">
+              <line class="g-edge c" x1="182" y1="50" x2="88"  y2="22"/>
+              <line class="g-edge c" x1="182" y1="50" x2="76"  y2="66"/>
+              <line class="g-edge c" x1="182" y1="50" x2="128" y2="84"/>
+              <line class="g-edge c" x1="182" y1="50" x2="148" y2="12"/>
+              <line class="g-edge c" x1="182" y1="50" x2="252" y2="18"/>
+              <line class="g-edge c" x1="182" y1="50" x2="288" y2="58"/>
+              <line class="g-edge c" x1="182" y1="50" x2="226" y2="84"/>
+              <line class="g-edge"   x1="88"  y1="22" x2="148" y2="12"/>
+              <line class="g-edge"   x1="76"  y1="66" x2="128" y2="84"/>
+              <line class="g-edge"   x1="252" y1="18" x2="318" y2="26"/>
+              <line class="g-edge"   x1="288" y1="58" x2="226" y2="84"/>
+              <circle class="g-node" cx="88"  cy="22" r="3"/>
+              <circle class="g-node" cx="76"  cy="66" r="3"/>
+              <circle class="g-node" cx="128" cy="84" r="3"/>
+              <circle class="g-node" cx="148" cy="12" r="3"/>
+              <circle class="g-node" cx="252" cy="18" r="3"/>
+              <circle class="g-node" cx="288" cy="58" r="3"/>
+              <circle class="g-node" cx="226" cy="84" r="3"/>
+              <circle class="g-node" cx="318" cy="26" r="3"/>
+              <circle class="g-ring" cx="182" cy="50" r="10"/>
+              <circle class="g-core" cx="182" cy="50" r="5"/>
+            </svg>
+            <span class="p-label">关系图谱 · 只读</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── 页脚 CTA ────────────────────────── -->
+<footer class="end" id="dl">
+  <div class="wrap" style="text-align:center">
+    <p class="eyebrow reveal">免费版含全部核心功能</p>
+    <h2 class="reveal d1">现在，去写点什么。</h2>
+    <p class="sub reveal d2">下载即用，本地运行。写完第一篇，再决定要不要留下来。</p>
+    <div class="cta-row reveal d3">
+      <a class="btn paper" href="#dl">↓ macOS 版</a>
+      <a class="btn ghost-dark" href="#dl">↓ Windows 版</a>
+    </div>
+    <p class="micro reveal d4">Apple Silicon / Intel · Windows 10+ x64 · 约 18 MB</p>
+
+    <dl class="spec reveal" style="text-align:left">
+      <div><dt>存储</dt><dd>纯文本 .md，随时整个迁走</dd></div>
+      <div><dt>渲染</dt><dd>Markdown，打字即排版</dd></div>
+      <div><dt>快捷键</dt><dd>全覆盖，双手不离键盘</dd></div>
+      <div><dt>账号</dt><dd>本地优先，不注册也能用</dd></div>
+      <div><dt>导出</dt><dd>.md / .pdf，一键带走</dd></div>
+      <div><dt>外观</dt><dd>深色模式，随系统切换</dd></div>
+    </dl>
+  </div>
+
+  <div class="foot">
+    <div class="wrap foot-in">
+      <a class="brand" href="#top">
+        <span class="seal" aria-hidden="true">墨</span>
+        <span><b>墨迹</b><i>INKWELL</i></span>
+      </a>
+      <span class="foot-note">© 2025 墨迹 Inkwell · 由写字的人，为写字的人做 · 本页文案写于墨迹</span>
+      <nav class="foot-links" aria-label="页脚导航">
+        <a href="#">更新日志</a>
+        <a href="#">快捷键手册</a>
+        <a href="#">隐私承诺</a>
+        <a href="mailto:hi@inkwell.app">hi@inkwell.app</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  var ok=window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+  if(!ok||!('IntersectionObserver' in window)){
+    els.forEach(function(e){e.classList.add('in')});
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

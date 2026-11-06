@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山雾 Mistveil · 把海拔 2000 米的清晨装进瓶子里</title>
+<meta name="description" content="山雾 Mistveil — 高山植物蒸馏精油。冷杉、岩兰草、野姜花三种香型与山雾机 M-01。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231C2321'/%3E%3Cpath d='M3 11.5h10M4.5 8.5h7M6 5.5h4' stroke='%23EDEBE4' stroke-width='1'/%3E%3C/svg%3E">
+<script>
+/* 早挂 .js：reduced-motion 用户不加，隐藏态不生效，杜绝 FOUC 与无 JS 不可见 */
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('js')}
+</script>
+<style>
+/* ═══ tokens ═══ */
+:root{
+  --mist:#EDEBE4;        /* 雾白底·冷调纸灰 */
+  --mist2:#E4E2D9;       /* 雾白沉一档 */
+  --ink:#1C2321;         /* 墨青·主文字 */
+  --ink70:rgba(28,35,33,.70);
+  --ink46:rgba(28,35,33,.46);
+  --line:rgba(28,35,33,.16);
+  --pine:#233329;        /* 冷杉深青·动作岗/深色面 */
+  --spruce:#33503F;      /* 冷杉带风土色 */
+  --loam:#29241E;        /* 岩兰土·明度反转面 */
+  --loam-ink:#E7E3D5;    /* 土面上的雾字 */
+  --cela:#DCE2D4;        /* 野姜花带·溪谷青白 */
+  --gold:#7E6117;        /* 松花金·信号岗（海拔读数/行装/0m）纸面 AA */
+  --g12:'Noto Serif SC','Source Han Serif SC','Source Han Serif CN','Songti SC','STSong','SimSun',serif;
+  --g33:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC',sans-serif;
+  --g55:ui-monospace,'SF Mono','Cascadia Mono','JetBrains Mono','Consolas','Courier New',monospace;
+  --ease:cubic-bezier(.19,1,.22,1);
+  --rail:clamp(52px,7vw,96px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:28px;overflow-x:clip}
+body{
+  background:var(--mist);color:var(--ink);
+  font:400 15px/1.85 var(--g33);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+::selection{background:var(--pine);color:var(--mist)}
+:focus-visible{outline:1.5px solid var(--gold);outline-offset:3px}
+.skip{position:absolute;left:12px;top:-60px;z-index:99;background:var(--pine);color:var(--mist);padding:8px 16px;font:600 12px/1 var(--g33);text-decoration:none;transition:top .15s var(--ease)}
+.skip:focus{top:12px}
+a{color:inherit}
+.num{font-family:var(--g55);font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+/* ═══ 顶栏 ═══ */
+.top{display:flex;align-items:baseline;gap:24px;padding:20px var(--rail) 0;position:relative;z-index:5}
+.brand{font:600 15px/1.2 var(--g12);letter-spacing:.14em;text-decoration:none}
+.brand em{font-style:normal;font:500 10px/1 var(--g55);letter-spacing:.32em;display:block;color:var(--ink46);margin-top:5px}
+.top nav{margin-left:auto;display:flex;gap:26px}
+.top nav a{font:400 12.5px/1.6 var(--g33);color:var(--ink70);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:3px}
+.bag{margin-left:6px;font:500 11px/1.6 var(--g55);letter-spacing:.06em;color:var(--gold);border-bottom:1px solid transparent;padding-bottom:3px;min-width:74px}
+@media(hover:hover) and (pointer:fine){
+  .top nav a,.bag{transition:border-color .15s var(--ease),color .15s var(--ease)}
+  .top nav a:hover{color:var(--ink);border-color:var(--ink46)}
+  .bag:hover{border-color:var(--gold)}
+}
+
+/* ═══ 海拔计（signature 装置） ═══ */
+.alt{position:fixed;left:0;top:0;bottom:0;width:var(--rail);z-index:4;pointer-events:none}
+.alt .rail{position:absolute;left:calc(var(--rail)*.5);top:0;bottom:0;width:1px;background:var(--line)}
+.alt .rail::after{content:'';position:absolute;left:0;top:0;bottom:0;width:7px;background:repeating-linear-gradient(to bottom,var(--ink46) 0 1px,transparent 1px 72px)}
+.alt .cur{position:absolute;left:0;right:0;text-align:center;transform:translateY(-50%)}
+.alt .cur b{display:block;font:600 12px/1.3 var(--g55);color:var(--gold);letter-spacing:.04em}
+.alt .cur s{display:block;font:400 9px/1 var(--g55);color:var(--ink46);letter-spacing:.2em;margin-top:4px;text-decoration:none}
+.alt .cur i{display:block;width:0;height:0;margin:7px auto 0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--gold)}
+.altm{display:none}
+@media (max-width:899px){
+  .alt{display:none}
+  .altm{display:block;position:fixed;right:12px;bottom:12px;z-index:40;background:rgba(237,235,228,.82);border:1px solid var(--line);padding:7px 11px;font:600 11px/1 var(--g55);letter-spacing:.08em;color:var(--gold)}
+  .altm s{text-decoration:none;color:var(--ink46);font-weight:400;margin-right:5px;letter-spacing:.14em}
+}
+
+/* ═══ hero · 2,000M ═══ */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 var(--rail) 9vh;background:linear-gradient(180deg,#DBDED7 0%,var(--mist) 62%)}
+.fog{position:absolute;pointer-events:none;will-change:transform,opacity}
+.fog1{width:130vw;height:34vh;left:-15vw;top:6vh;background:radial-gradient(closest-side,rgba(246,245,240,.95),rgba(246,245,240,0) 72%)}
+.fog2{width:110vw;height:26vh;left:-5vw;top:30vh;background:radial-gradient(closest-side,rgba(244,243,237,.9),rgba(244,243,237,0) 70%)}
+.fog3{width:90vw;height:20vh;left:20vw;top:52vh;background:radial-gradient(closest-side,rgba(238,236,228,.85),rgba(238,236,228,0) 72%)}
+.ridge{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:30vh;color:var(--spruce);opacity:.16}
+.hero-in{position:relative;z-index:2;max-width:920px}
+.kick{font:400 11px/1.8 var(--g55);letter-spacing:.14em;color:var(--ink46)}
+.kick b{color:var(--ink);font-weight:600}
+.hero h1{font:500 clamp(44px,7.6vw,108px)/1.22 var(--g12);letter-spacing:.02em;margin:30px 0 34px;max-width:14em}
+.hero h1 .ln{display:block;overflow:hidden}
+.hero h1 .ln>span{display:inline-block}
+.hero .sub{max-width:33em;color:var(--ink70);font-size:15.5px}
+.hero .go{display:inline-flex;align-items:baseline;gap:10px;margin-top:52px;font:400 12px/1 var(--g55);letter-spacing:.2em;color:var(--ink70);text-decoration:none}
+.hero .go b{font-weight:600;color:var(--gold)}
+.hero .go i{font-style:normal;transition:transform .3s var(--ease)}
+@media(hover:hover){.hero .go:hover i{transform:translateY(3px)}}
+.mveil{position:absolute;right:calc(var(--rail)*.42);top:16vh;writing-mode:vertical-rl;font:500 11px/1 var(--g55);letter-spacing:.5em;color:var(--ink46);z-index:2}
+.js .hero h1 .ln>span{transform:translateY(110%);animation:up .9s var(--ease) forwards}
+.js .hero .rise{opacity:0;transform:translateY(14px);animation:rup .8s var(--ease) forwards}
+@keyframes up{to{transform:translateY(0)}}
+@keyframes rup{to{opacity:1;transform:none}}
+.js .hero .d1>span{animation-delay:.05s}.js .hero .d2>span{animation-delay:.3s}.js .hero .d3>span{animation-delay:.55s}
+.js .hero .r1{animation-delay:.8s}.js .hero .r2{animation-delay:1s}
+@media (prefers-reduced-motion:no-preference){
+  .fog1{animation:drift 64s var(--ease) infinite alternate}
+  .fog2{animation:drift 52s var(--ease) infinite alternate-reverse}
+  .fog3{animation:drift 44s var(--ease) infinite alternate}
+}
+@keyframes drift{from{transform:translateX(-4vw)}to{transform:translateX(4vw)}}
+
+/* ═══ 香型带 ═══ */
+.band{position:relative;padding:120px var(--rail) 132px;border-top:1px solid var(--line)}
+.band .kick{margin-bottom:56px}
+.band .kick .sep{margin:0 10px;color:var(--ink46)}
+.band-in{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:0 64px;align-items:start}
+.vname{writing-mode:vertical-rl;font:500 clamp(72px,9vw,124px)/1.06 var(--g12);letter-spacing:.18em;color:var(--spruce)}
+.band h2{font:500 clamp(26px,2.6vw,34px)/1.5 var(--g12);letter-spacing:.02em;max-width:15em}
+.band .note{color:var(--ink70);max-width:30em;margin-top:18px}
+.ledger{margin-top:44px;border-top:1px solid var(--line)}
+.ledger .row{display:grid;grid-template-columns:92px 1fr;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;align-items:start}
+.ledger .k{font:500 10.5px/2 var(--g55);letter-spacing:.18em;color:var(--ink46);padding-top:2px}
+.ledger .v{color:var(--ink)}
+.spec{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 22px;margin-top:34px;font:400 12px/1.8 var(--g55);color:var(--ink70);letter-spacing:.05em}
+.spec .price{color:var(--ink);font-weight:600}
+.take{display:inline-block;margin-top:26px;font:500 12.5px/1 var(--g33);letter-spacing:.1em;color:var(--ink);background:none;border:0;padding:10px 2px;cursor:pointer;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:7px;text-decoration-color:var(--ink46)}
+.take.added{color:var(--gold);text-decoration-color:var(--gold)}
+@media(hover:hover) and (pointer:fine){
+  .take{transition:color .15s var(--ease),text-decoration-color .15s var(--ease)}
+  .take:hover{color:var(--pine);text-decoration-color:var(--pine)}
+  .take.added:hover{color:var(--gold);text-decoration-color:var(--gold)}
+}
+.band figcaption{font:400 10.5px/1.7 var(--g55);letter-spacing:.14em;color:var(--ink46);margin-top:20px}
+/* 岩兰草·明度反转 */
+.band.dark{background:var(--loam);color:var(--loam-ink);border-top:0}
+.band.dark .vname{color:#8F9B86}
+.band.dark .note{color:rgba(231,227,213,.72)}
+.band.dark .kick{color:rgba(231,227,213,.5)}
+.band.dark .ledger{border-top-color:rgba(231,227,213,.2)}
+.band.dark .ledger .row{border-bottom-color:rgba(231,227,213,.2)}
+.band.dark .ledger .k{color:rgba(231,227,213,.45)}
+.band.dark .ledger .v{color:var(--loam-ink)}
+.band.dark .spec{color:rgba(231,227,213,.66)}
+.band.dark .spec .price{color:var(--loam-ink)}
+.band.dark .take{color:var(--loam-ink);text-decoration-color:rgba(231,227,213,.45)}
+.band.dark figcaption{color:rgba(231,227,213,.45)}
+.band.dark .kick b{color:var(--loam-ink)}
+.band.dark .take:hover{color:var(--loam-ink);text-decoration-color:var(--loam-ink)}
+.strata{position:absolute;left:0;right:0;height:1px;background:rgba(231,227,213,.07)}
+.strata.s1{top:22%}.strata.s2{top:54%}.strata.s3{top:81%}
+/* 野姜花·溪谷 */
+.band.ginger{background:var(--cela);border-top:0}
+.band.ginger .vname{color:#6B7A5E}
+.band.ginger .band-in{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.band.ginger .vcol{order:2}
+
+/* ═══ 蒸馏坊 ═══ */
+.craft{padding:120px var(--rail) 128px}
+.craft-in{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start;margin-top:52px}
+.craft h2{font:500 clamp(26px,2.6vw,34px)/1.5 var(--g12);max-width:14em}
+.craft .note{color:var(--ink70);max-width:30em;margin-top:18px}
+.mach{width:100%;max-width:460px;margin:0 auto}
+.mach .call{font:400 10px/1.5 var(--g55);fill:var(--ink70);letter-spacing:.06em}
+.mach .cl{stroke:var(--ink46);stroke-width:.75;fill:none}
+.mach .body{stroke:var(--ink);stroke-width:1.4;fill:none}
+.mach .mist{stroke:var(--ink46);stroke-width:1;fill:none;stroke-linecap:round}
+.cap{display:block;margin-top:16px;text-align:center;font:400 10.5px/1.7 var(--g55);letter-spacing:.14em;color:var(--ink46)}
+.specgrid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line)}
+.specgrid .cell{padding:15px 0 15px 0;border-bottom:1px solid var(--line)}
+.specgrid .cell:nth-child(odd){padding-right:26px;border-right:1px solid var(--line)}
+.specgrid .cell:nth-child(even){padding-left:26px}
+.specgrid .k{font:500 10px/1 var(--g55);letter-spacing:.18em;color:var(--ink46);margin-bottom:9px}
+.specgrid .v{font-size:14px;color:var(--ink)}
+.mprice{margin-top:30px}
+
+/* ═══ 手记 ═══ */
+.letter{padding:128px var(--rail) 136px;border-top:1px solid var(--line)}
+.letter-in{max-width:34em;margin:0 auto}
+.letter .kick{text-align:center;margin-bottom:44px}
+.letter p{font:400 17px/2.05 var(--g12);color:var(--ink)}
+.letter p+p{margin-top:1.4em}
+.letter .sig{margin-top:44px;text-align:right;font:400 12.5px/1.8 var(--g33);color:var(--ink70)}
+.letter .sig b{display:block;font:500 10.5px/1 var(--g55);letter-spacing:.2em;color:var(--ink46);margin-top:8px}
+
+/* ═══ 收口 · 0M ═══ */
+.get{padding:140px var(--rail) 128px;background:var(--mist2);border-top:1px solid var(--line);text-align:center}
+.get .kick{margin-bottom:40px}
+.get .zero{font:600 12px/1 var(--g55);letter-spacing:.22em;color:var(--gold);margin-bottom:26px}
+.get h2{font:500 clamp(34px,4.6vw,62px)/1.35 var(--g12);letter-spacing:.02em;max-width:16em;margin:0 auto}
+.shelf{max-width:760px;margin:64px auto 0;text-align:left;border-top:1px solid var(--line)}
+.shelf .row{display:flex;align-items:baseline;gap:18px;padding:19px 0;border-bottom:1px solid var(--line)}
+.shelf .nm{font:500 15.5px/1.6 var(--g12)}
+.shelf .ds{font-size:12.5px;color:var(--ink70);margin-top:3px}
+.shelf .pr{margin-left:auto;font:600 13.5px/1.6 var(--g55);white-space:nowrap}
+.shelf .take{margin-top:0;flex:none}
+.get .foot-note{margin-top:44px;font:400 12px/1.8 var(--g55);letter-spacing:.14em;color:var(--ink46)}
+
+/* ═══ 页脚 ═══ */
+.foot{padding:72px var(--rail) 88px;border-top:1px solid var(--line)}
+.foot-in{display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:40px}
+.foot h3{font:600 10.5px/1 var(--g55);letter-spacing:.2em;color:var(--ink46);margin-bottom:20px}
+.foot a.fl{display:block;font-size:13px;color:var(--ink70);text-decoration:none;padding:5px 0}
+@media(hover:hover){.foot a.fl{transition:color .15s var(--ease)}.foot a.fl:hover{color:var(--ink)}}
+.foot .fb .brand{letter-spacing:.14em}
+.foot .fb p{font-size:12.5px;color:var(--ink70);margin-top:16px;max-width:22em}
+.foot .addr{font-size:12.5px;color:var(--ink70);line-height:2}
+.foot .addr a{color:inherit;text-decoration:none;border-bottom:1px solid var(--ink46);padding-bottom:1px}
+.colophon{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px 40px;font:400 11px/1.8 var(--g55);letter-spacing:.08em;color:var(--ink46)}
+.colophon .alt-end{color:var(--gold)}
+
+/* ═══ 入场（仅 .js + 非 reduced-motion） ═══ */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+
+/* ═══ 响应式 ═══ */
+@media (max-width:899px){
+  .band-in,.craft-in,.band.ginger .band-in{grid-template-columns:1fr;gap:40px}
+  .vname{height:auto;writing-mode:horizontal-tb;letter-spacing:.1em;font-size:clamp(56px,15vw,84px)}
+  .band.ginger .vcol{order:0}
+  .foot-in{grid-template-columns:1fr 1fr}
+}
+@media (pointer:coarse){
+  .top nav a,.foot a.fl{padding-top:11px;padding-bottom:11px}
+  .hero .go{padding-top:12px;padding-bottom:12px}
+}
+@media (max-width:560px){
+  :root{--rail:22px}
+  body{font-size:14.5px}
+  .top{flex-wrap:wrap;gap:10px}
+  .top nav{margin-left:0;width:100%;order:2;gap:20px;padding-top:12px;border-top:1px solid var(--line)}
+  .bag{margin-left:auto}
+  .hero{padding-bottom:12vh}
+  .hero h1{margin:24px 0 26px}
+  .mveil{top:12vh}
+  .band,.craft,.letter,.get{padding-top:88px;padding-bottom:96px}
+  .ledger .row{grid-template-columns:76px 1fr;font-size:13px}
+  .specgrid{grid-template-columns:1fr}
+  .specgrid .cell:nth-child(odd){padding-right:0;border-right:0}
+  .specgrid .cell:nth-child(even){padding-left:0}
+  .shelf .row{flex-wrap:wrap}
+  .shelf .pr{margin-left:0}
+  .foot-in{grid-template-columns:1fr}
+  .colophon{gap:8px 24px}
+}
+/* ═══ reduced-motion：零自动运动 ═══ */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .fog{opacity:.55}
+}
+/* ═══ 打印：深底转浅、藏交互层 ═══ */
+@media print{
+  .top nav,.alt,.altm,.fog,.ridge,.take,.skip,.hero .go{display:none!important}
+  .band.dark{background:#fff;color:#1C2321}
+  .band.dark *{color:#1C2321!important}
+  .js .rv,.js .hero .rise,.js .hero h1 .ln>span{opacity:1;transform:none}
+  .band,.craft,.letter,.get,.foot{break-inside:avoid}
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#fir">跳到香型</a>
+
+<header class="top">
+  <a class="brand" href="#top">山雾<em>MISTVEIL</em></a>
+  <nav aria-label="页内">
+    <a href="#fir">香型</a><a href="#craft">工艺</a><a href="#note">手记</a>
+    <a class="bag" href="#get" id="bag">行装 · 0</a>
+  </nav>
+</header>
+
+<!-- 海拔计 · 本页唯一持续装置（装饰性，读数冗余于各区眉题） -->
+<div class="alt" aria-hidden="true">
+  <div class="rail"></div>
+  <div class="cur" id="altCur" style="top:12%">
+    <b class="num" id="altNum">2,000</b><s>M</s><i></i>
+  </div>
+</div>
+<div class="altm" aria-hidden="true"><s>ALT</s><span class="num" id="altNumM">2,000</span> M</div>
+
+<main>
+<!-- ═══ 第一幕 · 2,000M 雾顶 ═══ -->
+<section class="hero" id="hero" data-alt="2000" data-primary aria-labelledby="hero-t">
+  <div class="fog fog1"></div><div class="fog fog2"></div><div class="fog fog3"></div>
+  <svg class="ridge" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,300 L0,220 L180,150 L320,205 L470,120 L640,190 L790,100 L960,175 L1120,90 L1280,160 L1440,110 L1440,300 Z" fill="currentColor"/>
+    <path d="M0,300 L0,260 L220,210 L420,255 L660,185 L900,240 L1140,190 L1440,225 L1440,300 Z" fill="currentColor" opacity=".55"/>
+  </svg>
+  <span class="mveil">MISTVEIL — 山雾</span>
+  <div class="hero-in">
+    <p class="kick rise r1"><b>N 28°16′ · E 103°52′</b> · 横断山脉北麓 · 海拔 <b class="num">2,000 M</b></p>
+    <h1 id="hero-t">
+      <span class="ln d1"><span>把海拔 2000 米的</span></span>
+      <span class="ln d2"><span>清晨，</span></span>
+      <span class="ln d3"><span>装进瓶子里。</span></span>
+    </h1>
+    <p class="sub rise r1">山雾 Mistveil，高山植物蒸馏精油。冷杉、岩兰草、野姜花——三种海拔的气；一台山雾机，替你在山脚把它放出来。</p>
+    <a class="go rise r2" href="#fir">由此下山 <b>↓</b><i>1,400 M 岩兰草带见</i></a>
+  </div>
+</section>
+
+<!-- ═══ 香型壹 · 冷杉 2,000M ═══ -->
+<section class="band" id="fir" data-alt="2000" aria-labelledby="fir-t">
+  <p class="kick rv">海拔 <b class="num">2,000 M</b><span class="sep">·</span>雪线以下<span class="sep">·</span>香型 壹</p>
+  <div class="band-in">
+    <div>
+      <h2 id="fir-t" class="rv">天亮前最冷的一小时。</h2>
+      <p class="note rv">针叶上还挂着霜，太阳没有越过山脊。冷杉的气是直的——干、冷、往上走，不绕弯。</p>
+      <div class="ledger rv" role="table" aria-label="冷杉香调">
+        <div class="row" role="row"><span class="k" role="cell">前调 TOP</span><span class="v" role="cell">冷杉针叶 · 雪水</span></div>
+        <div class="row" role="row"><span class="k" role="cell">中调 HEART</span><span class="v" role="cell">松脂 · 穿谷风</span></div>
+        <div class="row" role="row"><span class="k" role="cell">尾调 BASE</span><span class="v" role="cell">干净木质 · 微辛</span></div>
+      </div>
+      <p class="spec rv"><span>头道蒸馏</span><span>10 ml</span><span>批 MV-F-2087</span><span class="price num">¥268</span></p>
+      <button class="take rv" type="button" data-add="冷杉精油 10ml">装入行装</button>
+    </div>
+    <figure class="vcol rv">
+      <div class="vname" aria-hidden="true">冷杉</div>
+      <figcaption>FIR · 冷杉带 — 针叶剪枝于日出前</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══ 香型贰 · 岩兰草 1,400M · 明度反转 ═══ -->
+<section class="band dark" id="vetiver" data-alt="1400" aria-labelledby="vet-t">
+  <div class="strata s1"></div><div class="strata s2"></div><div class="strata s3"></div>
+  <p class="kick rv">海拔 <b class="num">1,400 M</b><span class="sep">·</span>背阴坡<span class="sep">·</span>香型 贰</p>
+  <div class="band-in">
+    <figure class="vcol rv">
+      <div class="vname" aria-hidden="true">岩兰草</div>
+      <figcaption>VETIVER · 根入岩缝三米，取根蒸馏</figcaption>
+    </figure>
+    <div>
+      <h2 id="vet-t" class="rv">气味不在枝叶，在三米深的根里。</h2>
+      <p class="note rv">贴着地面长的草，根往岩缝里钻。它的气是沉的——湿土、草根、一点淡淡的烟。</p>
+      <div class="ledger rv" role="table" aria-label="岩兰草香调">
+        <div class="row" role="row"><span class="k" role="cell">前调 TOP</span><span class="v" role="cell">湿土 · 草根</span></div>
+        <div class="row" role="row"><span class="k" role="cell">中调 HEART</span><span class="v" role="cell">岩缝 · 淡烟</span></div>
+        <div class="row" role="row"><span class="k" role="cell">尾调 BASE</span><span class="v" role="cell">深木 · 安定</span></div>
+      </div>
+      <p class="spec rv"><span>取根蒸馏</span><span>10 ml</span><span>批 MV-V-1451</span><span class="price num">¥298</span></p>
+      <button class="take rv" type="button" data-add="岩兰草精油 10ml">装入行装</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 香型叁 · 野姜花 900M ═══ -->
+<section class="band ginger" id="ginger" data-alt="900" aria-labelledby="gin-t">
+  <p class="kick rv">海拔 <b class="num">900 M</b><span class="sep">·</span>溪谷<span class="sep">·</span>香型 叁</p>
+  <div class="band-in">
+    <div>
+      <h2 id="gin-t" class="rv">清晨唯一的暖意，开在水汽最重的地方。</h2>
+      <p class="note rv">白瓣不沾水，花香里带一点姜的辛。它的气是活的——暖、甜、往外走。</p>
+      <div class="ledger rv" role="table" aria-label="野姜花香调">
+        <div class="row" role="row"><span class="k" role="cell">前调 TOP</span><span class="v" role="cell">姜花 · 露</span></div>
+        <div class="row" role="row"><span class="k" role="cell">中调 HEART</span><span class="v" role="cell">白瓣 · 辛暖</span></div>
+        <div class="row" role="row"><span class="k" role="cell">尾调 BASE</span><span class="v" role="cell">微甜 · 水气</span></div>
+      </div>
+      <p class="spec rv"><span>花穗蒸馏</span><span>10 ml</span><span>批 MV-G-0903</span><span class="price num">¥288</span></p>
+      <button class="take rv" type="button" data-add="野姜花精油 10ml">装入行装</button>
+    </div>
+    <figure class="vcol rv">
+      <div class="vname" aria-hidden="true">野姜花</div>
+      <figcaption>GINGER FLOWER · 晨采带露花穗</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══ 山脚 · 蒸馏坊 380M ═══ -->
+<section class="craft" id="craft" data-alt="380" aria-labelledby="craft-t">
+  <p class="kick rv">海拔 <b class="num">380 M</b><span class="sep">·</span>山脚蒸馏坊<span class="sep">·</span>工艺与机器</p>
+  <h2 id="craft-t" class="rv">山不会下山，机器替它走一趟。</h2>
+  <p class="note rv">枝叶在山上采、在山脚蒸。每一批只取头道馏液，编号留样——少，但每一滴都知道自己从哪来。</p>
+  <div class="craft-in">
+    <div class="rv">
+      <div class="ledger" role="table" aria-label="蒸馏工艺">
+        <div class="row" role="row"><span class="k" role="cell">采</span><span class="v" role="cell">05:10 – 07:40，露水未晞时剪枝</span></div>
+        <div class="row" role="row"><span class="k" role="cell">蒸</span><span class="v" role="cell">铜釜慢蒸 4 小时，水温不过 96 ℃</span></div>
+        <div class="row" role="row"><span class="k" role="cell">取</span><span class="v" role="cell">只留头道馏液，每 100 kg 枝叶得 1.2 L</span></div>
+        <div class="row" role="row"><span class="k" role="cell">留</span><span class="v" role="cell">每批留样封签，编号可溯</span></div>
+      </div>
+    </div>
+    <figure class="rv">
+      <svg class="mach" viewBox="0 0 460 380" role="img" aria-label="山雾机 M-01 线描图：圆柱机身，顶部出雾">
+        <!-- 雾 -->
+        <path class="mist" d="M210 118 q-6 -14 2 -26 q8 -11 0 -24"/>
+        <path class="mist" d="M235 118 q7 -16 -2 -28 q-8 -11 0 -22" opacity=".65"/>
+        <path class="mist" d="M258 120 q6 -13 -1 -24" opacity=".4"/>
+        <!-- 机身 -->
+        <path class="body" d="M176 320 L176 160 Q176 138 198 138 L262 138 Q284 138 284 160 L284 320 Z"/>
+        <ellipse class="body" cx="230" cy="320" rx="54" ry="7"/>
+        <line class="cl" x1="176" y1="248" x2="284" y2="248"/>
+        <circle class="body" cx="230" cy="290" r="9"/>
+        <line class="cl" x1="230" y1="281" x2="230" y2="299"/>
+        <line class="cl" x1="221" y1="290" x2="239" y2="290"/>
+        <!-- 标注 -->
+        <line class="cl" x1="150" y1="150" x2="120" y2="120"/><circle cx="150" cy="150" r="2" fill="var(--ink46)"/>
+        <text class="call" x="30" y="112">超声雾化 2.4 MHz</text>
+        <line class="cl" x1="284" y1="200" x2="330" y2="200"/><circle cx="284" cy="200" r="2" fill="var(--ink46)"/>
+        <text class="call" x="336" y="196">水箱 300 ml</text><text class="call" x="336" y="210">雾量 32 ml/h</text>
+        <line class="cl" x1="230" y1="327" x2="230" y2="352"/><circle cx="230" cy="327" r="2" fill="var(--ink46)"/>
+        <text class="call" x="176" y="368">噪声 ≤ 26 dB · 间歇 30 s/30 s</text>
+      </svg>
+      <figcaption class="cap">山雾机 M-01 — 它不模仿山，只负责把山放出来</figcaption>
+    </figure>
+  </div>
+  <div class="specgrid rv" role="table" aria-label="山雾机规格">
+    <div class="cell"><p class="k">雾化方式</p><p class="v">超声波 2.4 MHz，冷雾不加热</p></div>
+    <div class="cell"><p class="k">容量与雾量</p><p class="v">水箱 300 ml · 雾量 32 ml/h，约 9 小时</p></div>
+    <div class="cell"><p class="k">运行噪声</p><p class="v">≤ 26 dB，低于翻书声</p></div>
+    <div class="cell"><p class="k">模式</p><p class="v">持续 / 间歇 30 s · 一档暖白夜灯</p></div>
+  </div>
+  <p class="spec mprice rv"><span>山雾机 M-01</span><span>机身 ¥398</span><span class="price num">含冷杉一瓶 ¥598</span></p>
+  <button class="take rv" type="button" data-add="山雾机 M-01 + 冷杉">装入行装</button>
+</section>
+
+<!-- ═══ 手记 · 260M ═══ -->
+<section class="letter" id="note" data-alt="260" aria-labelledby="note-t">
+  <div class="letter-in">
+    <p class="kick rv">海拔 <b class="num">260 M</b><span class="sep">·</span>山腰人家<span class="sep">·</span>手记</p>
+    <h2 id="note-t" class="sr">品牌手记</h2>
+    <p class="rv">2019 年第一次上山，天黑透了才走到营地。第二天五点，雾从谷底升上来，冷杉的气味比闹钟先到。</p>
+    <p class="rv">后来我们做的一切，都是想把那一分钟留住。蒸馏只是手段——留住「山醒得比人早」这件事，才是产品。</p>
+    <p class="sig rv">山雾工作室<b>记于第 2087 批</b></p>
+  </div>
+</section>
+
+<!-- ═══ 收口 · 0M ═══ -->
+<section class="get" id="get" data-alt="0" aria-labelledby="get-t">
+  <p class="kick rv">海拔 <b class="num">0 M</b><span class="sep">·</span>你的房间<span class="sep">·</span>行装</p>
+  <p class="zero rv">ALT 0 — 山下</p>
+  <h2 id="get-t" class="rv">山留在山里，<br>清晨可以跟你回家。</h2>
+  <div class="shelf rv">
+    <div class="row">
+      <div><p class="nm">单支精油</p><p class="ds">冷杉 / 岩兰草 / 野姜花任选，10 ml</p></div>
+      <span class="pr num">¥268 起</span>
+      <button class="take" type="button" data-add="单支精油">装入行装</button>
+    </div>
+    <div class="row">
+      <div><p class="nm">三香套装</p><p class="ds">三种海拔各一支，封签编号连号</p></div>
+      <span class="pr num">¥720</span>
+      <button class="take" type="button" data-add="三香套装">装入行装</button>
+    </div>
+    <div class="row">
+      <div><p class="nm">山雾机 M-01 + 一支精油</p><p class="ds">默认配冷杉，可换香型</p></div>
+      <span class="pr num">¥598</span>
+      <button class="take" type="button" data-add="山雾机套装">装入行装</button>
+    </div>
+  </div>
+  <p class="foot-note rv">顺丰包邮 · 未拆封 30 日可退 · 每瓶附批次蒸馏卡</p>
+</section>
+</main>
+
+<!-- ═══ 页脚 ═══ -->
+<footer class="foot">
+  <div class="foot-in">
+    <div class="fb">
+      <p class="brand">山雾<em style="font:500 9px/1 var(--g55);letter-spacing:.3em;display:block;color:var(--ink46);margin-top:5px">MISTVEIL</em></p>
+      <p>高山植物蒸馏精油。在海拔 2000 米处等待清晨，在你的房间里把它放出来。</p>
+    </div>
+    <div>
+      <h3>香型</h3>
+      <a class="fl" href="#fir">冷杉 · 2,000 M</a>
+      <a class="fl" href="#vetiver">岩兰草 · 1,400 M</a>
+      <a class="fl" href="#ginger">野姜花 · 900 M</a>
+    </div>
+    <div>
+      <h3>档案</h3>
+      <a class="fl" href="#craft">蒸馏坊 · 380 M</a>
+      <a class="fl" href="#note">手记 · 260 M</a>
+      <a class="fl" href="#get">行装 · 0 M</a>
+    </div>
+    <div>
+      <h3>联络</h3>
+      <p class="addr">云南 · 香格里拉 · 214 国道 17 号<br>
+        <a href="mailto:hello@mistveil.example">hello@mistveil.example</a><br>
+        蒸馏坊开放参观 · 预约制</p>
+    </div>
+  </div>
+  <div class="colophon">
+    <span>© 2026 山雾工作室</span>
+    <span>本页为虚构品牌演示</span>
+    <span class="alt-end">海拔 0 M —— 到你这里了。</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 海拔计：按各 data-alt 段顶插值，滚动即下山 ── */
+  var marks = Array.prototype.slice.call(document.querySelectorAll('[data-alt]'))
+    .map(function(el){ return {y: el.getBoundingClientRect().top + window.scrollY, a: +el.dataset.alt}; })
+    .sort(function(a,b){ return a.y - b.y; });
+  var cur = document.getElementById('altCur'),
+      num = document.getElementById('altNum'),
+      numM = document.getElementById('altNumM'),
+      shown = marks.length ? marks[0].a : 0,
+      target = shown, raf = null, docEnd = 1;
+
+  function altAt(y){
+    if (y <= marks[0].y) return marks[0].a;
+    for (var i = 0; i < marks.length - 1; i++){
+      var m0 = marks[i], m1 = marks[i+1];
+      if (y < m1.y){
+        var t = (y - m0.y) / Math.max(1, m1.y - m0.y);
+        return m0.a + (m1.a - m0.a) * t;
+      }
+    }
+    var last = marks[marks.length-1], endY = docEnd - innerHeight;
+    if (last.a > 0 && y > last.y){
+      return Math.max(0, last.a * (1 - (y - last.y) / Math.max(1, endY - last.y)));
+    }
+    return last.a;
+  }
+  function fmt(v){ return Math.round(v / 10) * 10 >= 1000
+      ? (Math.round(v/10)*10).toLocaleString('en-US')
+      : String(Math.round(v/10)*10); }
+  function frame(){
+    shown += (target - shown) * (RM ? 1 : 0.14);
+    if (Math.abs(target - shown) < 1) shown = target;
+    var t = fmt(shown);
+    num.textContent = t; numM.textContent = t;
+    /* 读数沿轨滑动：0%→顶 88%→底，对应 2000→0 */
+    var span = marks[0].a || 1;
+    var p = Math.max(0, Math.min(1, 1 - shown / span));
+    cur.style.top = (12 + p * 72) + '%';
+    if (shown !== target) raf = requestAnimationFrame(frame); else raf = null;
+  }
+  function onScroll(){
+    docEnd = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    target = altAt(window.scrollY);
+    if (raf === null) raf = requestAnimationFrame(frame);
+  }
+  addEventListener('scroll', onScroll, {passive:true});
+  addEventListener('resize', onScroll);
+  onScroll(); frame();
+
+  /* ── 雾散：首个视口内滚动，雾层渐薄 ── */
+  var fogs = document.querySelectorAll('.fog'), hero = document.getElementById('hero');
+  function mist(){
+    if (RM) return;
+    var p = Math.min(1, window.scrollY / (innerHeight * 0.85));
+    for (var i = 0; i < fogs.length; i++){
+      fogs[i].style.opacity = String(Math.max(0, 1 - p * (1 + i * 0.25)));
+    }
+    hero.querySelector('.ridge').style.opacity = String(0.16 + p * 0.2);
+  }
+  if (!RM) addEventListener('scroll', mist, {passive:true});
+
+  /* ── 入场：IO 只播一次 ── */
+  if (!RM && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold: 0.15, rootMargin: '0px 0px -6% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.rv').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ── 行装：真实的加法与撤销 ── */
+  var bag = document.getElementById('bag'), count = 0;
+  document.querySelectorAll('[data-add]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var on = btn.classList.toggle('added');
+      count += on ? 1 : -1;
+      bag.textContent = '行装 · ' + count;
+      btn.textContent = on ? '已入行装 — 点击取出' : '装入行装';
+      btn.setAttribute('aria-pressed', String(on));
+    });
+  });
+})();
+</script>
+</body>
+</html>

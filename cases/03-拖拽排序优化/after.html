@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>任务优先级 · 拖拽排序</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== 视觉基调：深底 + 单一强调色 #5e6ad2 + 非 Inter 字体栈 + 圆角 8/12 两档 ===== */
+  :root {
+    --bg: #0e0f13;
+    --surface: #171922;
+    --surface-2: #1d2029;
+    --line: rgba(255,255,255,.08);
+    --text: #e8eaf0;
+    --muted: #9aa0ae;
+    --accent: #5e6ad2;
+    --accent-soft: rgba(94,106,210,.16);
+    --accent-text: #8f98e8;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+    --ease-out: cubic-bezier(.2,.8,.2,1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Space Grotesk', 'Avenir Next', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .container { max-width: 600px; margin: 0 auto; padding: var(--s6) 20px; }
+  h1 { font-size: 26px; letter-spacing: -.01em; margin-bottom: var(--s2); }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: var(--s5); line-height: 1.6; }
+  .save-hint { color: var(--accent-text); font-size: 12px; margin-left: var(--s2); opacity: 0; transition: opacity .25s; }
+  .save-hint.show { opacity: 1; }
+
+  .list { display: flex; flex-direction: column; gap: var(--s2); position: relative; }
+  .item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: var(--s2) var(--s4) var(--s2) 0;
+    display: flex; align-items: center; gap: var(--s3);
+    cursor: grab;                              /* 可拖暗示①：光标 */
+    user-select: none;
+    transition: transform .2s var(--ease-out), background .15s;  /* 让位动画：200ms ease-out */
+  }
+  @media (hover: hover) {
+    .item:hover { background: var(--surface-2); }
+    .item:hover .handle { color: var(--text); }
+  }
+  .item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .item.armed { background: var(--surface-2); transform: scale(1.005); }  /* 阈值前"被抓住"微反馈 */
+  .item.dragging {
+    transition: none;                          /* 跟手：拖动期禁 transition */
+    position: relative; z-index: 10;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);   /* 拿起反馈：阴影加深（scale 在 inline transform 里） */
+    border-color: rgba(94,106,210,.5);
+    cursor: grabbing;
+  }
+  .handle {
+    flex: 0 0 44px;                            /* 热区：触控 ≥44px 宽 × 整行高 */
+    align-self: stretch; display: grid; place-items: center;
+    color: var(--muted); cursor: grab; touch-action: none;       /* 手柄区禁默认手势 */
+    -webkit-touch-callout: none;
+  }
+  .handle:active { cursor: grabbing; }
+  .item .rank {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(255,255,255,.07); display: grid; place-items: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .item .title { flex: 1; font-size: 15px; user-select: text; cursor: text; }  /* 文本区：可选择，不发起拖拽 */
+  /* 优先级四档 → 色阶+字重映射；仅"紧急"破格用强调色（页面主题即优先级） */
+  .item .tag { font-size: 12px; padding: var(--s1) var(--s2); border-radius: var(--r-sm); flex-shrink: 0; }
+  .tag-urgent { background: var(--accent-soft); color: var(--accent-text); font-weight: 600; }
+  .tag-week   { background: rgba(255,255,255,.09); color: #c9cdd6; }
+  .tag-normal { background: rgba(255,255,255,.06); color: var(--muted); }
+  .tag-low    { background: rgba(255,255,255,.04); color: #6d7280; }
+
+  /* 插入指示线：排序用 2px 指示线 + 其他项让位 */
+  .insert-line {
+    position: absolute; left: var(--s3); right: var(--s3); height: 2px;
+    background: var(--accent); border-radius: 1px;
+    box-shadow: 0 0 0 1px rgba(94,106,210,.25);
+    pointer-events: none;
+  }
+  .insert-line::before, .insert-line::after {
+    content: ''; position: absolute; top: -2px; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent);
+  }
+  .insert-line::before { left: -3px; }
+  .insert-line::after { right: -3px; }
+
+  /* 拖动全程光标接管 / 无效区 no-drop 先验信号 */
+  .drag-active, .drag-active * { cursor: grabbing !important; }
+  .drag-invalid, .drag-invalid * { cursor: no-drop !important; }
+  .committing, .committing * { transition: none !important; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .item { transition: none; }
+    .save-hint { transition: none; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: var(--s5) var(--s3); }
+    h1 { font-size: 22px; }
+    .item .title { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>本周任务优先级</h1>
+  <p class="subtitle">拖动手柄或行体调整顺序，自上而下为执行优先级；键盘聚焦条目后按 Alt+↑/↓ 移动。<span class="save-hint" id="saveHint"></span></p>
+
+  <div class="list" id="list" role="list" aria-label="本周任务优先级列表">
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t1"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">1</span><span class="title">修复登录页在 Safari 的白屏问题</span><span class="tag tag-urgent">紧急</span></div>
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t2"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">2</span><span class="title">完成 Q4 数据报表的数据校验</span><span class="tag tag-week">本周</span></div>
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t3"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">3</span><span class="title">设计评审：新版仪表盘视觉稿</span><span class="tag tag-week">本周</span></div>
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t4"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">4</span><span class="title">编写 API 接口文档 v2.3</span><span class="tag tag-normal">常规</span></div>
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t5"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">5</span><span class="title">重构用户设置的表单组件</span><span class="tag tag-normal">常规</span></div>
+    <div class="item" tabindex="0" role="listitem" aria-roledescription="可排序条目" data-id="t6"><span class="handle" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="7.5" cy="13" r="1.3"/></svg></span><span class="rank">6</span><span class="title">整理竞品分析笔记同步给团队</span><span class="tag tag-low">低优</span></div>
+  </div>
+</div>
+<div class="sr-only" id="live" aria-live="polite"></div>
+
+<script>
+/* ===== 拖拽排序：pointerdown/move/up + setPointerCapture 骨架 + 显式状态机 ===== */
+'use strict';
+const S = { IDLE: 'idle', ARMED: 'armed', DRAGGING: 'dragging', SETTLING: 'settling' };
+// 状态图：idle →(pointerdown 命中拖区) armed →(位移≥阈值) dragging →(pointerup) settling → idle
+//         armed →(pointerup) idle[=点击]   dragging/armed →(Esc/pointercancel) settling[回滚] → idle
+//         非法转移：非 idle 态的第二个 pointerdown / 非当前 pointerId 的事件 —— 吞掉
+let state = S.IDLE;
+let drag = null;          // 当前拖拽上下文
+let scrollRAF = 0, scrollV = 0;
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const list = document.getElementById('list');
+const live = document.getElementById('live');
+const saveHint = document.getElementById('saveHint');
+const line = document.createElement('div');
+line.className = 'insert-line';
+
+const items = () => [...list.querySelectorAll('.item')];
+const titleOf = el => el.querySelector('.title').textContent;
+const tagOf = el => el.querySelector('.tag').textContent;
+const EASE = 'cubic-bezier(.2,.8,.2,1)';
+
+function announce(msg) {
+  live.textContent = '';
+  setTimeout(() => { live.textContent = msg; }, 40);   // 同文案重播需要先清空
+}
+function renumber() {
+  const its = items();
+  its.forEach((el, i) => {
+    el.querySelector('.rank').textContent = i + 1;
+    el.setAttribute('aria-label',
+      `第 ${i + 1} 项，共 ${its.length} 项：${titleOf(el)}，${tagOf(el)}。按住 Alt 加方向键可上下移动`);
+  });
+}
+
+/* ---------- 持久化：排序提交即存 localStorage，刷新恢复 ---------- */
+const STORE_KEY = 'zy-task-order-v1';
+let hintTimer = 0;
+function persist() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(items().map(el => el.dataset.id)));
+    saveHint.textContent = '已自动保存';
+    saveHint.classList.add('show');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => saveHint.classList.remove('show'), 2000);
+  } catch (err) {
+    saveHint.textContent = '保存失败';
+    saveHint.classList.add('show');
+  }
+}
+function restore() {
+  try {
+    const order = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (!Array.isArray(order)) return;
+    const byId = {};
+    items().forEach(el => { byId[el.dataset.id] = el; });
+    order.forEach(id => { if (byId[id]) list.appendChild(byId[id]); });
+  } catch (err) { /* 无存档或解析失败：保持默认顺序 */ }
+}
+
+/* ---------- 指针路径 ---------- */
+list.addEventListener('pointerdown', e => {
+  if (state !== S.IDLE) return;                          // 非法事件吞掉
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const el = e.target.closest('.item');
+  if (!el || !list.contains(el)) return;
+  const onHandle = !!e.target.closest('.handle');
+  const onTitle = !!e.target.closest('.title');
+  // 热区仲裁：触屏仅手柄可发起（行体留给页面滚动）；鼠标=手柄+行体非文本区，标题留给文本选择
+  if (e.pointerType === 'touch' ? !onHandle : (onTitle && !onHandle)) return;
+
+  drag = {
+    el, pointerId: e.pointerId,
+    sx: e.clientX, sy: e.clientY,
+    lx: e.clientX, ly: e.clientY,
+    touch: e.pointerType === 'touch',
+    ins: 0, others: [], slotH: 0, gap: 0, itemH: 0,
+    bounds: null, valid: true, scrollY: window.scrollY
+  };
+  state = S.ARMED;
+  el.classList.add('armed');
+  el.setPointerCapture(e.pointerId);                     // capture 时机：pointerdown 即捕
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onCancelEvt);
+  window.addEventListener('keydown', onEsc, true);
+});
+
+function onMove(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;   // 多指场景只认发起指针
+  const dy = e.clientY - drag.sy, dx = e.clientX - drag.sx;
+  if (state === S.ARMED) {
+    const th = drag.touch ? 10 : 6;                      // 拖动阈值：桌面 6px / 触屏 10px
+    if (dx * dx + dy * dy < th * th) return;
+    beginDrag();
+    state = S.DRAGGING;
+  }
+  if (state !== S.DRAGGING) return;
+  drag.lx = e.clientX; drag.ly = e.clientY;
+
+  // 跟手：单轴锁定（排序只许垂直），1:1 transform，无 transition
+  drag.el.style.transform = `translate3d(0,${dy}px,0) scale(1.02)`;
+  updateDrag();
+  autoScroll(e.clientY);
+}
+
+/* 有效性 + 落点判定：onMove 与滚动补偿共用同一入口，保证指示=落点 */
+function updateDrag() {
+  const x = drag.lx, y = drag.ly;
+  // 有效性判定：列表边界外扩 Y48 / X64，之外=无效区 → no-drop 先验 + 隐藏指示线
+  const b = drag.bounds;
+  drag.valid = y > b.t - 48 && y < b.b + 48 && x > b.l - 64 && x < b.r + 64;
+  document.body.classList.toggle('drag-invalid', !drag.valid);
+  line.style.display = drag.valid ? '' : 'none';
+  if (!drag.valid) { scrollV = 0; return; }
+
+  // 落点判定：pointer-inside + 上下半区 —— 指针越过某 item 中线 → 插入其下；末尾可达
+  let p = 0;
+  while (p < drag.others.length && drag.others[p].cy < y) p++;
+  // 滞后带 ±4px：边界附近保持当前判定不切换
+  const boundary = p === 0
+    ? drag.others[0].top - drag.gap / 2
+    : drag.others[p - 1].top + drag.others[p - 1].h + drag.gap / 2;
+  if (Math.abs(y - boundary) < 4) p = drag.ins;
+  if (p !== drag.ins) { drag.ins = p; reflowOthers(); }
+  placeLine();
+}
+
+function beginDrag() {
+  const its = items();
+  const rects = its.map(el => el.getBoundingClientRect());
+  const idx = its.indexOf(drag.el);
+  drag.gap = its.length > 1 ? rects[1].top - rects[0].bottom : 0;
+  drag.itemH = rects[idx].height;
+  drag.slotH = drag.itemH + drag.gap;
+  // 候选集剔除被拖元素自身；缓存未位移时的 rects，滚动时失效重算
+  drag.others = its.filter(el => el !== drag.el).map(el => {
+    const r = el.getBoundingClientRect();
+    return { el, top: r.top, h: r.height, cy: r.top + r.height / 2, cur: 0 };
+  });
+  drag.ins = idx;                                        // 初始插入位=原位
+  const lr = list.getBoundingClientRect();
+  drag.bounds = { t: lr.top, b: lr.bottom, l: lr.left, r: lr.right };
+  drag.el.classList.remove('armed');
+  drag.el.classList.add('dragging');
+  document.body.classList.add('drag-active');
+  line.style.display = '';
+  list.appendChild(line);
+  placeLine();
+  window.addEventListener('scroll', onScroll, { capture: true, passive: true });
+  scrollRAF = requestAnimationFrame(scrollLoop);
+  announce(`已抓起「${titleOf(drag.el)}」，移动到目标位置松手放下`);
+}
+
+/* 让位：drag 占第 ins 槽 → others[k] 目标槽 = k<ins ? k : k+1（自然槽 = k<orig ? k : k+1） */
+function reflowOthers() {
+  const orig = items().indexOf(drag.el);                 // drag 仍在原 DOM 位，原位=当前 index
+  drag.others.forEach((o, k) => {
+    const natural = k < orig ? k : k + 1;
+    const target = k < drag.ins ? k : k + 1;
+    const t = (target - natural) * drag.slotH;
+    if (t !== o.cur) { o.cur = t; o.el.style.transform = t ? `translateY(${t}px)` : ''; }
+  });
+}
+function placeLine() {
+  const p = drag.ins, os = drag.others;
+  const y = p < os.length
+    ? os[p].top + os[p].cur - drag.gap / 2
+    : os[p - 1].top + os[p - 1].cur + os[p - 1].h + drag.gap / 2;
+  line.style.top = (y - drag.bounds.t) + 'px';
+}
+
+/* 边缘自动滚动（库缺口·自答决策）：视口边 64px 触发，速度线性最高 14px/帧，与判定不冲突 */
+function autoScroll(y) {
+  const m = 64, max = 14, vh = window.innerHeight;
+  scrollV = y < m ? -(1 - y / m) * max : y > vh - m ? (1 - (vh - y) / m) * max : 0;
+}
+function scrollLoop() {
+  if (state === S.DRAGGING && scrollV) window.scrollBy(0, scrollV);
+  if (state === S.DRAGGING) scrollRAF = requestAnimationFrame(scrollLoop);
+}
+function onScroll() {
+  if (state !== S.DRAGGING || !drag) return;
+  const d = window.scrollY - drag.scrollY;
+  if (!d) return;
+  drag.scrollY = window.scrollY;
+  drag.sy -= d;                                          // 视口坐标系平移：让元素钉在指针下
+  drag.el.style.transform = `translate3d(0,${drag.ly - drag.sy}px,0) scale(1.02)`;
+  recacheRects();                                        // rects 失效重算（候选缓存滚动失效）
+  updateDrag();                                          // 内容在指针下滑动：落点需按新 rects 重判
+}
+function recacheRects() {
+  drag.others.forEach(o => {
+    const r = o.el.getBoundingClientRect();
+    o.top = r.top - o.cur;                               // 去掉让位 transform 得自然位
+    o.h = r.height; o.cy = o.top + r.height / 2;
+  });
+  const lr = list.getBoundingClientRect();
+  drag.bounds = { t: lr.top, b: lr.bottom, l: lr.left, r: lr.right };
+}
+
+function onUp(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;
+  if (state === S.ARMED) {                               // 阈值内松手=点击：不拖
+    cleanupPointer();
+    drag.el.classList.remove('armed');
+    state = S.IDLE; drag = null;
+    return;
+  }
+  if (state !== S.DRAGGING) return;
+  cleanupPointer();
+  state = S.SETTLING;
+  settle(!drag.valid);
+}
+function onCancelEvt(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;   // pointercancel 按"无效放下"收尾
+  cancelDrag();
+}
+function onEsc(e) {                                      // Esc 取消通道：全程可中止
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancelDrag(); }
+}
+function cancelDrag() {
+  if (state !== S.DRAGGING && state !== S.ARMED) return;
+  cleanupPointer();
+  if (state === S.ARMED) { drag.el.classList.remove('armed'); state = S.IDLE; drag = null; return; }
+  state = S.SETTLING;
+  settle(true);
+}
+function cleanupPointer() {
+  window.removeEventListener('pointermove', onMove);
+  window.removeEventListener('pointerup', onUp);
+  window.removeEventListener('pointercancel', onCancelEvt);
+  window.removeEventListener('keydown', onEsc, true);
+  window.removeEventListener('scroll', onScroll, { capture: true });
+  cancelAnimationFrame(scrollRAF); scrollV = 0;
+}
+
+/* 落位/回滚：DOM 落定 + WAAPI 收尾动画（禁 transition 瞬间清位，避免与动画叠加） */
+function settle(cancelled) {
+  const el = drag.el;
+  const curTop = el.getBoundingClientRect().top;         // 含 transform 的视觉位置
+  line.remove();
+  document.body.classList.remove('drag-active', 'drag-invalid');
+
+  if (cancelled) {
+    list.classList.add('committing');
+    el.classList.remove('dragging');
+    el.style.transform = '';
+    const backTop = el.getBoundingClientRect().top;
+    list.classList.remove('committing');
+    if (!REDUCED && curTop !== backTop) {
+      el.animate(
+        [{ transform: `translateY(${curTop - backTop}px) scale(1.02)` }, { transform: 'none' }],
+        { duration: 280, easing: EASE });                // 弹回 ≤400ms
+    }
+    drag.others.forEach(o => { o.el.style.transform = ''; });  // 让位动画回收（CSS transition）
+    announce(`已取消，「${titleOf(el)}」保持在第 ${items().indexOf(el) + 1} 位`);
+  } else {
+    const p = drag.ins;
+    list.classList.add('committing');
+    drag.others.forEach(o => { o.el.style.transform = ''; });  // others 已让位到目标槽，瞬清不跳变
+    const ref = drag.others[p] ? drag.others[p].el : null;     // p=others.length → 追加到末位（末位可达）
+    list.insertBefore(el, ref);
+    el.classList.remove('dragging');
+    el.style.transform = '';
+    const newTop = el.getBoundingClientRect().top;
+    list.classList.remove('committing');
+    if (!REDUCED && curTop !== newTop) {
+      el.animate(
+        [{ transform: `translateY(${curTop - newTop}px) scale(1.02)` }, { transform: 'none' }],
+        { duration: 240, easing: EASE });                // 落位动画 240ms
+    }
+    renumber();
+    persist();
+    announce(`「${titleOf(el)}」已放到第 ${p + 1} 位，共 ${items().length} 项`);
+  }
+  state = S.IDLE;
+  drag = null;
+}
+
+/* 拖动中禁右键菜单（触屏长按手柄防系统菜单打断） */
+window.addEventListener('contextmenu', e => { if (state !== S.IDLE) e.preventDefault(); });
+
+/* ---------- 键盘路径：聚焦条目后 Alt+↑/↓ 移动，aria-live 播报 ---------- */
+list.addEventListener('keydown', e => {
+  const el = e.target.closest('.item');
+  if (!el || !e.altKey) return;
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  e.preventDefault();
+  const dir = e.key === 'ArrowUp' ? -1 : 1;
+  const sib = dir < 0 ? el.previousElementSibling : el.nextElementSibling;
+  if (!sib) {
+    announce(`「${titleOf(el)}」已是${dir < 0 ? '第一' : '最后'}一位`);
+    return;
+  }
+  flip([el, sib], () => {
+    if (dir < 0) list.insertBefore(el, sib);
+    else list.insertBefore(el, sib.nextElementSibling);
+  });
+  renumber();
+  persist();
+  announce(`「${titleOf(el)}」已${dir < 0 ? '上' : '下'}移至第 ${items().indexOf(el) + 1} 位`);
+});
+function flip(els, mutate) {                              // FLIP：先量→改 DOM→补动画
+  const before = els.map(el => el.getBoundingClientRect());
+  mutate();
+  if (REDUCED) return;
+  els.forEach((el, i) => {
+    const dy = before[i].top - el.getBoundingClientRect().top;
+    if (dy) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
+      { duration: 200, easing: EASE });
+  });
+}
+
+/* ---------- 初始化 ---------- */
+restore();
+renumber();
+</script>
+</body>
+</html>

@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汇川 Conflux · 工作台</title>
+<style>
+/* ============================================================
+   汇川 Conflux · 工作台（内嵌通知中心）
+   方向卡：清亮 / 紧凑 / 笃定
+   配色：青瓷台账（雾底+纸面+松墨顶栏）· 松绿品牌 · 朱砂专司未读
+   材质：哑光纸面 + 发丝线，装饰手法仅 1 种（顶部青雾光晕）
+   ============================================================ */
+:root{
+  --mist:        #ECEFED;
+  --mist-deep:   #E1E6E2;
+  --surface:     #FDFEFC;
+  --surface-2:   #F5F8F5;
+  --ink:         #1D2622;
+  --ink-2:       #4C5651;
+  --ink-3:       #5F6A62;
+  --line:        #DCE2DC;
+  --line-soft:   #E7EBE6;
+  --topbar:      #141F1A;
+  --topbar-fg:   #AEBCB1;
+  --topbar-fg-2: #EDF2EE;
+  --topbar-line: rgba(255,255,255,.09);
+  --pine:        #0E6E55;
+  --pine-deep:   #0A5743;
+  --pine-tint:   #E2F0EA;
+  --cinnabar:    #C2402A;
+  --cinnabar-deep:#9E3220;
+  --cinnabar-tint:#F9EAE4;
+  --unread-bg:   #FAF4E9;
+  --unread-hover:#F4ECDB;
+  --reply:       #3F5F88;
+  --reply-tint:  #EAEFF5;
+  --sys:         #66716A;
+  --sys-tint:    #EDF0EA;
+  --warn:        #96660F;
+  --ring:        rgba(14,110,85,.4);
+  --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.45,.64,1);
+  --shadow-pop:0 1px 2px rgba(29,38,34,.05),0 8px 24px rgba(29,38,34,.10),0 28px 56px rgba(29,38,34,.11);
+  --shadow-card:0 1px 2px rgba(29,38,34,.04),0 4px 14px rgba(29,38,34,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  font-size:14px;line-height:1.55;
+  color:var(--ink);
+  background:var(--mist);
+  min-height:100vh;
+  font-variant-numeric:tabular-nums;
+}
+/* 唯一装饰手法：页顶一层极淡的青雾光晕（<8%） */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1100px 380px at 50% -140px,rgba(14,110,85,.075),transparent 70%);
+}
+::selection{background:rgba(14,110,85,.18)}
+button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;font-size:inherit}
+a{color:inherit}
+ul{list-style:none}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:4px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ============ 顶栏（深松墨） ============ */
+.topbar{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;padding:0 20px;
+  background:var(--topbar);
+  border-bottom:1px solid var(--topbar-line);
+}
+.tb-left,.tb-right{display:flex;align-items:center;gap:6px;min-width:0}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;margin-right:20px;flex:none}
+.brand-name{color:var(--topbar-fg-2);font-size:14.5px;font-weight:650;letter-spacing:.04em}
+.brand-en{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--topbar-fg);margin-top:1px}
+.nav{display:flex;gap:2px}
+.nav-link{
+  color:var(--topbar-fg);text-decoration:none;font-size:13.5px;
+  padding:6px 12px;border-radius:7px;
+  transition:color .15s,background .15s;
+}
+.nav-link:hover{color:var(--topbar-fg-2);background:rgba(255,255,255,.06)}
+.nav-link.is-current{color:var(--topbar-fg-2);background:rgba(255,255,255,.1);font-weight:600}
+.search-pill{
+  display:flex;align-items:center;gap:8px;height:32px;padding:0 11px;margin-right:4px;
+  border:1px solid var(--topbar-line);border-radius:8px;
+  color:var(--topbar-fg);font-size:12.5px;
+  transition:border-color .15s,color .15s;
+}
+.search-pill:hover{border-color:rgba(255,255,255,.24);color:#D5DDD6}
+.search-pill svg{width:13px;height:13px;flex:none}
+.search-pill kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--topbar-line);border-radius:4px;padding:1px 5px}
+.icon-btn{
+  position:relative;display:grid;place-items:center;
+  width:36px;height:36px;border-radius:9px;
+  color:#C8D2C9;transition:background .15s,color .15s;flex:none;
+}
+.icon-btn:hover{background:rgba(255,255,255,.08);color:var(--topbar-fg-2)}
+.icon-btn[aria-expanded="true"]{background:rgba(255,255,255,.11);color:var(--topbar-fg-2)}
+.icon-btn svg{width:19px;height:19px}
+.bell-svg{transform-origin:50% 4px}
+.bell-svg.swing{animation:bellswing .55s var(--ease-out)}
+@keyframes bellswing{
+  0%{transform:rotate(0)}22%{transform:rotate(13deg)}
+  44%{transform:rotate(-9deg)}64%{transform:rotate(5deg)}
+  82%{transform:rotate(-2.5deg)}100%{transform:rotate(0)}
+}
+.badge{
+  position:absolute;top:0;right:-3px;
+  min-width:17px;height:17px;padding:0 4px;
+  display:grid;place-items:center;
+  background:var(--cinnabar);color:#FDF3EE;
+  font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;
+  border-radius:9px;border:1.5px solid var(--topbar);
+}
+.badge.pop{animation:badgepop .38s var(--ease-spring)}
+@keyframes badgepop{0%{transform:scale(.5)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.me{
+  width:30px;height:30px;border-radius:50%;margin-left:6px;flex:none;
+  background:#3E5C4F;color:#E9F0EA;font-size:12px;font-weight:600;
+  display:grid;place-items:center;border:1px solid var(--topbar-line);
+}
+
+/* ============ 通知面板（纸面 popover） ============ */
+.bell-wrap{position:relative}
+.panel{
+  position:absolute;top:calc(100% + 10px);right:-6px;
+  width:396px;max-width:calc(100vw - 24px);
+  display:flex;flex-direction:column;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:var(--shadow-pop);
+  transform-origin:top right;
+  opacity:0;transform:scale(.97) translateY(-6px);
+  transition:opacity .18s var(--ease-out),transform .18s var(--ease-out);
+  pointer-events:none;z-index:40;
+}
+.panel.is-open{opacity:1;transform:scale(1) translateY(0);pointer-events:auto}
+.panel-head{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 16px 12px;
+  border-bottom:1px solid var(--line-soft);
+  flex:none;
+}
+.panel-title{font-size:15px;font-weight:650;letter-spacing:.01em}
+.u-count{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  color:var(--cinnabar-deep);background:var(--cinnabar-tint);
+  padding:2px 7px;border-radius:20px;
+}
+.markall{
+  margin-left:auto;display:flex;align-items:center;gap:5px;
+  font-size:12.5px;font-weight:560;color:var(--pine);
+  padding:5px 9px;border-radius:7px;
+  transition:background .15s,color .15s;
+}
+.markall:hover{background:var(--pine-tint)}
+.markall:disabled{color:var(--ink-3);opacity:.55;cursor:not-allowed;background:none}
+.markall svg{width:14px;height:14px}
+.panel-scroll{
+  overflow-y:auto;overscroll-behavior:contain;
+  max-height:min(478px,calc(100vh - 170px));
+  scrollbar-width:thin;scrollbar-color:#C6CFC8 transparent;
+}
+.panel-scroll::-webkit-scrollbar{width:6px}
+.panel-scroll::-webkit-scrollbar-thumb{background:#C6CFC8;border-radius:3px}
+/* 列表过长时底部渐隐，提示可继续滚动 */
+.panel-scroll.has-more{
+  mask-image:linear-gradient(to bottom,#000 calc(100% - 40px),transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 40px),transparent 100%);
+}
+.g-head{
+  position:sticky;top:0;z-index:2;
+  display:flex;align-items:center;gap:8px;
+  padding:7px 16px 6px;
+  font-size:11px;font-weight:650;letter-spacing:.14em;color:var(--ink-3);
+  background:var(--surface-2);
+  border-bottom:1px solid var(--line-soft);
+}
+.g-head .g-num{font-family:var(--mono);font-weight:700;letter-spacing:0;color:var(--ink-2)}
+.g-head .g-clear{
+  margin-left:auto;font-size:11.5px;font-weight:500;letter-spacing:0;
+  color:var(--ink-3);padding:2px 7px;border-radius:6px;
+  transition:color .15s,background .15s;
+}
+.g-head .g-clear:hover{color:var(--cinnabar-deep);background:var(--cinnabar-tint)}
+
+/* 通知条目：左头像 + 类型 chip + 两行文本 + 右侧未读点（指示器即操作） */
+.n-item{position:relative;display:flex;transition:background .15s}
+.n-item + .n-item{border-top:1px solid var(--line-soft)}
+.n-item:hover{background:var(--surface-2)}
+.n-item.is-unread{background:var(--unread-bg)}
+.n-item.is-unread:hover{background:var(--unread-hover)}
+.n-item{--flash-end:transparent}
+.n-item.is-unread{--flash-end:var(--unread-bg)}
+.n-item.flash{animation:rowflash 1.4s var(--ease-out)}
+@keyframes rowflash{0%{background:var(--pine-tint)}100%{background:var(--flash-end)}}
+.n-main{
+  display:flex;gap:11px;flex:1;min-width:0;
+  padding:12px 0 12px 14px;
+  text-decoration:none;color:inherit;
+}
+.n-avatar{
+  width:31px;height:31px;border-radius:50%;flex:none;
+  display:grid;place-items:center;
+  font-size:12.5px;font-weight:650;color:#FBFAF5;
+  background:var(--av,#66716A);
+  margin-top:1px;
+}
+.n-body{min-width:0;flex:1}
+.n-line{display:flex;align-items:baseline;gap:7px;min-width:0}
+.n-chip{
+  flex:none;font-size:10.5px;font-weight:650;line-height:1;
+  padding:3px 5px 2.5px;border-radius:5px;letter-spacing:.05em;
+  transform:translateY(-.5px);
+}
+.t-mention{color:var(--cinnabar-deep);background:var(--cinnabar-tint)}
+.t-assign{color:var(--pine-deep);background:var(--pine-tint)}
+.t-reply{color:var(--reply);background:var(--reply-tint)}
+.t-system{color:var(--sys);background:var(--sys-tint)}
+.n-text{
+  min-width:0;font-size:13px;line-height:1.5;color:var(--ink-2);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.is-unread .n-text{color:var(--ink);font-weight:520}
+.n-text b{font-weight:650;color:var(--ink)}
+.n-quote{
+  display:block;margin-top:3px;font-size:12px;color:var(--ink-3);line-height:1.5;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-meta{
+  display:block;margin-top:4px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--ink-3);
+}
+.n-read-btn{
+  position:relative;flex:none;align-self:flex-start;
+  width:34px;height:34px;margin:9px 8px 0 4px;
+  display:grid;place-items:center;border-radius:50%;
+  transition:background .15s;
+}
+.n-read-btn::before{
+  content:"";width:8px;height:8px;border-radius:50%;
+  background:var(--cinnabar);
+  transition:transform .18s var(--ease-out),opacity .15s;
+}
+.n-read-btn svg{
+  position:absolute;width:15px;height:15px;color:var(--pine-deep);
+  opacity:0;transform:scale(.5);transition:opacity .15s,transform .18s var(--ease-spring);
+}
+.n-read-btn:hover{background:var(--pine-tint)}
+.n-read-btn:hover::before{transform:scale(0);opacity:0}
+.n-read-btn:hover svg{opacity:1;transform:scale(1)}
+.n-read-btn:active svg{transform:scale(.85)}
+/* 指示器即操作：点本身就是常驻的未读标志，触屏天然可用；
+   桌面 hover 只是把它"揭开"为确认按钮，不独占功能 */
+@media (hover:hover) and (pointer:fine){
+  .n-read-btn{opacity:.75}
+  .n-item:hover .n-read-btn,.n-read-btn:focus-visible{opacity:1}
+}
+/* 收起 / 入场动画（JS 驱动 max-height） */
+.n-li-collapse{overflow:hidden;border-color:transparent!important;transition:height .26s var(--ease-out),opacity .22s}
+.n-li-enter{animation:nenter .3s var(--ease-out)}
+@keyframes nenter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+.n-li-arrive{animation:narrive .38s var(--ease-out)}
+@keyframes narrive{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+
+/* 空态 */
+.empty{padding:34px 24px 38px;text-align:center}
+.empty svg{margin:0 auto 14px;display:block}
+.empty-t{font-family:var(--serif);font-size:16.5px;font-weight:600;letter-spacing:.02em;margin-bottom:6px}
+.empty-d{font-size:12.5px;color:var(--ink-3);line-height:1.7;max-width:252px;margin:0 auto}
+.empty .empty-cta{
+  margin-top:14px;font-size:12.5px;font-weight:600;color:var(--pine);
+  padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  transition:border-color .15s,background .15s;
+}
+.empty .empty-cta:hover{border-color:var(--pine);background:var(--pine-tint)}
+.zero{padding:26px 20px 24px;text-align:center;border-bottom:1px dashed var(--line)}
+.zero .empty-t{font-size:14.5px}
+.zero svg{margin:0 auto 9px;display:block}
+.panel-foot{
+  flex:none;border-top:1px solid var(--line-soft);
+  padding:9px 16px;text-align:center;
+}
+.panel-foot a{
+  font-size:12.5px;font-weight:560;color:var(--pine);text-decoration:none;
+  display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;
+}
+.panel-foot a:hover{background:var(--pine-tint)}
+.panel-foot svg{width:12px;height:12px}
+
+/* ============ 工作台 ============ */
+.workbench{
+  position:relative;z-index:0;
+  max-width:1080px;margin:0 auto;
+  padding:34px 24px 60px;
+}
+.wb-kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+  color:var(--pine);margin-bottom:10px;
+}
+.wb-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.wb-h1{
+  font-family:var(--serif);font-weight:700;
+  font-size:clamp(26px,3.4vw,34px);letter-spacing:.01em;line-height:1.25;
+}
+.wb-sub{margin-top:8px;font-size:13px;color:var(--ink-2)}
+.wb-sub b{color:var(--ink);font-weight:650}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--pine);color:#F2F7F4;
+  font-size:13px;font-weight:600;
+  padding:9px 16px;border-radius:9px;
+  transition:background .15s,transform .12s;
+}
+.btn-primary:hover{background:var(--pine-deep)}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary svg{width:14px;height:14px}
+.kpis{
+  display:flex;margin:26px 0 28px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow-card);
+}
+.kpi{flex:1;padding:15px 18px 13px}
+.kpi + .kpi{border-left:1px solid var(--line-soft)}
+.kpi-num{font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.kpi-num.warn{color:var(--warn)}
+.kpi-label{margin-top:3px;font-size:11.5px;color:var(--ink-3);letter-spacing:.04em}
+.wb-grid{display:grid;grid-template-columns:1.9fr 1fr;gap:18px;align-items:start}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow-card);
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px 12px;border-bottom:1px solid var(--line-soft);
+}
+.card-title{font-size:13.5px;font-weight:650;letter-spacing:.02em}
+.card-head .more{font-size:12px;color:var(--ink-3);text-decoration:none}
+.card-head .more:hover{color:var(--pine)}
+.task{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 18px;transition:background .15s;
+}
+.task + .task{border-top:1px solid var(--line-soft)}
+.task:hover{background:var(--surface-2)}
+.task-check{
+  width:19px;height:19px;flex:none;border-radius:6px;
+  border:1.5px solid #7C8780;display:grid;place-items:center;
+  transition:border-color .15s,background .15s;
+}
+.task-check svg{width:11px;height:11px;color:#FDFEFC;opacity:0;transform:scale(.5);
+  transition:opacity .15s,transform .18s var(--ease-spring)}
+.task.done .task-check{background:var(--pine);border-color:var(--pine)}
+.task.done .task-check svg{opacity:1;transform:scale(1)}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:13.5px;line-height:1.45}
+.task.done .task-title{color:var(--ink-3);text-decoration:line-through;text-decoration-color:#B9C2BB}
+.task-meta{margin-top:2px;font-size:11.5px;color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.p-chip{font-size:10.5px;font-weight:600;padding:1.5px 6px;border-radius:5px;
+  color:var(--pc,#4C5651);background:var(--pc-bg,#EEF1EE)}
+.due{flex:none;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  padding:3px 8px;border-radius:6px;border:1px solid var(--line)}
+.due.today{color:var(--warn);border-color:#E3D2B0;background:#FBF6EA}
+.side-stack{display:flex;flex-direction:column;gap:18px}
+.proj{padding:12px 18px}
+.proj + .proj{border-top:1px solid var(--line-soft)}
+.proj-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.proj-name{font-size:13px;font-weight:560}
+.proj-pct{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.proj-bar{height:4px;border-radius:2px;background:var(--line-soft);margin-top:8px;overflow:hidden}
+.proj-bar i{display:block;height:100%;border-radius:2px;background:var(--pine);
+  width:var(--w);transition:width .6s var(--ease-out)}
+.who{display:flex;align-items:center;padding:11px 18px}
+.who + .who{border-top:1px solid var(--line-soft)}
+.who-av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-size:11.5px;font-weight:650;color:#FBFAF5;background:var(--av);flex:none;position:relative}
+.who-av::after{content:"";position:absolute;right:-1px;bottom:-1px;width:8px;height:8px;
+  border-radius:50%;background:#2F9A6B;border:2px solid var(--surface)}
+.who-av.away::after{background:#C2C9C2}
+.who-name{margin-left:10px;font-size:13px}
+.who-role{margin-left:auto;font-size:11px;color:var(--ink-3)}
+.wb-foot{
+  margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  font-size:11.5px;color:var(--ink-3);
+}
+.wb-foot .fm{font-family:var(--mono);letter-spacing:.08em}
+
+/* ============ Toast（轻打断） ============ */
+.toast-root{
+  position:fixed;top:66px;right:20px;z-index:70;
+  display:flex;flex-direction:column;gap:12px;width:352px;max-width:calc(100vw - 32px);
+}
+.toast{
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:11px;
+  box-shadow:var(--shadow-pop);
+  padding:12px 12px 13px;
+  animation:toastin .28s var(--ease-out);
+}
+.toast.leaving{animation:toastout .18s ease-in forwards}
+@keyframes toastin{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes toastout{to{opacity:0;transform:translateY(-8px) scale(.98)}}
+.toast-ic{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;
+  background:var(--pine-tint);color:var(--pine-deep);margin-top:1px}
+.toast-ic svg{width:15px;height:15px}
+.toast-body{flex:1;min-width:0}
+.toast-t{font-size:13px;font-weight:600;line-height:1.45}
+.toast-d{font-size:12px;color:var(--ink-3);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast-act{
+  flex:none;font-size:12.5px;font-weight:650;color:var(--pine);
+  padding:5px 9px;border-radius:7px;align-self:center;
+  transition:background .15s;
+}
+.toast-act:hover{background:var(--pine-tint)}
+.toast-x{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;
+  color:var(--ink-3);transition:background .15s,color .15s}
+.toast-x:hover{background:var(--surface-2);color:var(--ink)}
+.toast-x svg{width:12px;height:12px}
+.toast-bar{
+  position:absolute;left:0;bottom:0;height:3px;width:100%;
+  background:var(--pine);opacity:.55;
+  transform-origin:left;transform:scaleX(1);
+}
+
+/* ============ 响应式 / 动效降级 ============ */
+@media (max-width:900px){
+  .wb-grid{grid-template-columns:1fr}
+  .kpis{flex-wrap:wrap}
+  .kpi{flex:1 1 40%}
+}
+@media (max-width:760px){
+  .nav,.search-pill{display:none}
+  .panel{position:fixed;top:64px;right:12px;left:12px;width:auto;transform-origin:top right}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+  .toast-bar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="topbar">
+  <div class="tb-left">
+    <a class="brand" href="#" aria-label="汇川 Conflux 首页">
+      <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="20" height="20" rx="5.5" fill="#0E6E55"/>
+        <path d="M6.5 6.5v9M11 6.5v6.5a2.5 2.5 0 0 0 2.5 2.5h2" stroke="#EDF2EE" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M15.5 6.5v5.5" stroke="#E8A48F" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <span>
+        <span class="brand-name">汇川</span><br>
+        <span class="brand-en">CONFLUX</span>
+      </span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="nav-link is-current" href="#" aria-current="page">工作台</a>
+      <a class="nav-link" href="#">项目</a>
+      <a class="nav-link" href="#">文档</a>
+      <a class="nav-link" href="#">日程</a>
+      <a class="nav-link" href="#">报表</a>
+    </nav>
+  </div>
+  <div class="tb-right">
+    <button class="search-pill" type="button" aria-label="全局搜索，快捷键 Ctrl K">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.5"/><path d="m10.6 10.6 2.9 2.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      搜索任务、文档、成员
+      <kbd>⌘K</kbd>
+    </button>
+    <button class="icon-btn" type="button" aria-label="帮助与快捷键">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.6" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 7.9c0-1.2 1-2.2 2.3-2.2 1.2 0 2.1.9 2.1 2 0 1.4-1.3 1.8-2 2.4-.3.3-.3.7-.3 1.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="13.9" r="1" fill="currentColor"/></svg>
+    </button>
+    <div class="bell-wrap">
+      <button class="icon-btn" id="bellBtn" type="button"
+              aria-expanded="false" aria-controls="notifyPanel" aria-label="通知">
+        <svg class="bell-svg" id="bellSvg" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 2.8c-3 0-4.8 2-4.8 4.7 0 2.6-.7 3.8-1.5 4.6-.4.4-.1 1.1.5 1.1h11.6c.6 0 .9-.7.5-1.1-.8-.8-1.5-2-1.5-4.6 0-2.7-1.8-4.7-4.8-4.7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M8.2 15.8a1.9 1.9 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="badge" id="badge" hidden></span>
+      </button>
+
+      <!-- 通知中心 popover（非模态 Disclosure） -->
+      <section class="panel" id="notifyPanel" role="region" aria-label="通知中心" hidden>
+        <div class="panel-head">
+          <span class="panel-title">通知</span>
+          <span class="u-count" id="uCount" hidden></span>
+          <button class="markall" id="markAllBtn" type="button">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 8.5 3.2 3.2L13 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            全部已读
+          </button>
+        </div>
+
+        <div class="panel-scroll" id="panelScroll">
+          <!-- 未读组 -->
+          <section aria-labelledby="gUnreadHead" id="gUnread">
+            <div class="g-head" id="gUnreadHead">未读 <span class="g-num" id="gUnreadNum"></span></div>
+            <ul id="unreadList"></ul>
+          </section>
+
+          <!-- 零未读态（inbox zero） -->
+          <div class="zero" id="zeroUnread" hidden>
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="15.5" stroke="#0E6E55" stroke-width="1.4" stroke-dasharray="3.5 4"/>
+              <path d="m13.5 20.5 4.5 4.5 8.5-9" stroke="#0E6E55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="empty-t">都处理完了</div>
+            <p class="empty-d">没有未读通知。新的 @提及 和任务指派会第一时间出现在这里。</p>
+          </div>
+
+          <!-- 已读组 -->
+          <section aria-labelledby="gReadHead" id="gRead">
+            <div class="g-head" id="gReadHead">已读
+              <button class="g-clear" id="clearReadBtn" type="button" hidden>清除</button>
+            </div>
+            <ul id="readList"></ul>
+          </section>
+
+          <!-- 全空态 -->
+          <div class="empty" id="emptyAll" hidden>
+            <svg width="76" height="66" viewBox="0 0 76 66" fill="none" aria-hidden="true">
+              <path d="M38 10c-11 0-17.5 7.2-17.5 17 0 9.4-2.5 13.8-5.4 16.7-1.5 1.5-.4 4 1.8 4h42.2c2.2 0 3.3-2.5 1.8-4C58 41.3 55.5 36.9 55.5 27c0-9.8-6.5-17-17.5-17Z" stroke="#AEB9B1" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M33 52a5.2 5.2 0 0 0 10 0" stroke="#AEB9B1" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M20 8.5 15 4M56 8.5l5-4.5" stroke="#C6CFC8" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <div class="empty-t">还没有通知</div>
+            <p class="empty-d">团队有新动态时，会第一时间出现在这里。</p>
+            <button class="empty-cta" id="emptyBack" type="button">回到工作台</button>
+          </div>
+        </div>
+
+        <div class="panel-foot">
+          <a href="#" id="viewAllLink">
+            查看全部历史通知
+            <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6h7M7 3.5 9.5 6 7 8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </section>
+    </div>
+    <span class="me" aria-label="当前用户：沈澜" role="img">澜</span>
+  </div>
+</header>
+
+<!-- ============ 工作台 ============ -->
+<main class="workbench">
+  <div class="wb-kicker">10 月 21 日 · 星期二 · 星野实验室</div>
+  <div class="wb-head">
+    <div>
+      <h1 class="wb-h1">早上好，沈澜</h1>
+      <p class="wb-sub">今天有 <b>3 项任务</b>到期，<b>2 条评审</b>在等你确认。</p>
+    </div>
+    <button class="btn-primary" type="button" id="newTaskBtn">
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      新建任务
+    </button>
+  </div>
+
+  <div class="kpis" role="group" aria-label="本周概览">
+    <div class="kpi"><div class="kpi-num">8</div><div class="kpi-label">进行中任务</div></div>
+    <div class="kpi"><div class="kpi-num">3</div><div class="kpi-label">今日到期</div></div>
+    <div class="kpi"><div class="kpi-num warn">1</div><div class="kpi-label">已逾期</div></div>
+    <div class="kpi"><div class="kpi-num">14</div><div class="kpi-label">本周已完成</div></div>
+  </div>
+
+  <div class="wb-grid">
+    <section class="card" aria-labelledby="taskHead">
+      <div class="card-head">
+        <h2 class="card-title" id="taskHead">今日任务</h2>
+        <a class="more" href="#">全部任务</a>
+      </div>
+      <div id="taskList">
+        <div class="task" data-task>
+          <button class="task-check" aria-label="标记完成：灯塔 CRM 续约流程视觉走查"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">灯塔 CRM · 续约流程视觉走查</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#8A5A2B;--pc-bg:#F4EBDD">灯塔 CRM</span>14:00 评审会前需给出结论</div>
+          </div>
+          <span class="due today">今天 14:00</span>
+        </div>
+        <div class="task" data-task>
+          <button class="task-check" aria-label="标记完成：通知偏好设置页初稿"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">通知偏好设置页 · 视觉初稿</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#3F5F88;--pc-bg:#EAEFF5">移动端 3.0</span>周正衡指派，走查前需过一遍交互稿</div>
+          </div>
+          <span class="due">周四</span>
+        </div>
+        <div class="task" data-task>
+          <button class="task-check" aria-label="标记完成：发票抬头校验规则确认"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">发票抬头校验规则确认</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#5A6B46;--pc-bg:#EDF1E4">计费中心</span>苏晓棠改完规则，等你复核</div>
+          </div>
+          <span class="due today">今天</span>
+        </div>
+        <div class="task done" data-task>
+          <button class="task-check" aria-label="取消完成：周会纪要同步"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">周会纪要同步到项目组</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#5A6B46;--pc-bg:#EDF1E4">计费中心</span>已完成 · 今天 09:40</div>
+          </div>
+          <span class="due">已完成</span>
+        </div>
+        <div class="task" data-task>
+          <button class="task-check" aria-label="标记完成：暗色模式 token 复核"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">暗色模式 token 复核</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#6B5A86;--pc-bg:#EFEAF4">设计系统 2.0</span>与何雨桐结对，重点看语义色阶</div>
+          </div>
+          <span class="due">明天</span>
+        </div>
+        <div class="task" data-task>
+          <button class="task-check" aria-label="标记完成：导出配额说明文案"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="task-body">
+            <div class="task-title">导出配额调整 · 说明文案</div>
+            <div class="task-meta"><span class="p-chip" style="--pc:#8A5A2B;--pc-bg:#F4EBDD">灯塔 CRM</span>给客服团队的对客口径</div>
+          </div>
+          <span class="due">周五</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="side-stack">
+      <section class="card" aria-labelledby="projHead">
+        <div class="card-head"><h2 class="card-title" id="projHead">项目进展</h2><a class="more" href="#">项目</a></div>
+        <div class="proj"><div class="proj-row"><span class="proj-name">灯塔 CRM 改版</span><span class="proj-pct">68%</span></div><div class="proj-bar"><i style="--w:68%"></i></div></div>
+        <div class="proj"><div class="proj-row"><span class="proj-name">移动端 3.0</span><span class="proj-pct">42%</span></div><div class="proj-bar"><i style="--w:42%"></i></div></div>
+        <div class="proj"><div class="proj-row"><span class="proj-name">设计系统 2.0</span><span class="proj-pct">81%</span></div><div class="proj-bar"><i style="--w:81%"></i></div></div>
+      </section>
+
+      <section class="card" aria-labelledby="whoHead">
+        <div class="card-head"><h2 class="card-title" id="whoHead">今天谁在线</h2><span class="more">5 人</span></div>
+        <div class="who"><span class="who-av" style="--av:#4E6A7A">苏</span><span class="who-name">苏晓棠</span><span class="who-role">前端</span></div>
+        <div class="who"><span class="who-av" style="--av:#7C5E42">陈</span><span class="who-name">陈默</span><span class="who-role">产品</span></div>
+        <div class="who"><span class="who-av" style="--av:#6A5C7A">何</span><span class="who-name">何雨桐</span><span class="who-role">设计</span></div>
+        <div class="who"><span class="who-av away" style="--av:#44685A">陆</span><span class="who-name">陆则明</span><span class="who-role">后端 · 离开</span></div>
+        <div class="who"><span class="who-av" style="--av:#7A4E4E">周</span><span class="who-name">周正衡</span><span class="who-role">技术负责人</span></div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="wb-foot">
+    <span>汇川 Conflux · 工作区「星野实验室」</span>
+    <span class="fm">数据更新于 09:47 · 帮助 · 快捷键 ?</span>
+  </footer>
+</main>
+
+<div class="toast-root" id="toastRoot" aria-live="polite"></div>
+<div class="visually-hidden" role="status" id="announcer"></div>
+
+<script>
+/* ============================================================
+   通知中心逻辑
+   数据形态：{id,type,actor,av,act,target,quote,proj,time,unread}
+   type: mention 提及 / assign 指派 / reply 回复 / system 系统
+   ============================================================ */
+const TYPE_LABEL = { mention:'提及', assign:'指派', reply:'回复', system:'系统' };
+const TOAST_TYPES = new Set(['mention','assign']);   // 打断分级：仅"需要本人回应"的走 toast
+
+let notifications = [
+  {id:'n1',type:'mention',actor:'陈默',av:'#7C5E42',act:'在「续约流程走查」的评论中提到了你',
+   quote:'@沈澜 流失预警入口放二级页还是常驻顶栏？下午评审前想定个方向。',proj:'灯塔 CRM',time:'12分钟前',unread:true},
+  {id:'n2',type:'assign',actor:'周正衡',av:'#7A4E4E',act:'把任务指派给你：通知偏好设置页视觉走查',
+   quote:'截止 10月24日（周四）· 优先级：高',proj:'移动端 3.0',time:'38分钟前',unread:true},
+  {id:'n3',type:'reply',actor:'苏晓棠',av:'#4E6A7A',act:'回复了你在「发票抬头校验」下的评论',
+   quote:'校验规则我按昨晚讨论改了，手机号段白名单那段你再看看。',proj:'计费中心',time:'1小时前',unread:true},
+  {id:'n4',type:'system',actor:'汇川助手',av:'#0E6E55',act:'「设计系统 2.0」组件库发布完成',
+   quote:'v2.4.0 已上线 12 个组件，含新的 Toast 与 EmptyState 规范。',proj:'设计系统 2.0',time:'2小时前',unread:true},
+  {id:'n5',type:'reply',actor:'何雨桐',av:'#6A5C7A',act:'回复了你的评论「仪表盘空态插画」',
+   quote:'第三版我倾向留白的方向，明天对一下再定稿。',proj:'设计系统 2.0',time:'昨天 18:24',unread:false},
+  {id:'n6',type:'mention',actor:'陆则明',av:'#44685A',act:'在「数据导出 · 异步队列」中提到了你',
+   quote:'导出超时的兜底页需要你补一句文案，不急，这周就行。',proj:'灯塔 CRM',time:'昨天 16:07',unread:false},
+  {id:'n7',type:'assign',actor:'陈默',av:'#7C5E42',act:'把任务指派给你：续约邮件模板文案走查',
+   quote:'已完成 · 实际用时 40 分钟',proj:'灯塔 CRM',time:'昨天 11:32',unread:false},
+  {id:'n8',type:'system',actor:'汇川助手',av:'#0E6E55',act:'你预约的「报表中心」导出配额已调整',
+   quote:'每日上限 500 → 2000 次，明早 6 点生效。',proj:'报表中心',time:'周一',unread:false},
+  {id:'n9',type:'reply',actor:'周正衡',av:'#7A4E4E',act:'回复了「周会纪要」下你的评论',
+   quote:'OK，通知项拆到偏好设置里这个思路对，继续做。',proj:'团队周会',time:'周一',unread:false},
+];
+
+/* 实时到达池：由定时器推入，模拟真实推送 */
+const ARRIVAL_POOL = [
+  {id:'nA',type:'mention',actor:'苏晓棠',av:'#4E6A7A',act:'在「推送开关交互」的评论中提到了你',
+   quote:'@沈澜 长按二次确认这版我觉得行，你来看一眼再合？',proj:'移动端 3.0',time:'刚刚',unread:true},
+  {id:'nB',type:'reply',actor:'何雨桐',av:'#6A5C7A',act:'回复了你在「暗色模式色阶」下的评论',
+   quote:'表面分层那组我倾向减一档，下午碰一下？',proj:'设计系统 2.0',time:'刚刚',unread:true},
+  {id:'nC',type:'assign',actor:'陈默',av:'#7C5E42',act:'把任务指派给你：续约预警入口方案评审',
+   quote:'截止明天 12:00 · 需要设计侧结论',proj:'灯塔 CRM',time:'刚刚',unread:true},
+];
+
+const $ = s => document.querySelector(s);
+const bellBtn = $('#bellBtn'), bellSvg = $('#bellSvg'), badge = $('#badge');
+const panel = $('#notifyPanel'), panelScroll = $('#panelScroll');
+const unreadList = $('#unreadList'), readList = $('#readList');
+const gUnread = $('#gUnread'), gRead = $('#gRead');
+const gUnreadNum = $('#gUnreadNum'), uCount = $('#uCount');
+const zeroUnread = $('#zeroUnread'), emptyAll = $('#emptyAll');
+const markAllBtn = $('#markAllBtn'), clearReadBtn = $('#clearReadBtn');
+const toastRoot = $('#toastRoot'), announcer = $('#announcer');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let panelOpen = false;
+
+/* ---------- 渲染 ---------- */
+function announce(msg){ announcer.textContent=''; requestAnimationFrame(()=>announcer.textContent=msg); }
+
+function itemHTML(n){
+  return `<li class="n-item${n.unread?' is-unread':''}" data-id="${n.id}">
+    <a class="n-main" href="#" data-act="open" aria-label="${n.actor}${n.act}${n.unread?'，未读，点击标为已读':''}">
+      <span class="n-avatar" style="--av:${n.av}" aria-hidden="true">${n.actor.slice(0,1)}</span>
+      <span class="n-body">
+        <span class="n-line">
+          <span class="n-chip t-${n.type}">${TYPE_LABEL[n.type]}</span>
+          <span class="n-text">${n.type==='system' ? n.act : `<b>${n.actor}</b>${n.act}`}</span>
+        </span>
+        <span class="n-quote">${n.quote}</span>
+        <span class="n-meta">${n.proj} · ${n.time}</span>
+      </span>
+    </a>
+    ${n.unread?`<button class="n-read-btn" data-act="read" aria-label="标为已读：${n.actor}${n.act}">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 8.5 3.2 3.2L13 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>`:''}
+  </li>`;
+}
+
+function renderAll(){
+  const unread = notifications.filter(n=>n.unread);
+  const read   = notifications.filter(n=>!n.unread);
+  unreadList.innerHTML = unread.map(itemHTML).join('');
+  readList.innerHTML   = read.map(itemHTML).join('');
+
+  const u = unread.length, total = notifications.length;
+  gUnreadNum.textContent = u;
+  uCount.textContent = u + ' 条未读';
+  uCount.hidden = u === 0;
+
+  /* 组显隐 */
+  gUnread.hidden = u === 0;
+  gRead.hidden   = read.length === 0;
+  zeroUnread.hidden = !(u === 0 && read.length > 0);
+  emptyAll.hidden   = total !== 0;
+
+  /* 徽标：与未读数唯一对齐，0 时隐藏 */
+  badge.hidden = u === 0;
+  badge.textContent = u > 99 ? '99+' : u;
+  bellBtn.setAttribute('aria-label', u ? `通知，${u} 条未读` : '通知');
+
+  markAllBtn.disabled = u === 0;
+  markAllBtn.title = u === 0 ? '没有未读通知' : '将所有通知标为已读';
+  clearReadBtn.hidden = read.length === 0;
+  updateScrollHint();
+}
+function updateScrollHint(){
+  /* 仅在"可滚且未滚到底"时显示底部渐隐 */
+  const more = panelScroll.scrollHeight - panelScroll.scrollTop - panelScroll.clientHeight > 8;
+  panelScroll.classList.toggle('has-more', more);
+}
+panelScroll.addEventListener('scroll', updateScrollHint);
+
+/* ---------- 面板开关（非模态 Disclosure） ---------- */
+function openPanel(){
+  if(panelOpen) return;
+  panelOpen = true;
+  panel.hidden = false;
+  bellBtn.setAttribute('aria-expanded','true');
+  requestAnimationFrame(()=>{ panel.classList.add('is-open'); updateScrollHint(); });
+}
+function closePanel(restoreFocus){
+  if(!panelOpen) return;
+  panelOpen = false;
+  bellBtn.setAttribute('aria-expanded','false');
+  panel.classList.remove('is-open');
+  const p = panel;
+  setTimeout(()=>{ if(!p.classList.contains('is-open')) p.hidden = true; }, 190);
+  if(restoreFocus) bellBtn.focus();
+}
+bellBtn.addEventListener('click', ()=> panelOpen ? closePanel(false) : openPanel());
+document.addEventListener('pointerdown', e=>{
+  if(panelOpen && !panel.contains(e.target) && !bellBtn.contains(e.target)) closePanel(false);
+});
+panel.querySelector('.panel-foot a').addEventListener('click', e=>{ e.preventDefault(); closePanel(false); });
+$('#emptyBack').addEventListener('click', ()=> closePanel(true));
+$('#viewAllLink').addEventListener('click', e=> e.preventDefault());
+
+/* ---------- 单条已读 / 点击条目 ---------- */
+function collapseThen(li, done){
+  if(reduceMotion){ done(); return; }
+  li.style.height = li.offsetHeight + 'px';
+  li.classList.add('n-li-collapse');
+  requestAnimationFrame(()=>{ li.style.height='0px'; li.style.opacity='0'; });
+  li.addEventListener('transitionend', function h(e){
+    if(e.propertyName !== 'height') return;   // 只认高度收起完成，防 opacity 先结束造成闪断
+    li.removeEventListener('transitionend',h); done();
+  });
+}
+
+function markRead(id, opts={}){
+  const idx = notifications.findIndex(x=>x.id===id);
+  const n = notifications[idx];
+  if(!n || !n.unread) return;
+  n.unread = false;
+  /* 模型重排：移到已读区顶部（与 DOM 落位一致），撤销靠 ORDER 恢复原位 */
+  notifications.splice(idx,1);
+  const firstRead = notifications.findIndex(x=>!x.unread);
+  notifications.splice(firstRead === -1 ? notifications.length : firstRead, 0, n);
+  const li = unreadList.querySelector(`[data-id="${id}"]`);
+  const doMove = ()=>{
+    if(li) li.remove();
+    renderAll();                                  // 数据驱动重排：n 已在已读区顶部
+    const readLi = readList.querySelector(`[data-id="${id}"]`);
+    if(readLi && !reduceMotion) readLi.classList.add('n-li-enter');
+    if(!opts.silent) announce(`已标为已读：${n.actor}${n.act}`);
+  };
+  if(li && !opts.instant){ collapseThen(li, doMove); }
+  else { doMove(); }
+}
+
+panel.addEventListener('click', e=>{
+  const actEl = e.target.closest('[data-act]');
+  if(!actEl) return;
+  const id = actEl.closest('.n-item')?.dataset.id;
+  if(actEl.dataset.act === 'read'){ markRead(id); }
+  else if(actEl.dataset.act === 'open'){
+    e.preventDefault();
+    const n = notifications.find(x=>x.id===id);
+    if(n && n.unread) markRead(id);
+    else if(n) flashItem(id);            // 已读条目点击＝回看定位，给一次高亮反馈
+  }
+});
+
+/* ---------- 全部已读 / 清除已读（Toast + Undo，K12） ---------- */
+let ORDER = notifications.map(n=>n.id);
+let pendingMarkAll = null;   // 全部已读的延迟提交（撤销可取消）
+
+function showUndoToast(text, snapshot){
+  const el = document.createElement('div');
+  el.className = 'toast'; el.setAttribute('role','status');
+  /* 快照绑定到本条 toast 元素——两条 undo toast 共存时各撤各的 */
+  el._snapshot = snapshot;
+  el.innerHTML = `
+    <span class="toast-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="m3 8.5 3.2 3.2L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="toast-body"><span class="toast-t">${text}</span></span>
+    <button class="toast-act" data-t="undo">撤销</button>
+    <button class="toast-x" data-t="close" aria-label="关闭"><svg viewBox="0 0 12 12" fill="none"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    <i class="toast-bar" aria-hidden="true"></i>`;
+  toastRoot.appendChild(el);
+  armTimer(el, 6000);
+  el.querySelector('[data-t="undo"]').addEventListener('click', ()=>{ doUndo(el._snapshot); dismissToast(el); });
+  el.querySelector('[data-t="close"]').addEventListener('click', ()=>dismissToast(el));
+}
+function doUndo(snapshot){
+  if(!snapshot) return;
+  const {ids, kind, items} = snapshot;
+  if(kind === 'read'){
+    clearTimeout(pendingMarkAll); pendingMarkAll = null;   // 取消未提交的全部已读
+    notifications.forEach(n=>{ if(ids.has(n.id)) n.unread = true; });
+    announce(`已恢复 ${ids.size} 条未读`);
+  }else{
+    notifications.push(...items);
+    announce(`已恢复 ${items.length} 条已读通知`);
+  }
+  notifications.sort((a,b)=> ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+  renderAll();
+}
+
+markAllBtn.addEventListener('click', ()=>{
+  if(pendingMarkAll) return;                    // 防连点：上一次全部已读尚未提交
+  const ids = notifications.filter(n=>n.unread).map(n=>n.id);
+  if(!ids.length) return;
+  /* 依次收起的 stagger 编排 */
+  const lis = [...unreadList.children];
+  lis.forEach((li,i)=>{
+    setTimeout(()=>{
+      li.style.height = li.offsetHeight+'px';
+      li.classList.add('n-li-collapse');
+      requestAnimationFrame(()=>{ li.style.height='0px'; li.style.opacity='0'; });
+    }, reduceMotion ? 0 : i*45);
+  });
+  pendingMarkAll = setTimeout(()=>{
+    pendingMarkAll = null;
+    notifications.forEach(n=>n.unread=false);
+    renderAll();
+  }, reduceMotion ? 30 : lis.length*45 + 200);
+  showUndoToast(`已将 ${ids.length} 条标为已读`, {kind:'read', ids:new Set(ids)});
+});
+
+clearReadBtn.addEventListener('click', ()=>{
+  const items = notifications.filter(n=>!n.unread);
+  if(!items.length) return;
+  notifications = notifications.filter(n=>n.unread);
+  renderAll();
+  showUndoToast(`已清除 ${items.length} 条已读通知`, {kind:'clear', items});
+});
+
+/* ---------- 实时到达（打断分级） ---------- */
+let arrivalIdx = 0;
+let toastItems = [];          // 合并池：5s 窗口内合并计数
+
+function arrive(n){
+  notifications.unshift(n);
+  ORDER.unshift(n.id);
+  bellSwing();
+  if(panelOpen){
+    /* 注意力已在面板：零打断，仅列表滑入 */
+    renderAll();
+    const li = unreadList.querySelector(`[data-id="${n.id}"]`);
+    if(li && !reduceMotion) li.classList.add('n-li-arrive');
+    announce(`收到新通知：${n.actor}${n.act}`);
+  }else{
+    renderAll();
+    bumpBadge();
+    if(TOAST_TYPES.has(n.type)) showArrivalToast(n);
+    else announce(`收到新通知：${n.actor}${n.act}`);
+  }
+}
+function bumpBadge(){
+  badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop');
+}
+function bellSwing(){
+  if(reduceMotion) return;
+  bellSvg.classList.remove('swing'); void bellSvg.getBoundingClientRect(); bellSvg.classList.add('swing');
+}
+function flashItem(id){
+  const li = document.querySelector(`.n-item[data-id="${id}"]`);
+  if(!li) return;
+  li.scrollIntoView({block:'nearest'});
+  li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
+}
+function showArrivalToast(n){
+  toastItems.push(n);
+  let el = toastRoot.querySelector('.toast[data-kind="arrival"]');
+  const merged = toastItems.length;
+  const title = merged > 1
+    ? `${n.actor} 等 ${merged} 条新通知`
+    : `${n.actor}${n.act}`;
+  if(!el){
+    el = document.createElement('div');
+    el.className = 'toast'; el.dataset.kind='arrival'; el.setAttribute('role','status');
+    el.innerHTML = `
+      <span class="toast-ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2.2C5.6 2.2 4 3.8 4 6c0 2-.6 2.9-1.2 3.5-.3.3-.1.9.4.9h9.6c.5 0 .7-.6.4-.9C12.6 8.9 12 8 12 6c0-2.2-1.6-3.8-4-3.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6.6 12.6a1.5 1.5 0 0 0 2.8 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+      <span class="toast-body"><span class="toast-t"></span><span class="toast-d"></span></span>
+      <button class="toast-act" data-t="view">查看</button>
+      <button class="toast-x" data-t="close" aria-label="关闭"><svg viewBox="0 0 12 12" fill="none"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      <i class="toast-bar" aria-hidden="true"></i>`;
+    toastRoot.appendChild(el);
+    el.querySelector('[data-t="view"]').addEventListener('click', ()=>{
+      const target = toastItems[toastItems.length-1];
+      dismissToast(el);
+      openPanel();
+      setTimeout(()=>flashItem(target.id), 220);
+    });
+    el.querySelector('[data-t="close"]').addEventListener('click', ()=>dismissToast(el));
+  }else{
+    el.classList.remove('leaving');
+  }
+  el.querySelector('.toast-t').textContent = title;
+  el.querySelector('.toast-d').textContent = n.quote;
+  armTimer(el, 5000);
+}
+/* 计时与进度条同源（rAF 共享 deadline）——hover/focus 暂停即冻结 */
+function armTimer(el, ms){
+  clearTimeout(el._t); cancelAnimationFrame(el._raf);
+  const bar = el.querySelector('.toast-bar');
+  let deadline = Date.now() + ms, paused = false;
+  const tick = ()=>{
+    const left = deadline - Date.now();
+    if(bar) bar.style.transform = `scaleX(${Math.max(left,0)/ms})`;
+    if(left <= 0){ dismissToast(el); return; }
+    el._raf = requestAnimationFrame(tick);
+  };
+  el._raf = requestAnimationFrame(tick);
+  const pause = ()=>{ if(paused) return; paused=true; cancelAnimationFrame(el._raf); el._left = deadline - Date.now(); };
+  const resume = ()=>{ if(!paused) return; paused=false; deadline = Date.now() + el._left; el._raf = requestAnimationFrame(tick); };
+  el.onpointerenter = pause; el.onpointerleave = resume;
+  el.onfocusin = pause;    el.onfocusout = resume;
+  if(el.matches(':hover') || el.contains(document.activeElement)) pause();  // 合并更新时指针可能已在内
+}
+function dismissToast(el){
+  cancelAnimationFrame(el._raf);
+  if(el.dataset.kind === 'arrival') toastItems = [];
+  if(el.isConnected){
+    el.classList.add('leaving');
+    el.addEventListener('animationend', ()=>el.remove(), {once:true});
+    if(reduceMotion) el.remove();
+  }
+}
+
+/* Esc：先关 toast，再关面板并归还焦点（K14·浮层焦点栈） */
+document.addEventListener('keydown', e=>{
+  if(e.key !== 'Escape') return;
+  const top = toastRoot.querySelector('.toast:last-child');
+  if(top){ dismissToast(top); return; }
+  if(panelOpen){ closePanel(true); }
+});
+
+/* ---------- 工作台微交互：任务完成切换 / 新建任务 ---------- */
+document.querySelectorAll('.task-check').forEach(btn=>{
+  btn.setAttribute('aria-pressed', btn.closest('.task').classList.contains('done'));
+  btn.addEventListener('click', ()=>{
+    const t = btn.closest('.task');
+    t.classList.toggle('done');
+    btn.setAttribute('aria-pressed', t.classList.contains('done'));
+  });
+});
+document.getElementById('newTaskBtn').addEventListener('click', ()=>{
+  const row = document.createElement('div');
+  row.className = 'task'; row.dataset.task = '';
+  row.innerHTML = `
+    <button class="task-check" aria-pressed="false" aria-label="标记完成：新任务草稿"><svg viewBox="0 0 12 12" fill="none"><path d="m2.5 6.5 2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="task-body">
+      <div class="task-title">新任务草稿 · 双击命名</div>
+      <div class="task-meta"><span class="p-chip" style="--pc:#5A6B46;--pc-bg:#EDF1E4">未分配项目</span>刚创建，还没有到期时间</div>
+    </div>
+    <span class="due">待定</span>`;
+  const list = document.getElementById('taskList');
+  list.insertBefore(row, list.firstChild);
+  row.querySelector('.task-check').addEventListener('click', function(){
+    row.classList.toggle('done');
+    this.setAttribute('aria-pressed', row.classList.contains('done'));
+  });
+  if(!reduceMotion){ row.style.animation = 'nenter .3s var(--ease-out)'; }
+});
+
+/* ---------- 演示页死链接拦截（仅演示环境） ---------- */
+document.querySelectorAll('a[href="#"]').forEach(a=>{
+  a.addEventListener('click', e=>e.preventDefault());
+});
+
+/* ---------- 模拟实时推送：5s / 22s / 40s 各到达一条 ---------- */
+renderAll();
+[5000, 22000, 40000].forEach((ms,i)=>{
+  setTimeout(()=>{ const n = ARRIVAL_POOL[i]; if(n) arrive(n); }, ms);
+});
+</script>
+</body>
+</html>

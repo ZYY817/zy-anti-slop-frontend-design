@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>case06 定价页生成对照 · 墨迹 Inkwell</title>
+<style>
+  body{margin:0;background:#141210;color:#d8d2c4;font:14px/1.6 system-ui,sans-serif}
+  header{padding:20px 28px;border-bottom:1px solid #2a2620;display:flex;gap:24px;align-items:baseline;flex-wrap:wrap}
+  h1{font-size:16px;margin:0;font-weight:600}
+  .meta{opacity:.6;font-size:12px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2a2620}
+  .col{background:#141210;min-width:0}
+  .col h2{padding:12px 20px;margin:0;font-size:13px;letter-spacing:.08em;border-bottom:1px solid #2a2620;display:flex;justify-content:space-between;align-items:center}
+  .col h2 a{font-size:11px;color:#8a8272;text-decoration:none}
+  .col h2 a:hover{color:#d9a24b}
+  iframe{display:block;width:100%;height:calc(100vh - 130px);border:0;background:#000}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>case06 · 定价页（货架页）生成对照</h1>
+  <span class="meta">墨迹 Inkwell · Free/Pro ¥68·Studio ¥168 · 两方案并行盲比</span>
+  <span class="meta"><a href="brief.md" style="color:#8a8272">任务书</a> · <a href="record.md" style="color:#8a8272">记录</a></span>
+</header>
+<div class="cols">
+  <div class="col">
+    <h2>方案 armM <a href="armM.html" target="_blank">新窗口打开 ↗</a></h2>
+    <iframe src="armM.html" title="armM"></iframe>
+  </div>
+  <div class="col">
+    <h2>方案 armN <a href="armN.html" target="_blank">新窗口打开 ↗</a></h2>
+    <iframe src="armN.html" title="armN"></iframe>
+  </div>
+</div>
+</body>
+</html>

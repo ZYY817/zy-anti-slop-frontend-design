@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>墨迹落地页 · W0 vs W1 vs W2 对照</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: system-ui, sans-serif; background:#111; color:#eee; height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:16px; padding:10px 20px; border-bottom:1px solid #333; font-size:13px; flex-wrap:wrap; }
+  header b { color:#8f98e8; }
+  header .hint { color:#888; font-size:12px; }
+  .cols { flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#333; }
+  .col { display:flex; flex-direction:column; background:#000; }
+  .col h2 { font-size:12.5px; padding:8px 12px; background:#1a1a1a; color:#bbb; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+  .col h2 .tag { font-size:11px; font-weight:400; color:#777; }
+  .col h2 a { color:#6f79d8; font-weight:400; }
+  .col.win h2 { color:#8fd8a0; }
+  .col.user h2 { color:#d8b06f; }
+  iframe { flex:1; width:100%; border:none; background:#fff; }
+</style>
+</head>
+<body>
+<header>
+  <b>case05 落地页 · 三轮演进</b>
+  <span>W0 裸跑 64-66（结构好但 hero 死 CTA=P0）｜ W1 武装·B86 80（皮全对·骨输：用户终审判负）｜ <b style="color:#8fd8a0">W2 武装·B86+B87结构卡 79（骨皮双答）</b></span>
+  <span class="hint">演进链：方向卡修"正确但冷" → 呼吸峰修"笃定但满" → 结构卡修"皮对骨输"——W2 hero 把产品窗口当证据不是装饰，区块逐块报岗，每个主张配 show</span>
+</header>
+<div class="cols">
+  <div class="col user"><h2>W0 · 裸跑 <span class="tag">大实证窗 / 但页尾死 CTA</span><a href="w0.html" target="_blank">↗</a></h2><iframe src="w0.html"></iframe></div>
+  <div class="col"><h2>W1 · 武装·B86词库 <span class="tag">案上墨 / 皮对骨输</span><a href="w1.html" target="_blank">↗</a></h2><iframe src="w1.html"></iframe></div>
+  <div class="col win"><h2>W2 · 武装+B87结构卡 <span class="tag">深夜书房 / 六岗齐全·全主张配证据</span><a href="w2.html" target="_blank">↗</a></h2><iframe src="w2.html"></iframe></div>
+</div>
+</body>
+</html>

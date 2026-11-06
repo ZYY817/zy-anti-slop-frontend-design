@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墨迹 Inkwell — 打开，就是稿纸</title>
+<meta name="description" content="墨迹 Inkwell：为写作者做的极简桌面笔记。打开即写、无文件夹、双向链接。macOS 与 Windows 客户端，本地优先，不注册也能用。">
+<meta name="theme-color" content="#16120D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2316120D'/%3E%3Crect x='14' y='12' width='36' height='40' rx='4' fill='%23F2EDDF'/%3E%3Crect x='30' y='20' width='4' height='18' fill='%23D9A24B'/%3E%3C/svg%3E">
+<script>/* 尽早挂 .js，入场隐藏态随 CSS 即生效，避免先见后隐 */
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('js')}</script>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   「灯下稿纸 NIGHT DESK」· 墨迹 Inkwell 落地页
+   结构卡先于方向卡：论证页 / 论证链 / 逐块报岗
+   hero=勾住+定向+证据件(亮窗) → f1证明(实测) → f2证明→深化(搜索演示)
+   → f3深化(反链+图谱) → 引语信任(换气) → Q&A排疑 → 亮页收口
+   色板来源：深夜书房——墨夜 + 钨丝灯 + 稿纸
+   色岗：琥珀=动作(≤5处) / 纸白阶=信息 / 稿纸=证据件底(亮块)
+   字岗：宋体=表达 / sans=界面 / mono=数据(边注·状态·规格)
+   母题：被照亮的一块（hero亮窗 → 三块亮面板 → 收口整张亮页）
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --night:#16120D;               /* 墨夜底 */
+  --night-2:#1D1710;             /* 微抬表面 */
+  --line:rgba(236,230,214,.10);  /* hairline α 档 */
+  --line-2:rgba(236,230,214,.18);
+  --ink:#ECE6D6;                 /* 纸白正文 on 墨夜（非纯白） */
+  --ink-72:rgba(236,230,214,.72);/* ≈5.5:1 次级 */
+  --ink-55:rgba(236,230,214,.55);/* ≈4.5:1 小字下限 */
+  --ink-38:rgba(236,230,214,.38);/* 仅装饰/大字，不作正文 */
+  --paper:#F2EDDF;               /* 稿纸亮块 */
+  --paper-2:#E9E3D1;
+  --p-ink:#272218;               /* 墨 on 稿纸 */
+  --p-ink-68:rgba(39,34,24,.68); /* ≈6.8:1 */
+  --p-ink-48:rgba(39,34,24,.48); /* ≈4.6:1 小字下限 */
+  --p-ink-30:rgba(39,34,24,.30); /* 仅装饰 */
+  --p-line:rgba(39,34,24,.13);
+  --amber:#D9A24B;               /* 钨丝 on 墨夜 ≈6.4:1 */
+  --amber-2:#E4B366;
+  --amber-soft:rgba(217,162,75,.16);
+  --amber-p:#8A5A1B;             /* 深钨 on 稿纸 ≈5.3:1（跨底校准 #37） */
+  --amber-p-soft:rgba(138,90,27,.11);
+  --ease:cubic-bezier(.19,1,.22,1);  /* 全页唯一签名缓动：从容 */
+  --serif:"Songti SC","STSong","STZhongsong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:88px;overflow-x:clip}
+body{
+  background:var(--night);color:var(--ink);
+  font:15.5px/1.85 var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:clip;               /* clip 不建滚动容器，保住 .top 的 sticky；hidden 会废掉它 */
+}
+::selection{background:var(--amber);color:#1C1509}
+.skip{position:absolute;left:-9999px;top:0;background:var(--amber);color:#1C1509;
+  padding:10px 16px;z-index:200;font-weight:600;text-decoration:none;border-radius:0 0 8px 0}
+.skip:focus{left:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:2px}
+/* 亮底（稿纸/面板/收口）上的焦点环换深钨——琥珀在浅底只剩 ~1.9:1 */
+.win :focus-visible,.panel :focus-visible,.cta :focus-visible{outline-color:var(--amber-p)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+.mono{font-family:var(--mono)}
+/* 纸感噪点：全页统一材质，单层 ≤4% */
+body::after{
+  content:"";position:fixed;inset:0;z-index:120;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.045;mix-blend-mode:overlay;
+}
+h1,h2,h3{font-family:var(--serif);font-weight:600}
+.kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  color:var(--ink-55);text-transform:uppercase;
+}
+.kicker::before{
+  content:"";display:inline-block;width:22px;height:1px;
+  background:var(--ink-38);vertical-align:.28em;margin-right:11px;
+}
+
+/* ── 顶栏（L4 收紧带）────────────────────────────── */
+.top{
+  position:sticky;top:0;z-index:60;
+  background:var(--night);border-bottom:1px solid var(--line);
+}
+.top-in{display:flex;align-items:center;gap:26px;min-height:58px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:9px;text-decoration:none;color:var(--ink)}
+.brand b{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.06em}
+.brand i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--ink-55)}
+.nav{display:flex;gap:24px;margin-left:auto}
+.nav a{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+  color:var(--ink-72);text-decoration:none;padding:12px 4px;
+}
+.ver{font-family:var(--mono);font-size:10.5px;color:var(--ink-55);letter-spacing:.08em}
+
+/* ── 按钮 ──────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:.55em;
+  padding:.8em 1.75em;border-radius:7px;border:1px solid transparent;
+  background:var(--amber);color:#1C1509;
+  font-weight:600;font-size:.94rem;letter-spacing:.03em;text-decoration:none;
+  cursor:pointer;
+}
+.btn--sm{padding:.5em 1.15em;font-size:.82rem;min-height:44px}
+.btn--ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
+.btn--paper{background:var(--amber-p);color:#FBF6E7}
+.btn--ghost-p{background:transparent;color:var(--p-ink);border-color:var(--p-ink-30)}
+.tlink{
+  color:var(--ink);font-weight:500;font-size:.93rem;text-decoration:none;
+  border-bottom:1px solid var(--ink-38);padding-bottom:.12em;
+}
+
+/* ── Hero（呼吸峰 L1.5 · signature 峰值：点灯的窗口）── */
+.hero{padding-top:clamp(72px,9vw,116px)}
+.hero-copy{max-width:680px;margin:0 auto;text-align:center;position:relative}
+.hero h1{
+  font-size:clamp(48px,8vw,92px);line-height:1.16;letter-spacing:.015em;
+  margin:.42em 0 .38em;word-break:keep-all;
+}
+.hero h1 .line{display:block;overflow:hidden}
+.hero h1 .line>span{display:inline-block}
+.deck{
+  max-width:34em;margin:0 auto;color:var(--ink-72);
+  font-size:clamp(15px,1.6vw,16.5px);line-height:1.9;
+}
+.acts{display:flex;gap:22px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:34px}
+.micro{margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-55)}
+
+/* 证据件：大而亮的实界面窗口（稿纸亮块 #1） */
+.win-wrap{position:relative;margin-top:clamp(52px,7vw,76px)}
+.lamp{                                       /* 唯一持续光源：径向暖光，signature 配额的载体 */
+  position:absolute;left:50%;top:-14%;z-index:0;
+  width:min(1180px,132vw);height:150%;transform:translateX(-50%);
+  background:radial-gradient(ellipse 46% 40% at 50% 32%,
+    rgba(222,168,86,.20),rgba(222,168,86,.06) 48%,transparent 70%);
+  pointer-events:none;
+}
+.win{
+  position:relative;z-index:1;max-width:940px;margin:0 auto;
+  background:var(--paper);color:var(--p-ink);
+  border-radius:12px;overflow:hidden;text-align:left;
+  box-shadow:
+    0 50px 100px -34px rgba(8,6,3,.85),           /* 暖黑接触影，非纯黑（R20#31） */
+    0 0 90px -18px rgba(222,168,86,.28);          /* 灯晕外溢 */
+}
+.win-bar{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 18px;border-bottom:1px solid var(--p-line);background:var(--paper-2);
+}
+.dots{display:flex;gap:7px;flex:none}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--p-ink-30);display:block}
+.win-title{
+  flex:1;text-align:center;font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--p-ink-48);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.win-meta{font-family:var(--mono);font-size:10.5px;color:var(--p-ink-48);flex:none}
+.win-body{padding:clamp(26px,4.5vw,46px) clamp(20px,5.5vw,66px) clamp(26px,4vw,40px)}
+.w-date{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--p-ink-48);margin-bottom:16px}
+.w-h{font-family:var(--serif);font-weight:600;font-size:clamp(20px,2.6vw,26px);letter-spacing:.02em;margin-bottom:16px}
+.win-body>p:not(.w-date):not(.w-cur){color:var(--p-ink-68);font-size:clamp(14px,1.5vw,15.5px);margin-bottom:.85em;max-width:62ch}
+.lk{font-weight:600;color:var(--p-ink);white-space:nowrap;
+  background:rgba(39,34,24,.07);border-bottom:1px solid var(--p-ink-30);
+  border-radius:2px;padding:0 .14em}
+.w-cur{margin-bottom:0}
+.caret{                      /* 光标=母题：琥珀者两处（hero、收口），墨者在演示面板内 */
+  display:inline-block;width:2px;height:1.1em;background:var(--p-ink);
+  vertical-align:-.18em;margin-left:1px;
+}
+.caret--lamp{background:var(--amber-p)}
+.win-foot{
+  display:flex;gap:22px;align-items:center;flex-wrap:wrap;
+  padding:11px 18px;border-top:1px solid var(--p-line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--p-ink-48);
+}
+.win-foot .wr{margin-left:auto}
+.win-cap{
+  margin-top:18px;text-align:center;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;color:var(--ink-55);
+}
+
+/* ── 边注 marginalia：手稿栅格的宽边距批注（≥1320 挂页边——需 ≥118+20px 外边距）── */
+.copy{position:relative}
+.mnote{
+  position:absolute;top:.4em;right:calc(100% + 20px);width:118px;
+  font-family:var(--mono);font-size:10px;line-height:1.8;letter-spacing:.04em;
+  color:var(--ink-55);text-align:right;
+  border-right:1px solid var(--line-2);padding-right:12px;
+}
+.feat--flip .mnote{
+  right:auto;left:calc(100% + 20px);text-align:left;
+  border-right:none;border-left:1px solid var(--line-2);padding:0 0 0 12px;
+}
+.mnote b{display:block;font-weight:500;color:var(--ink-72)}
+
+/* ── 特性区（claim→show 交替；亮块 #2-4 为次级，无光晕）── */
+.feat{padding-block:clamp(72px,9vw,108px)}
+.feat+.feat,.qna,.quote{border-top:1px solid var(--line)}
+.f-grid{
+  display:grid;grid-template-columns:5fr 6.4fr;
+  gap:clamp(44px,6vw,88px);align-items:center;
+}
+.feat--flip .f-grid{grid-template-columns:6.4fr 5fr}
+.feat--flip .copy{order:2}
+.feat--flip .fig{order:1}
+.copy h2{
+  font-size:clamp(26px,3.6vw,36px);line-height:1.4;letter-spacing:.015em;
+  margin:.5em 0 .55em;
+}
+.copy>p{color:var(--ink-72);max-width:42ch}
+.copy--wide{max-width:660px}
+.fig--below{margin-top:clamp(36px,5vw,56px)}
+.pts{list-style:none;margin-top:1.5em}
+.pts li{position:relative;padding-left:1.7em;margin-top:.65em;color:var(--ink-72);font-size:14.5px}
+.pts li::before{content:"";position:absolute;left:0;top:.85em;width:1.05em;height:1.5px;background:var(--ink-38)}
+.pts b{color:var(--ink);font-weight:600}
+.meta{
+  margin-top:1.7em;padding-top:1.1em;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--ink-55);
+}
+
+/* 亮块面板：证据件共享材质（稿纸），内部信息密度收紧作对照 */
+.panel{
+  background:var(--paper);color:var(--p-ink);border-radius:10px;
+  box-shadow:0 30px 70px -34px rgba(8,6,3,.8);
+  padding:clamp(18px,2.6vw,26px);
+}
+.p-label{font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:var(--p-ink-48)}
+
+/* 面板 1 · 打开即写：实测演示（数字证据+键帽+不存在的步骤） */
+.p1-top{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.p1-top b{font-family:var(--mono);font-weight:600;font-size:clamp(30px,4.5vw,42px);letter-spacing:-.03em;line-height:1}
+.p1-top b i{font-style:normal;font-size:.42em;color:var(--p-ink-48);margin-left:.08em}
+.p1-mid{
+  display:flex;align-items:center;gap:12px;margin:20px 0 18px;
+  padding:14px 16px;background:rgba(39,34,24,.05);
+  border:1px solid var(--p-line);border-radius:8px;
+}
+.key{
+  display:inline-block;font-family:var(--mono);font-size:12.5px;color:var(--p-ink);
+  background:var(--paper);border:1px solid var(--p-line);border-bottom-width:3px;
+  border-radius:6px;padding:.28em .6em;line-height:1.4;
+}
+.p1-arrow{color:var(--p-ink-30);flex:none;font-family:var(--mono)}
+.p1-field{flex:1;min-width:0;display:flex;align-items:center;font-size:13.5px;color:var(--p-ink-48)}
+.p1-field .ghost{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.no{list-style:none;display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:6px}
+.no li{font-family:var(--mono);font-size:11px;color:var(--p-ink-48)}
+.no li::before{content:"× ";color:var(--p-ink-30)}
+.p1-foot{margin-top:18px;padding-top:13px;border-top:1px solid var(--p-line);
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* 面板 2 · 无文件夹：搜索演示（真实查询+命中高亮） */
+.p2-head{display:flex;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--p-line)}
+.p2-search{display:flex;align-items:center;gap:2px;padding:14px 2px 13px;border-bottom:1px solid var(--p-line)}
+.p2-search .q{font-size:15.5px;font-weight:600;color:var(--p-ink)}
+.p2-search .ms{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--p-ink-48);flex:none;padding-left:12px}
+.hits{list-style:none}
+.hits li{padding:13px 2px;border-bottom:1px solid var(--p-line)}
+.hits .h-t{display:flex;justify-content:space-between;gap:14px;font-weight:600;font-size:13.5px;color:var(--p-ink)}
+.hits .h-t time{font-family:var(--mono);font-weight:400;font-size:10.5px;color:var(--p-ink-48);flex:none;padding-top:.2em}
+.hits p{font-size:12.5px;color:var(--p-ink-48);margin-top:.3em}
+.hits em{font-style:normal;color:var(--amber-p);background:var(--amber-p-soft);border-radius:2px;padding:0 .12em}
+.p2-foot{padding-top:13px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--p-ink-48)}
+
+/* 面板 3 · 双向链接：文档+反链（暗底图阵在 .gmap） */
+.p3-cols{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(18px,3vw,26px)}
+.p3-doc .p-label{display:block;margin-bottom:12px}
+.p3-doc p.txt{font-size:13.5px;color:var(--p-ink-68);line-height:1.9}
+.p3-back{border-left:1px solid var(--p-line);padding-left:clamp(16px,2.4vw,24px)}
+.p3-back ul{list-style:none;margin-top:12px}
+.p3-back li{font-size:13px;color:var(--p-ink-68);margin-top:.5em}
+.p3-back li::before{content:"←";color:var(--amber-p);margin-right:.55em}
+.gmap{margin-top:clamp(30px,4vw,44px)}
+.gmap .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.gmap svg{display:block;min-width:640px;width:100%;height:auto}
+.gmap .gcap{margin-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;color:var(--ink-55)}
+.g-edge{stroke:var(--ink-38);stroke-opacity:.35;stroke-width:1}
+.g-edge.h{stroke:var(--amber);stroke-opacity:.5}
+.g-node{fill:var(--ink-38)}
+.g-hot{fill:var(--amber)}
+.g-ring{fill:none;stroke:var(--amber);stroke-opacity:.4;stroke-width:1}
+.g-txt{fill:var(--ink-55);font-family:var(--mono);font-size:12.5px;letter-spacing:.04em}
+.g-txt.hot{fill:var(--amber-2);font-weight:600}
+
+/* ── 引语（信任岗 · 兼换气：休止拍）── */
+.quote{padding-block:clamp(72px,9vw,108px)}
+.quote blockquote{max-width:680px;margin:0 auto;text-align:center}
+.quote p{
+  font-family:var(--serif);font-size:clamp(22px,3.2vw,30px);line-height:1.7;
+  letter-spacing:.02em;color:var(--ink);
+}
+.quote footer{margin-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-55)}
+
+/* ── 排疑（Q&A：收紧区 L3，发丝线列表）── */
+.qna{padding-block:clamp(72px,9vw,108px)}
+.qna-col{max-width:720px;margin:0 auto;position:relative}
+.qna h2{font-size:clamp(26px,3.6vw,36px);letter-spacing:.015em;margin:.5em 0 1.1em}
+.qa{border-top:1px solid var(--line)}
+.qa>div{padding:22px 0;border-bottom:1px solid var(--line)}
+.qa dt{font-family:var(--serif);font-size:clamp(16px,1.9vw,18.5px);font-weight:600;letter-spacing:.02em;color:var(--ink)}
+.qa dd{margin-top:.55em;color:var(--ink-72);font-size:14.5px;max-width:56ch}
+
+/* ── 收口：整张稿纸点亮（亮块峰值回放 · 回扣主张句）── */
+.cta{background:var(--paper);color:var(--p-ink);text-align:center;padding-block:clamp(80px,10vw,124px)}
+.cta .kicker{color:var(--p-ink-48)}
+.cta .kicker::before{background:var(--p-ink-30)}
+.cta h2{font-size:clamp(34px,5.6vw,56px);letter-spacing:.02em;line-height:1.3;margin:.4em 0 .3em}
+.cta h2 .caret{background:var(--amber-p);height:.92em;vertical-align:-.12em}
+.cta .sub{color:var(--p-ink-68);max-width:34em;margin:0 auto}
+.cta .acts{margin-top:36px}
+.cta .micro{color:var(--p-ink-48)}
+.cta .chips{
+  margin-top:26px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--p-ink-48);
+}
+
+/* ── 页脚行（L4 收紧带）── */
+.foot{border-top:1px solid var(--line);padding-block:26px 30px}
+.foot-in{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.foot-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--ink-55)}
+.foot-links{display:flex;gap:20px;margin-left:auto;flex-wrap:wrap}
+.foot-links a{font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:var(--ink-55);text-decoration:none;padding:10px 2px}
+
+/* ── 动效：双轨 ──────────────────────────────────
+   productive: hover/focus/按压 150ms；
+   expressive: 仅 hero 点灯编排一处（~1.4s）；
+   持续动效仅光标 blink（功能件）。 */
+@media (hover:hover) and (pointer:fine){
+  .nav a,.foot-links a,.tlink,.btn,.key{transition:color .15s var(--ease),background .15s var(--ease),border-color .15s var(--ease),transform .15s var(--ease),opacity .15s var(--ease)}
+  .nav a:hover,.foot-links a:hover{color:var(--amber)}
+  .tlink:hover{color:var(--amber);border-color:var(--amber)}
+  .btn:hover{background:var(--amber-2);transform:translateY(-1px)}
+  .btn--ghost:hover{border-color:var(--amber);color:var(--amber);background:transparent}
+  .btn--paper:hover{background:#7A4E15;transform:translateY(-1px)}
+  .btn--ghost-p:hover{border-color:var(--p-ink);background:transparent}
+  .btn:active{transform:translateY(0);transition-duration:0ms}
+}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+  /* hero 点灯编排（expressive 唯一配额） */
+  .js .hero .a0{opacity:0;animation:fade .6s var(--ease) both .05s}
+  .js .hero h1 .line>span{transform:translateY(114%);animation:up .85s var(--ease) both}
+  .js .hero h1 .line:nth-child(2)>span{animation-delay:.14s}
+  .js .hero .a2{opacity:0;transform:translateY(16px);animation:rise .7s var(--ease) both .36s}
+  .js .hero .a3{opacity:0;transform:translateY(16px);animation:rise .7s var(--ease) both .5s}
+  .js .hero .a4{opacity:0;animation:fade .7s var(--ease) both .62s}
+  .js .lamp{opacity:0;animation:lampOn 1.7s var(--ease) both .55s}
+  .js .win{opacity:0;transform:translateY(28px);animation:rise .95s var(--ease) both .66s}
+  .js .win-cap{opacity:0;animation:fade .6s var(--ease) both 1.15s}
+  /* 滚动入场：一次，不重复 */
+  .js .reveal{opacity:0;transform:translateY(16px);
+    transition:opacity .64s var(--ease),transform .64s var(--ease)}
+  .js .reveal.in{opacity:1;transform:none}
+  .js .d1{transition-delay:.07s}.js .d2{transition-delay:.14s}
+  @keyframes up{to{transform:none}}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes fade{to{opacity:1}}
+  @keyframes lampOn{to{opacity:1}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .caret{animation:blink 1.2s steps(1) infinite}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* ── 破格回退 + 响应式重排 ───────────────────────── */
+@media (max-width:1319px){
+  .mnote{position:static;width:auto;text-align:left;
+    border-right:none;border-left:1px solid var(--line-2);
+    padding:0 0 0 12px;margin:0 0 20px}
+  .feat--flip .mnote{margin:0 0 20px}
+}
+@media (min-width:961px){
+  .gmap{margin-right:calc(-1*((100vw - min(1040px,100vw))/2 + clamp(20px,4vw,40px)))}
+}
+@media (max-width:960px){
+  .f-grid,.feat--flip .f-grid{grid-template-columns:1fr;gap:40px}
+  .feat--flip .copy{order:1}
+  .feat--flip .fig{order:2}
+}
+@media (max-width:700px){
+  .top-in{padding:12px 0 0;row-gap:4px}
+  .nav{order:3;width:100%;overflow-x:auto;gap:20px;padding:6px 0 10px;margin-left:0;
+    -webkit-overflow-scrolling:touch}
+  .top-in .btn{margin-left:auto}
+  .ver{display:none}
+  .p3-cols{grid-template-columns:1fr}
+  .p3-back{border-left:none;border-top:1px solid var(--p-line);padding-left:0;padding-top:18px}
+  .win-meta,.win-foot .wr{display:none}
+}
+@media (max-width:560px){
+  .acts{flex-direction:column;align-items:stretch;gap:16px}
+  .acts .btn{justify-content:center}
+  .acts .tlink{text-align:center;border:none;text-decoration:underline;
+    text-underline-offset:.25em;text-decoration-color:var(--ink-38)}
+  .win-foot{gap:14px}
+  .foot-in{flex-direction:column;align-items:flex-start;gap:12px}
+  .foot-links{margin-left:0}
+}
+
+/* ── 输出视图：深底转浅，交互层隐藏 ─────────────── */
+@media print{
+  :root{
+    --night:#FFFFFF;--night-2:#FFFFFF;
+    --ink:#26221B;--ink-72:rgba(38,34,27,.72);--ink-55:rgba(38,34,27,.58);
+    --ink-38:rgba(38,34,27,.4);
+    --line:rgba(38,34,27,.15);--line-2:rgba(38,34,27,.22);
+    --amber:#8A5A1B;--amber-2:#8A5A1B;
+  }
+  body{background:#fff}
+  body::after,.lamp,.caret,.skip{display:none}
+  .top,.acts,.win-bar .dots{display:none}
+  .panel,.win,.cta{box-shadow:none;border:1px solid var(--p-line)}
+  .cta{background:#fff;color:#26221B}
+  .gmap{margin-right:0}
+  .feat,.quote,.qna,.cta{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#top" aria-label="墨迹 Inkwell 首页"><b>墨迹</b><i>INKWELL</i></a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#f-write">打开即写</a>
+      <a href="#f-flat">无文件夹</a>
+      <a href="#f-link">双向链接</a>
+      <a href="#ask">答疑</a>
+    </nav>
+    <span class="ver" aria-hidden="true">v2.4.1</span>
+    <a class="btn btn--ghost btn--sm" href="#dl">下载</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ══ Hero｜岗：勾住 + 定向｜证据件：亮着的实界面窗口 ══ -->
+  <section class="hero" id="top" aria-labelledby="hero-t">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="kicker a0">墨迹 INKWELL · 为写作者做的桌面笔记</p>
+        <h1 id="hero-t"><span class="line"><span>打开，</span></span><span class="line"><span>就是稿纸。</span></span></h1>
+        <p class="deck a2">墨迹不问你建哪个文件夹、选哪套模板、先读哪页欢迎词。<br>它只做一件事：把光标放回你上次停下的地方。<br>给写作者，和想得太多的人。</p>
+        <div class="acts a3">
+          <a class="btn" href="#dl">免费下载墨迹</a>
+          <a class="tlink" href="#f-write">先看看它怎么工作 ↓</a>
+        </div>
+        <p class="micro a4">macOS 12+ / Windows 10+ · 约 18 MB · 免费版含全部核心功能 · 不注册也能用</p>
+      </div>
+
+      <div class="win-wrap">
+        <div class="lamp" aria-hidden="true"></div>
+        <figure class="win" role="img" aria-label="墨迹应用界面示意：深夜十一点四十七分，一篇名为「长夜将尽 · 终章草稿」的笔记正在书写，文中有两处双方括号链接">
+          <div class="win-bar" aria-hidden="true">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="win-title">长夜将尽 · 终章草稿 — 墨迹</span>
+            <span class="win-meta">⌘K</span>
+          </div>
+          <div class="win-body" aria-hidden="true">
+            <p class="w-date">10 月 28 日 · 周二 · 夜</p>
+            <p class="w-h">长夜将尽 · 终章草稿</p>
+            <p>结尾改了四遍。问题不在句子，在我一直不肯让主角认输——<span class="lk">[[人物小传 · 周岚]]</span> 里写过她的软肋，回去翻了一遍，那场对话忽然就通了。</p>
+            <p>明早交稿前，把 <span class="lk">[[截稿日备忘]]</span> 再过一遍。</p>
+            <p class="w-cur"><span class="caret caret--lamp" aria-hidden="true"></span></p>
+          </div>
+          <div class="win-foot" aria-hidden="true">
+            <span>418 字</span><span>Markdown</span><span>已保存 23:47</span>
+            <span class="wr">⌘K 搜索 · ⌘N 新建</span>
+          </div>
+        </figure>
+        <p class="win-cap">23:47 的实界面 · 默认深色模式 · 不是插画</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 特性一｜岗：证明｜主张：冷启动 0.4 秒｜证据：实测演示面板 ══ -->
+  <section class="feat" id="f-write" aria-labelledby="f1-t">
+    <div class="wrap f-grid">
+      <div class="copy reveal">
+        <p class="mnote"><b>实测 · M3 AIR</b>从按下图标计时<br>十次取中位</p>
+        <p class="kicker">其一 · 打开即写</p>
+        <h2 id="f1-t">冷启动 0.4 秒。<br>光标比你先坐下。</h2>
+        <p>没有启动页，没有模板市场，没有「先建个笔记本吧」。按下 ⌘N——或者什么都不按，窗口就在上次那行等着。在墨迹里，「开始写」没有前置动作。</p>
+        <ul class="pts">
+          <li><b>全局唤起：</b>⌘⇧J 在任何窗口呼出速记面板</li>
+          <li><b>逐字落盘：</b>每个字即时写入本地，退出不用确认</li>
+          <li><b>崩溃兜底：</b>恢复到上一次按键，不是上一次保存</li>
+        </ul>
+        <p class="meta">冷启动 0.4s · 安装包约 18 MB · 全程离线可用</p>
+      </div>
+      <div class="fig reveal d1">
+        <div class="panel" role="img" aria-label="演示面板：按下 Command+N 后光标在 0.4 秒内就位；墨迹没有启动页、模板选择、文件夹向导和登录注册">
+          <div class="p1-top">
+            <span class="p-label">冷启动实测 · APPLE SILICON</span>
+            <b>0.4<i>s</i></b>
+          </div>
+          <div class="p1-mid" aria-hidden="true">
+            <span><span class="key">⌘</span> <span class="key">N</span></span>
+            <span class="p1-arrow">→</span>
+            <span class="p1-field"><span class="caret"></span><span class="ghost">想到什么，先写下来</span></span>
+          </div>
+          <ul class="no" aria-label="这些步骤在墨迹中不存在">
+            <li>启动页</li><li>模板选择</li><li>文件夹向导</li><li>登录注册</li>
+          </ul>
+          <div class="p1-foot" aria-hidden="true">
+            <span class="p-label">0.0s 按下图标</span>
+            <span class="p-label">0.2s 窗口就绪</span>
+            <span class="p-label">0.4s 光标就位</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 特性二｜岗：证明→深化｜主张：找东西靠搜不靠记｜证据：搜索演示 ══ -->
+  <section class="feat feat--flip" id="f-flat" aria-labelledby="f2-t">
+    <div class="wrap f-grid">
+      <div class="copy reveal">
+        <p class="mnote"><b>库内 214 篇</b>全文索引 8.1 MB<br>首次建立 31s</p>
+        <p class="kicker">其二 · 无文件夹</p>
+        <h2 id="f2-t">不问「该放哪儿」，<br>只管「搜不搜得到」。</h2>
+        <p>文件夹要求你在动笔之前先做图书管理员。墨迹只有一条按时间排好的笔记流，和毫秒级的全文搜索——写下来的，永远找得回来。</p>
+        <ul class="pts">
+          <li><b>全文检索：</b>毫秒级返回，标题、正文一并命中</li>
+          <li><b>够用就好：</b>#标签、日期、字数，三种筛法</li>
+          <li><b>置顶手记：</b>常用的钉在最上面，层级到此为止</li>
+        </ul>
+        <p class="meta">检索词：截稿 · 18ms · 3 篇命中 · 无侧边栏</p>
+      </div>
+      <div class="fig reveal d1">
+        <div class="panel" role="img" aria-label="演示面板：在全部笔记中搜索「截稿」，18 毫秒返回 3 篇命中，关键词在摘录中高亮">
+          <div class="p2-head" aria-hidden="true">
+            <span class="p-label">全部笔记 · 214 篇 · 按时间</span>
+            <span class="p-label">⌘K</span>
+          </div>
+          <div class="p2-search" aria-hidden="true">
+            <span class="q">截稿</span><span class="caret"></span>
+            <span class="ms">↵ 18ms · 3 篇命中</span>
+          </div>
+          <ul class="hits" aria-hidden="true">
+            <li>
+              <div class="h-t">长夜将尽 · 终章草稿<time datetime="2026-10-28">10月28日</time></div>
+              <p>……明早交稿前，把<em>截稿</em>日备忘再过一遍……</p>
+            </li>
+            <li>
+              <div class="h-t">截稿日备忘<time datetime="2026-10-21">10月21日</time></div>
+              <p>……<em>截稿</em>前：校对一遍、配图三张、标题留两版……</p>
+            </li>
+            <li>
+              <div class="h-t">给编辑的信 · 草稿<time datetime="2026-10-09">10月9日</time></div>
+              <p>……这次<em>截稿</em>提前到周五，专栏从简……</p>
+            </li>
+          </ul>
+          <div class="p2-foot" aria-hidden="true">没有侧边栏，没有层级。找东西靠问，不靠记。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 特性三｜岗：深化｜主张：写下即连接｜证据：反链面板+暗底图阵 ══ -->
+  <section class="feat" id="f-link" aria-labelledby="f3-t">
+    <div class="wrap">
+      <div class="copy copy--wide reveal">
+        <p class="mnote"><b>链接是引用</b>不产生副本<br>删了也不伤原文</p>
+        <p class="kicker">其三 · 双向链接</p>
+        <h2 id="f3-t">写下一个词，<br>它自己会长出回路。</h2>
+        <p>行文里敲 <span class="mono" style="font-size:.9em">[[</span> 提起任何一篇笔记，对方会默默记下这次引用。写得越久，笔记越不像一摞纸，越像一张网——研究员叫它卡片盒，写作者叫它「原来我早就想过」。</p>
+        <ul class="pts">
+          <li><b>输入 [[：</b>即时联想补全，不用记标题全称</li>
+          <li><b>被引用于：</b>每篇笔记自带反向引用面板</li>
+          <li><b>图谱在角落：</b>关系图只读，不站在你和稿子中间</li>
+        </ul>
+        <p class="meta">反向链接 · 联想补全 · 只读图谱 · 不写也能连</p>
+      </div>
+      <div class="fig fig--below reveal d1">
+        <div class="panel" role="img" aria-label="演示面板：笔记「人物小传 · 周岚」的正文里引用了终章草稿；右侧列出它被四篇笔记反向引用">
+          <div class="p3-cols">
+            <div class="p3-doc" aria-hidden="true">
+              <span class="p-label">正在编辑 · 人物小传 · 周岚</span>
+              <p class="txt">周岚不肯认输，是从十五岁那年夏天开始的。<br>这个软肋要在 <span class="lk">[[长夜将尽 · 终章草稿]]</span> 里还给她——输一次，比赢十次更像她。</p>
+            </div>
+            <div class="p3-back" aria-hidden="true">
+              <span class="p-label">「人物小传 · 周岚」被引用于</span>
+              <ul>
+                <li>长夜将尽 · 终章草稿</li>
+                <li>十一月连载大纲</li>
+                <li>人物关系图 · 草稿</li>
+                <li>截稿日备忘</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="gmap">
+          <div class="scroll">
+            <svg viewBox="0 0 940 300" role="img" aria-label="关系图谱示意：笔记「人物小传·周岚」位于中心，与四篇笔记相连，其中与「长夜将尽·终章草稿」互相引用">
+              <g>
+                <line class="g-edge h" x1="470" y1="150" x2="218" y2="78"/>
+                <line class="g-edge h" x1="470" y1="150" x2="724" y2="70"/>
+                <line class="g-edge h" x1="470" y1="150" x2="206" y2="238"/>
+                <line class="g-edge h" x1="470" y1="150" x2="738" y2="240"/>
+                <line class="g-edge" x1="218" y1="78" x2="724" y2="70"/>
+                <line class="g-edge" x1="206" y1="238" x2="738" y2="240"/>
+                <line class="g-edge" x1="218" y1="78" x2="206" y2="238"/>
+              </g>
+              <g>
+                <circle class="g-node" cx="218" cy="78" r="4.5"/>
+                <text class="g-txt" x="180" y="56">长夜将尽 · 终章草稿</text>
+                <circle class="g-node" cx="724" cy="70" r="4.5"/>
+                <text class="g-txt" x="668" y="48">十一月连载大纲</text>
+                <circle class="g-node" cx="206" cy="238" r="4.5"/>
+                <text class="g-txt" x="150" y="270">截稿日备忘</text>
+                <circle class="g-node" cx="738" cy="240" r="4.5"/>
+                <text class="g-txt" x="700" y="272">人物关系图 · 草稿</text>
+                <circle class="g-ring" cx="470" cy="150" r="13"/>
+                <circle class="g-hot" cx="470" cy="150" r="5.5"/>
+                <text class="g-txt hot" x="412" y="126">人物小传 · 周岚</text>
+                <text class="g-txt" x="414" y="186">被 4 篇笔记提起</text>
+              </g>
+            </svg>
+          </div>
+          <p class="gcap">关系图谱 · 只读 · 想法在黑暗里自己找到彼此，不用你打灯</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 引语｜岗：信任（兼换气·休止拍）══ -->
+  <section class="quote" aria-label="用户引语">
+    <div class="wrap">
+      <blockquote class="reveal">
+        <p>「用了四个月，我第一次觉得<br>笔记是越写越值钱的东西。」</p>
+        <footer>沈以宁 · 城市研究者 · 墨迹用户第 121 天</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ══ 答疑｜岗：排疑（锁定/迁移/注册/免费/崩溃）══ -->
+  <section class="qna" id="ask" aria-labelledby="ask-t">
+    <div class="wrap">
+      <div class="qna-col">
+        <p class="mnote"><b>答于 v2.4.1</b>未删改<br>有出入以安装包为准</p>
+        <div class="reveal">
+          <p class="kicker">下载之前</p>
+          <h2 id="ask-t">你可能想问的，先答了。</h2>
+        </div>
+        <dl class="qa reveal d1">
+          <div>
+            <dt>我的笔记会不会被锁住？</dt>
+            <dd>纯文本 .md，存在本地一个普通文件夹里，随时整个拖走。哪天不用墨迹了，字还在。</dd>
+          </div>
+          <div>
+            <dt>从别的笔记迁过来呢？</dt>
+            <dd>.md / .txt 直接拖入。Obsidian、Bear 的库，一顿饭的功夫搬完。</dd>
+          </div>
+          <div>
+            <dt>要注册吗？</dt>
+            <dd>不用。本地优先，下载即用。多端同步是可选项，走你自己的 iCloud 或 WebDAV。</dd>
+          </div>
+          <div>
+            <dt>免费版缺了什么？</dt>
+            <dd>不缺。全部核心功能免费。Pro 版只管两件事：多端同步和历史版本。</dd>
+          </div>
+          <div>
+            <dt>写着写着崩了呢？</dt>
+            <dd>逐字落盘——崩溃恢复到上一次按键，不是上一次「保存」。</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+<!-- ══ 收口｜岗：收口（整张稿纸点亮 · 回扣「打开，就是稿纸」）══ -->
+<section class="cta" id="dl" aria-labelledby="cta-t">
+  <div class="wrap">
+    <p class="kicker reveal">现在开始</p>
+    <h2 id="cta-t" class="reveal d1">稿纸还亮着，<br>就差第一句<span class="caret" aria-hidden="true"></span></h2>
+    <p class="sub reveal d1">下载即用，本地运行。免费版含全部核心功能——写完第一篇，再决定要不要留下来。</p>
+    <div class="acts reveal d2">
+      <a class="btn btn--paper" href="downloads/inkwell-2.4.1-macos.dmg" download>↓ 下载 macOS 版</a>
+      <a class="btn btn--ghost-p" href="downloads/inkwell-2.4.1-win.exe" download>↓ Windows 版</a>
+    </div>
+    <p class="micro reveal d2">Apple Silicon / Intel · Windows 10+ x64 · v2.4.1 · 约 18 MB</p>
+    <p class="chips reveal d2">.md 纯文本 · 本地优先 · ⌘ 快捷键全覆盖 · 深色模式随系统</p>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="brand" href="#top"><b>墨迹</b><i>INKWELL</i></a>
+    <span class="foot-note">© 2026 墨迹 Inkwell · 由写字的人，为写字的人做 · 本页文案写于墨迹</span>
+    <nav class="foot-links" aria-label="页脚链接">
+      <a href="https://inkwell.app/changelog">更新日志</a>
+      <a href="https://inkwell.app/docs/shortcuts">快捷键手册</a>
+      <a href="https://inkwell.app/privacy">隐私承诺</a>
+      <a href="mailto:hi@inkwell.app">hi@inkwell.app</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+/* 渐进增强：.js 已在 head 按 reduced-motion 判定；此处只做滚动入场。
+   无 JS / reduced-motion 下所有内容直接可见。 */
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(!('IntersectionObserver' in window)||!document.documentElement.classList.contains('js')){
+    els.forEach(function(e){e.classList.add('in')});
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}
+    });
+  },{threshold:.2,rootMargin:'0px 0px -7% 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SaaS 数据仪表盘</title>
+<style>
+  /* ===== 修复版：每处改动可回溯到 K 词条决策点（见 record.md）===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* K18·配额：去掉紫蓝渐变+玻璃卡片，深色底+单一强调色（出现 ≤5 次）*/
+  :root {
+    --bg: #0f1114; --panel: #171a1f; --line: #262b33;
+    --text: #e6e8eb; --text-2: #9aa3ad;
+    --accent: #5e6ad2;          /* 单一强调色：靛蓝（非 Tailwind 默认蓝）*/
+    --danger: #e5534b;
+    --r-sm: 8px; --r-lg: 12px;  /* K2·圆角：半径统一两档 */
+  }
+  body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; /* 非 Inter */
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 40px; border-bottom: 1px solid var(--line);
+  }
+  .logo { font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+  .nav-links { display: flex; align-items: center; gap: 24px; }
+  .nav-links a { color: var(--text-2); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover { color: var(--text); }   /* hover 用色阶不用 scale */
+  .badge {
+    background: var(--accent); border-radius: 10px; padding: 1px 8px;
+    font-size: 12px; font-weight: 600;
+  }
+  .container { max-width: 1160px; margin: 0 auto; padding: 32px 24px 60px; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: var(--text-2); font-size: 14px; margin-bottom: 28px; }
+
+  /* K18·配额：卡片去玻璃化，实底 panel，唯一峰值留给顶部 KPI 区 */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 20px;
+  }
+  .card .num {
+    font-size: 32px; font-weight: 600; margin: 8px 0 2px;
+    font-variant-numeric: tabular-nums;   /* B60：数字等宽 */
+  }
+  .card .label { color: var(--text-2); font-size: 13px; }
+  .card .trend { font-size: 13px; margin-top: 8px; }
+  .trend.up { color: #4fb27f; } .trend.down { color: var(--danger); }
+
+  /* K13·视觉规格：分隔三选一（细线+hover，无斑马无叠加线）*/
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 20px;
+  }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .panel-head h2 { font-size: 17px; font-weight: 600; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 11px 14px; text-align: left; white-space: nowrap; }
+  thead th {
+    position: sticky; top: 0; background: var(--panel);     /* K13：sticky 表头 */
+    color: var(--text-2); font-weight: 500; font-size: 13px;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody tr { border-bottom: 1px solid var(--line); }        /* 分隔只用细线一种 */
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  tbody tr.selected {
+    outline: 2px solid var(--accent); outline-offset: -2px; /* K17/K13：选中用 outline 不跳行 */
+    background: rgba(94,106,210,.08);
+  }
+  /* K13·对齐协议：文左、数右+tabular-nums、态中、操作右 */
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.status, th.status { text-align: center; }
+  td.ops, th.ops { text-align: right; }
+  .status-pill { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .status-done { color: #4fb27f; } .status-prog { color: #e2b93d; } .status-pend { color: var(--text-2); }
+
+  /* K11/K16：搜索框——防抖+IME保护+最少字符 */
+  input {
+    padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); width: 220px; font-size: 14px;
+  }
+  input:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;   /* B76/K8：focus-visible */
+  }
+  .btn {
+    background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: var(--r-sm); padding: 7px 14px; cursor: pointer; font-size: 13px;
+  }
+  .btn:hover { background: #1e2229; }      /* 色阶反馈 */
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.ghost-danger { color: var(--danger); }
+  .btn.ghost-danger:hover { background: rgba(229,83,75,.1); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* K14·Toast 队列：固定右下，hover 暂停，带 Action 不自动消失 */
+  .toast-zone { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 70; }
+  .toast {
+    background: #22262d; border: 1px solid var(--line); border-radius: var(--r-sm);
+    padding: 12px 16px; font-size: 14px; display: flex; align-items: center; gap: 12px;
+    min-width: 260px; animation: toast-in .2s ease-out;
+  }
+  .toast.error { border-color: var(--danger); }
+  .toast .undo { color: var(--accent); background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+  @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } .nav-links a { display: none; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">DataDash</div>
+  <div class="nav-links">
+    <a href="#">概览</a><a href="#">报表</a><a href="#">团队</a><a href="#">设置</a>
+    <span class="badge" aria-label="5 条未读通知">5</span>
+  </div>
+</nav>
+<div class="container">
+  <h1>数据概览</h1>
+  <p class="subtitle">实时掌握你的业务核心指标</p>
+
+  <div class="cards">
+    <div class="card"><div class="label">总收入</div><div class="num">¥1,284,392</div><div class="trend up">↑ 12.5% vs 上月</div></div>
+    <div class="card"><div class="label">活跃用户</div><div class="num">84,291</div><div class="trend up">↑ 8.2% vs 上月</div></div>
+    <div class="card"><div class="label">转化率</div><div class="num">4.7%</div><div class="trend down">↓ 0.6% vs 上月</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>最近订单</h2>
+      <div style="display:flex;gap:8px">
+        <input id="search" placeholder="搜索订单号或客户…" enterkeyhint="search">
+        <button class="btn primary">导出</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+    <table id="orders">
+      <thead><tr>
+        <th>订单号</th><th>客户</th><th class="num">金额</th><th class="status">状态</th><th>时间</th><th class="ops">操作</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>#10028</td><td>陈雪晴</td><td class="num">¥12,840.50</td><td class="status"><span class="status-pill status-done">已完成</span></td><td>10-21 14:32</td><td class="ops"><button class="btn">查看</button> <button class="btn ghost-danger" data-del>删除</button></td></tr>
+        <tr><td>#10027</td><td>李铭轩</td><td class="num">¥8,340.00</td><td class="status"><span class="status-pill status-prog">进行中</span></td><td>10-21 11:08</td><td class="ops"><button class="btn">查看</button> <button class="btn ghost-danger" data-del>删除</button></td></tr>
+        <tr><td>#10026</td><td>王晓萌</td><td class="num">¥156,200.75</td><td class="status"><span class="status-pill status-done">已完成</span></td><td>10-20 18:44</td><td class="ops"><button class="btn">查看</button> <button class="btn ghost-danger" data-del>删除</button></td></tr>
+        <tr><td>#10025</td><td>张天佑</td><td class="num">¥3,299.99</td><td class="status"><span class="status-pill status-pend">待支付</span></td><td>10-20 09:15</td><td class="ops"><button class="btn">查看</button> <button class="btn ghost-danger" data-del>删除</button></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+<div class="toast-zone" id="toastZone"></div>
+
+<script>
+/* K12·撤销：软删除 + Toast+Undo 5s 窗口（hover 暂停计时），不弹 confirm */
+const zone = document.getElementById('toastZone');
+const pendingDeletes = new Map();          // id → {row, timer}
+
+function makeToast({msg, error=false, action=null, timeout=5000}) {
+  if (zone.children.length >= 3) zone.firstChild.remove();      // 同屏 ≤3
+  const t = document.createElement('div');
+  t.className = 'toast' + (error ? ' error' : '');
+  t.innerHTML = `<span>${msg}</span>`;
+  if (action) {
+    const b = document.createElement('button');
+    b.className = 'undo'; b.textContent = action.label;
+    b.onclick = () => { action.fn(); t.remove(); };
+    t.appendChild(b);
+  }
+  zone.appendChild(t);
+  let timer = action ? null : setTimeout(() => t.remove(), timeout);  // 带 Action 不自动消失
+  t.onmouseenter = () => { if (timer) clearTimeout(timer); };
+  t.onmouseleave = () => { if (!action) timer = setTimeout(() => t.remove(), timeout); };
+  return t;
+}
+
+document.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => {
+  const row = btn.closest('tr'), id = row.cells[0].textContent;
+  row.style.display = 'none';                                    // 软删除：先藏不真删
+  const timer = setTimeout(() => { row.remove(); pendingDeletes.delete(id); }, 5000);
+  pendingDeletes.set(id, {row, timer});
+  makeToast({ msg: `已删除订单 ${id}`, action: { label: '撤销', fn: () => {
+    clearTimeout(pendingDeletes.get(id).timer);
+    pendingDeletes.get(id).row.style.display = '';               // 恢复原位
+    pendingDeletes.delete(id);
+  }}});
+}));
+
+/* K16·搜索触发链 + K11·IME：300ms 防抖 + 最少 2 字符 + compositionend 后重启 */
+const input = document.getElementById('search');
+let timer = null, composing = false;
+input.addEventListener('compositionstart', () => { composing = true; if (timer) clearTimeout(timer); });
+input.addEventListener('compositionend', () => { composing = false; schedule(); });
+input.addEventListener('input', () => { if (!composing) schedule(); });
+function schedule() {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const q = input.value.trim();
+    if (q.length < 2) return;                                    // 最少字符门槛，不弹 toast
+    const hit = [...document.querySelectorAll('#orders tbody tr')]
+      .some(r => r.textContent.includes(q));
+    if (!hit) makeToast({ msg: `未找到 "${q}" 的订单`, timeout: 3000 });   // 无结果才提示
+  }, 300);
+}
+</script>
+</body>
+</html>

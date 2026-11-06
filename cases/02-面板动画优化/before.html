@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>设置中心 · 面板动画基线</title>
+<style>
+  /* ===== 基线：典型 AI 生成的面板动画，保留真实缺陷 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh; color: #fff;
+  }
+  .container { max-width: 640px; margin: 0 auto; padding: 40px 20px 200px; }
+  h1 { font-size: 36px; margin-bottom: 32px; }
+
+  /* 手风琴：max-height 偷工版 */
+  .acc-item { background: rgba(255,255,255,.12); backdrop-filter: blur(12px); border-radius: 16px; margin-bottom: 16px; }
+  .acc-head {
+    width: 100%; background: none; border: none; color: #fff; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px; font-size: 16px; text-align: left;
+  }
+  .acc-head .icon { font-size: 20px; }
+  .acc-item.open .icon { transform: rotate(180deg); }      /* 无 transition：瞬间翻转 */
+  .acc-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .35s ease-in-out;                /* max-height 偷工：缓动失真 */
+  }
+  .acc-item.open .acc-body { max-height: 500px; }           /* 内容实际 ~180px */
+  .acc-body .inner { padding: 0 24px 20px; color: rgba(255,255,255,.85); line-height: 1.7; }
+
+  /* 底部面板：只有位置阈值，无速度/档位吸附 */
+  #openSheet {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #3b82f6; color: #fff; border: none; border-radius: 12px;
+    padding: 14px 32px; font-size: 15px; cursor: pointer;
+  }
+  #openSheet:hover { transform: translateX(-50%) scale(1.05); }
+  .backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; /* 瞬间出现 */
+  }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 70vh;
+    background: #1e222b; border-radius: 20px 20px 0 0;
+    transform: translateY(100%);                            /* 默认藏在屏外 */
+    transition: transform .3s ease-in-out;
+    padding: 24px; touch-action: none;
+  }
+  .sheet.show { transform: translateY(30%); }               /* 只一个档位 */
+  .sheet .grabber {
+    width: 40px; height: 4px; background: rgba(255,255,255,.3);
+    border-radius: 2px; margin: 0 auto 20px; cursor: grab;
+  }
+  .sheet h2 { font-size: 20px; margin-bottom: 16px; }
+  .sheet p { color: rgba(255,255,255,.7); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>设置中心</h1>
+
+  <div class="acc-item">
+    <button class="acc-head">账号与隐私 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>管理你的账号信息、登录设备和隐私偏好。你可以控制谁可以看到你的个人资料、活动状态以及在线时间。</p>
+      <p>隐私设置变更会立即生效，并同步到所有已登录设备。</p>
+    </div></div>
+  </div>
+  <div class="acc-item">
+    <button class="acc-head">通知偏好 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>选择接收哪些类型的通知：产品更新、安全提醒、营销活动。</p>
+      <p>重要安全通知无法关闭，这是保护账号的必要措施。</p>
+    </div></div>
+  </div>
+  <div class="acc-item">
+    <button class="acc-head">外观与显示 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>自定义界面主题、字体大小和显示密度。支持跟随系统设置的自动切换。</p>
+      <p>深色模式在 OLED 屏幕上可以节省电量。</p>
+    </div></div>
+  </div>
+</div>
+
+<button id="openSheet">打开分享面板</button>
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="grabber"></div>
+  <h2>分享此页面</h2>
+  <p>复制链接或选择分享渠道。拖拽面板可以调整高度。</p>
+</div>
+
+<script>
+/* ===== 缺陷行为 =====
+   1. 手风琴：点击瞬间 toggle class，max-height 500px 与实际 180px 不匹配
+      → 展开显得过快、收起前半段"空跑"有延迟感
+   2. 连点：无中断接管——动画反转方向但 icon 状态与动画脱节
+   3. 底部面板：拖拽只记位置，松手只看"当前高度 > 50%"决定开关
+      → 快速甩一下（flick）不认速度；只有一个档位没有中途吸附
+   4. backdrop display:none 瞬间切，与 sheet 滑动不同步
+   5. aria-expanded 从不更新；无 reduced-motion
+*/
+document.querySelectorAll('.acc-head').forEach(head => {
+  head.addEventListener('click', () => head.closest('.acc-item').classList.toggle('open'));
+});
+
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+document.getElementById('openSheet').onclick = () => {
+  sheet.classList.add('show'); backdrop.style.display = 'block';
+};
+
+// 拖拽：只跟手，松手时按位置二选一（无速度、无档位吸附）
+let startY = 0, startTy = 0;
+sheet.addEventListener('pointerdown', e => {
+  startY = e.clientY;
+  startTy = sheet.classList.contains('show') ? 30 : 100;
+  sheet.style.transition = 'none';
+  const move = ev => {
+    const dy = ev.clientY - startY;
+    sheet.style.transform = `translateY(${startTy + dy / sheet.offsetHeight * 100}%)`;
+  };
+  const up = ev => {
+    sheet.style.transition = '';
+    const cur = parseFloat(sheet.style.transform.match(/[\d.]+/)[0]);
+    if (cur > 65) { sheet.classList.remove('show'); backdrop.style.display = 'none'; }
+    else { sheet.classList.add('show'); }
+    sheet.style.transform = '';
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+  };
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up);
+});
+backdrop.onclick = () => { sheet.classList.remove('show'); backdrop.style.display = 'none'; };
+</script>
+</body>
+</html>

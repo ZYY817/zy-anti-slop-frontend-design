@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墨迹 Inkwell · 定价 — 本地功能，永远免费</title>
+<meta name="description" content="墨迹 Inkwell 定价：本地功能永远免费，订阅只为多端同步与协作付费。Free 永久免费 / Pro ¥68 每年 / Studio ¥168 每年。不买断、不画大饼、随时取消。">
+<meta name="theme-color" content="#16120D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2316120D'/%3E%3Crect x='14' y='12' width='36' height='40' rx='4' fill='%23F2EDDF'/%3E%3Crect x='30' y='20' width='4' height='18' fill='%23D9A24B'/%3E%3C/svg%3E">
+<script>/* 尽早挂 .js：入场隐藏态随 CSS 即生效，避免先见后隐 */
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('js')}</script>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   「灯下账本 OPEN LEDGER」· 墨迹 Inkwell 定价页（货架页）
+   结构卡：定向(定价哲学) → 货架(三档+计费切换·主件) → 对比台账(深化)
+          → 排疑(FAQ) → 收口(先免费写) → 页脚
+   与落地页同族「深夜书房」：墨夜底 / 钨丝琥珀=动作岗 / 稿纸=亮块
+   母题延续"被照亮的一块"：全货架只有 Pro 一张卡被点亮
+   字岗：宋体=表达 / sans=界面 / mono=数据·价目·台账
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --night:#16120D;               /* 墨夜底 */
+  --night-2:#1D1710;             /* 微抬表面（暗卡） */
+  --night-3:#241D14;             /* 暗卡内再抬一层（徽章底） */
+  --line:rgba(236,230,214,.10);  /* hairline α 档 */
+  --line-2:rgba(236,230,214,.18);
+  --ink:#ECE6D6;                 /* 纸白正文 on 墨夜（非纯白） */
+  --ink-72:rgba(236,230,214,.72);/* ≈5.5:1 次级 */
+  --ink-55:rgba(236,230,214,.55);/* ≈4.5:1 小字下限 */
+  --ink-38:rgba(236,230,214,.38);/* 仅装饰/大字 */
+  --paper:#F2EDDF;               /* 稿纸亮块（Pro 卡 / 收口 / toggle 选态） */
+  --paper-2:#E9E3D1;
+  --p-ink:#272218;               /* 墨 on 稿纸 */
+  --p-ink-68:rgba(39,34,24,.68); /* ≈6.8:1 */
+  --p-ink-48:rgba(39,34,24,.48); /* ≈4.6:1 小字下限 */
+  --p-ink-30:rgba(39,34,24,.30); /* 仅装饰 */
+  --p-line:rgba(39,34,24,.13);
+  --amber:#D9A24B;               /* 钨丝 on 墨夜 ≈6.4:1（动作岗） */
+  --amber-2:#E4B366;
+  --amber-soft:rgba(217,162,75,.10); /* 对比表 Pro 列淡底 */
+  --amber-p:#8A5A1B;             /* 深钨 on 稿纸 ≈5.3:1（跨底校准） */
+  --ease:cubic-bezier(.19,1,.22,1);  /* 全页唯一签名缓动：从容 */
+  --serif:"Songti SC","STSong","STZhongsong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:88px;overflow-x:clip}
+body{
+  background:var(--night);color:var(--ink);
+  font:15.5px/1.85 var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:clip;               /* clip 不建滚动容器，保住 .top 的 sticky */
+}
+::selection{background:var(--amber);color:#1C1509}
+.skip{position:absolute;left:-9999px;top:0;background:var(--amber);color:#1C1509;
+  padding:10px 16px;z-index:200;font-weight:600;text-decoration:none;border-radius:0 0 8px 0}
+.skip:focus{left:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:2px}
+/* 亮底（稿纸）上的焦点环换深钨——琥珀在浅底只剩 ~1.9:1 */
+.tier--pro :focus-visible,.cta :focus-visible{outline-color:var(--amber-p)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 clamp(20px,4vw,40px)}
+.mono{font-family:var(--mono)}
+.sr-only{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+/* 纸感噪点：全页统一材质，单层 ≤4.5% */
+body::after{
+  content:"";position:fixed;inset:0;z-index:120;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.045;mix-blend-mode:overlay;
+}
+h1,h2,h3{font-family:var(--serif);font-weight:600}
+.kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  color:var(--ink-55);text-transform:uppercase;
+}
+.kicker::before{
+  content:"";display:inline-block;width:22px;height:1px;
+  background:var(--ink-38);vertical-align:.28em;margin-right:11px;
+}
+
+/* ── 顶栏（L3 收紧带）────────────────────────────── */
+.top{
+  position:sticky;top:0;z-index:60;
+  background:var(--night);border-bottom:1px solid var(--line);
+}
+.top-in{display:flex;align-items:center;gap:26px;min-height:58px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:9px;text-decoration:none;color:var(--ink)}
+.brand b{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.06em}
+.brand i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--ink-55)}
+.nav{display:flex;gap:24px;margin-left:auto}
+.nav a{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+  color:var(--ink-72);text-decoration:none;padding:12px 4px;
+}
+.nav a[aria-current]{color:var(--ink);border-bottom:1px solid var(--ink-55)} /* 导航当前态用墨色线，不占琥珀配额 */
+.ver{font-family:var(--mono);font-size:10.5px;color:var(--ink-55);letter-spacing:.08em}
+
+/* ── 按钮 ──────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55em;
+  padding:.8em 1.75em;border-radius:7px;border:1px solid transparent;
+  background:var(--amber);color:#1C1509;
+  font-weight:600;font-size:.94rem;letter-spacing:.03em;text-decoration:none;
+  cursor:pointer;
+}
+.btn--sm{padding:.5em 1.15em;font-size:.82rem;min-height:44px}
+.btn--ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
+.btn--paper{background:var(--amber-p);color:#FBF6E7}
+.btn--ghost-p{background:transparent;color:var(--p-ink);border-color:var(--p-ink-30)}
+.tlink{
+  color:var(--ink);font-weight:500;font-size:.93rem;text-decoration:none;
+  border-bottom:1px solid var(--ink-38);padding-bottom:.12em;
+}
+
+/* ── 定向区（L2 中开口：定价哲学=主张句）────────────── */
+.intro{padding:clamp(64px,8vw,104px) 0 clamp(30px,4vw,44px)}
+.intro-in{max-width:680px;position:relative} /* mnote 锚定基准 */
+.intro h1{
+  font-size:clamp(40px,6.6vw,68px);line-height:1.22;letter-spacing:.015em;
+  margin:.42em 0 .42em;word-break:keep-all;
+}
+.intro .deck{color:var(--ink-72);font-size:clamp(15px,1.6vw,16.5px);line-height:1.95;max-width:36em}
+.intro .deck b{color:var(--ink);font-weight:600}
+.intro .creed{
+  margin-top:22px;display:flex;flex-wrap:wrap;gap:6px 0;
+  font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:var(--ink-55);
+}
+.intro .creed span+span::before{content:"·";margin:0 .9em;color:var(--ink-38)}
+
+/* ── 计费切换（分段控件：fieldset+radio，原生键盘/读屏）── */
+.bill{padding:clamp(24px,3vw,36px) 0 clamp(56px,7vw,84px)}
+.seg-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:clamp(28px,4vw,40px)}
+.seg{
+  display:inline-flex;padding:4px;gap:2px;
+  background:var(--night-2);border:1px solid var(--line-2);border-radius:999px;
+}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
+.seg span{
+  display:inline-flex;align-items:center;gap:.5em;
+  padding:.5em 1.3em;min-height:44px;border-radius:999px; /* 触控下限 44px */
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.05em;color:var(--ink-72);
+}
+.seg input:checked+span{background:var(--paper);color:var(--p-ink);font-weight:600}
+.seg input:focus-visible+span{outline:2px solid var(--amber);outline-offset:2px}
+.seg-note{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-55)}
+.seg-note .save{color:var(--amber)}
+/* 信任信号贴摩擦点（H3）：价格区旁即退款承诺 */
+.seg-trust{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-55)}
+
+/* ── 货架（三档均权网格·Pro 为唯一亮块 signature 峰值）── */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,22px);align-items:stretch}
+.tier{
+  position:relative;display:flex;flex-direction:column;
+  background:var(--night-2);border:1px solid var(--line);border-radius:12px;
+  padding:clamp(24px,3vw,32px) clamp(20px,2.6vw,28px) clamp(20px,2.4vw,26px);
+}
+.tier-name{display:flex;align-items:baseline;gap:10px}
+.tier-name b{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:.03em}
+.tier-name i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--ink-55)}
+.tier-tag{margin-top:6px;font-size:13px;color:var(--ink-55);min-height:1.6em}
+.price{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.price-num{
+  display:block;font-family:var(--mono);font-weight:600;
+  font-size:clamp(40px,4.6vw,50px);line-height:1;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;overflow:hidden;
+}
+.price-num .cur{font-size:.42em;font-weight:400;letter-spacing:0;color:var(--ink-55);margin-right:.06em}
+.price-per{font-size:.36em;font-weight:400;letter-spacing:.02em;color:var(--ink-55)}
+.price-sub{
+  margin-top:10px;min-height:2.6em;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;line-height:1.7;color:var(--ink-55);
+}
+.feats{list-style:none;margin-top:20px;flex:1}
+.feats li{position:relative;padding-left:1.6em;margin-top:.6em;font-size:14px;color:var(--ink-72)}
+.feats li::before{content:"✓";position:absolute;left:0;top:0;color:var(--ink-55);font-weight:600}
+.feats li b{color:var(--ink);font-weight:600}
+.feats .all{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-55);padding-left:0}
+.feats .all::before{content:""}
+.tier .btn{margin-top:26px;width:100%}
+.tier-micro{
+  margin-top:12px;text-align:center;
+  font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-55);
+}
+/* Pro：被照亮的一块——稿纸亮卡 + 灯晕（母题回放，全页唯一 signature 峰值） */
+.tier--pro{
+  --settle:translateY(-16px);                /* 破格落定位：reveal 结束后保持 -16px 抬升 */
+  transform:var(--settle);                   /* 破格：纵轴越出栅格线，横轴仍锚定 */
+  background:var(--paper);color:var(--p-ink);border-color:transparent;
+  box-shadow:
+    0 40px 80px -32px rgba(8,6,3,.85),
+    0 0 70px -20px rgba(222,168,86,.30);     /* 灯晕外溢 */
+}
+.tier--pro .tier-name i{color:var(--p-ink-48)}
+.tier--pro .tier-tag{color:var(--p-ink-48)}
+.tier--pro .price{border-top-color:var(--p-line)}
+.tier--pro .price-num .cur,.tier--pro .price-num .price-per{color:var(--p-ink-48)}
+.tier--pro .price-sub{color:var(--p-ink-48)}
+.tier--pro .feats li{color:var(--p-ink-68)}
+.tier--pro .feats li::before{color:var(--p-ink-48)} /* ✓ 用墨阶不占琥珀配额 */
+.tier--pro .feats li b{color:var(--p-ink)}
+.tier--pro .feats .all{color:var(--p-ink-48)}
+.tier--pro .tier-micro{color:var(--p-ink-48)}
+.badge{
+  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  background:var(--amber);color:#1C1509;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;
+  padding:.45em 1.1em;border-radius:999px;white-space:nowrap;
+  box-shadow:0 6px 18px -6px rgba(217,162,75,.5);
+}
+.bill-note{
+  margin-top:clamp(26px,3.4vw,36px);text-align:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-55);
+}
+
+/* ── 边注 marginalia（宽屏挂页边，同 w2 破格手法）── */
+.mnote{
+  position:absolute;top:.3em;right:calc(100% + 22px);width:118px;
+  font-family:var(--mono);font-size:10px;line-height:1.8;letter-spacing:.04em;
+  color:var(--ink-55);text-align:right;
+  border-right:1px solid var(--line-2);padding-right:12px;
+}
+.mnote b{display:block;font-weight:500;color:var(--ink-72)}
+
+/* ── 对比台账（L4 收紧区：mono 高密度台账岗）────────── */
+.cmp{border-top:1px solid var(--line);padding-block:clamp(64px,8vw,96px)}
+.cmp-col{max-width:880px;margin:0 auto;position:relative}
+.cmp h2{font-size:clamp(24px,3.2vw,34px);letter-spacing:.015em;margin:.5em 0 .4em}
+.cmp .sub{color:var(--ink-72);font-size:14.5px;max-width:44ch;margin-bottom:clamp(26px,3.4vw,38px)}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;padding:0 2px}
+table.cmp-t{
+  width:100%;min-width:620px;border-collapse:collapse;
+  font-size:13.5px;
+}
+.cmp-t caption{
+  text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+  color:var(--ink-55);padding-bottom:12px;
+}
+.cmp-t th,.cmp-t td{padding:11px 14px 11px 0;text-align:left;vertical-align:baseline}
+.cmp-t thead th{
+  font-family:var(--serif);font-weight:600;font-size:16px;letter-spacing:.03em;
+  border-bottom:1px solid var(--line-2);padding-bottom:14px;
+}
+.cmp-t thead .c{text-align:center;width:96px}
+.cmp-t thead .p{color:var(--amber-2)}
+.cmp-t thead .c small{
+  display:block;font-family:var(--mono);font-weight:400;font-size:9.5px;
+  letter-spacing:.14em;color:var(--ink-55);margin-top:2px;
+}
+/* 分组小标题行（mono 标签岗） */
+.cmp-t tbody tr.grp th{
+  font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.13em;
+  color:var(--ink-55);padding-top:20px;padding-bottom:8px;text-align:left;
+  border-bottom:1px solid var(--line);
+}
+/* 行表头（特性名=th scope=row，读屏报行） */
+.cmp-t tbody th.f{font-weight:400;text-align:left;border-bottom:1px solid var(--line)}
+.cmp-t .f{color:var(--ink-72);font-size:13.5px}
+.cmp-t tbody td{border-bottom:1px solid var(--line);color:var(--ink-72)}
+.cmp-t td.c{text-align:center;font-family:var(--mono);font-size:12.5px}
+.cmp-t td.y{color:var(--ink);font-weight:600}
+.cmp-t td.no{color:var(--ink-55)}               /* "—" 承载信息，须过 AA */
+.cmp-t td.p{background:var(--amber-soft)}
+.cmp-t .price-row td,.cmp-t .price-row th{border-bottom:none;padding-top:18px}
+.cmp-foot{
+  margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  line-height:1.9;color:var(--ink-55);
+}
+/* 行 hover：生产轨 150ms，仅横向精指针 */
+@media (hover:hover) and (pointer:fine){
+  .cmp-t tbody tr:not(.grp):hover td,.cmp-t tbody tr:not(.grp):hover th.f{background:rgba(236,230,214,.04)}
+  .cmp-t tbody tr:not(.grp):hover td.p{background:rgba(217,162,75,.13)}
+}
+
+/* ── 排疑（FAQ：原生 details · L3）────────────────── */
+.faq{border-top:1px solid var(--line);padding-block:clamp(64px,8vw,96px)}
+.faq-col{max-width:720px;margin:0 auto;position:relative}
+.faq h2{font-size:clamp(24px,3.2vw,34px);letter-spacing:.015em;margin:.5em 0 1.1em}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{
+  list-style:none;cursor:pointer;position:relative;
+  padding:20px 44px 20px 0;
+  font-family:var(--serif);font-size:clamp(16px,1.9vw,18.5px);font-weight:600;
+  letter-spacing:.02em;color:var(--ink);
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";position:absolute;right:6px;top:50%;margin-top:-.72em;
+  font-family:var(--mono);font-size:20px;font-weight:400;color:var(--ink-55);
+  transition:transform .18s var(--ease);
+}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq .a{padding:0 44px 22px 0;color:var(--ink-72);font-size:14.5px;max-width:56ch}
+.faq .a b{color:var(--ink);font-weight:600}
+.faq .a code{
+  font-family:var(--mono);font-size:.92em;
+  background:rgba(236,230,214,.07);border:1px solid var(--line);
+  border-radius:4px;padding:.08em .4em;
+}
+.faq-link{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink-38)}
+
+/* ── 收口：整张稿纸点亮（亮块峰值回放 · 回扣主张）── */
+.cta{background:var(--paper);color:var(--p-ink);text-align:center;padding-block:clamp(80px,10vw,124px)}
+.cta .kicker{color:var(--p-ink-48)}
+.cta .kicker::before{background:var(--p-ink-30)}
+.cta h2{font-size:clamp(32px,5.2vw,54px);letter-spacing:.02em;line-height:1.32;margin:.4em 0 .3em}
+.cta .sub{color:var(--p-ink-68);max-width:36em;margin:0 auto}
+.cta .acts{margin-top:36px;display:flex;gap:22px;justify-content:center;align-items:center;flex-wrap:wrap}
+.cta .micro{margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--p-ink-48)}
+.cta .chips{
+  margin-top:26px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--p-ink-48);
+}
+.cta .alt{
+  margin-top:30px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--p-ink-48);
+}
+.cta .alt a{color:var(--p-ink);text-decoration:none;border-bottom:1px solid var(--p-ink-30);padding-bottom:.1em}
+
+/* ── 页脚行（L3 收紧带）── */
+.foot{border-top:1px solid var(--line);padding-block:26px 30px}
+.foot-in{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.foot-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--ink-55)}
+.foot-links{display:flex;gap:20px;margin-left:auto;flex-wrap:wrap}
+.foot-links a{font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:var(--ink-55);text-decoration:none;padding:10px 2px}
+
+/* ── 动效：双轨 ──────────────────────────────────
+   productive: hover/focus/按压/toggle/accordion 150-200ms；
+   expressive: 仅价格数字换档（纵向滑换 300ms）+ 入场 rise 一次。 */
+@media (hover:hover) and (pointer:fine){
+  .nav a,.foot-links a,.tlink,.btn,.faq-link,.cta .alt a{transition:color .15s var(--ease),background .15s var(--ease),border-color .15s var(--ease),transform .15s var(--ease),opacity .15s var(--ease)}
+  .nav a:hover,.foot-links a:hover{color:var(--amber)}
+  .nav a[aria-current]:hover{color:var(--ink)}
+  .tlink:hover{color:var(--amber);border-color:var(--amber)}
+  .faq-link:hover{color:var(--amber);border-color:var(--amber)}
+  .cta .alt a:hover{border-color:var(--amber-p)}
+  .btn:hover{background:var(--amber-2);transform:translateY(-1px)}
+  .btn--ghost:hover{border-color:var(--amber);color:var(--amber);background:transparent}
+  .btn--paper:hover{background:#7A4E15;transform:translateY(-1px)}
+  .btn--ghost-p:hover{border-color:var(--p-ink);background:transparent}
+  .btn:active{transform:translateY(0);transition-duration:0ms}
+  .seg span{transition:color .15s var(--ease),background .15s var(--ease)}
+  .seg label:hover span{color:var(--ink)}
+  .seg input:checked+span:hover{color:var(--p-ink)}
+  .tier{transition:border-color .15s var(--ease)}
+  .tier:not(.tier--pro):hover{border-color:var(--line-2)}
+}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+  /* 入场：一次，轻编排（货架页不做大表演） */
+  .js .a0{opacity:0;animation:fade .55s var(--ease) both .05s}
+  .js .a1{opacity:0;transform:translateY(14px);animation:rise .65s var(--ease) both .12s}
+  .js .a2{opacity:0;transform:translateY(14px);animation:rise .65s var(--ease) both .26s}
+  .js .a3{opacity:0;animation:fade .55s var(--ease) both .4s}
+  .js .reveal{opacity:0;transform:translateY(16px);
+    transition:opacity .64s var(--ease),transform .64s var(--ease)}
+  .js .reveal.in{opacity:1;transform:var(--settle,none)} /* --settle 保留破格抬升，不被 transform:none 抹掉 */
+  .js .d1{transition-delay:.08s}.js .d2{transition-delay:.16s}
+  /* 价格换档：expressive 唯一配额——数字纵向滑换 */
+  .price-num .n{display:inline-block}
+  .price-num.swap .n{animation:numSwap .3s var(--ease) both}
+  @keyframes numSwap{from{opacity:0;transform:translateY(45%)}to{opacity:1;transform:none}}
+  /* FAQ 展开：内容淡入微升 */
+  .faq details[open] .a{animation:aIn .22s var(--ease) both}
+  @keyframes aIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes fade{to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* ── 响应式重排 ───────────────────────────────── */
+@media (max-width:1319px){
+  .mnote{position:static;width:auto;text-align:left;
+    border-right:none;border-left:1px solid var(--line-2);
+    padding:0 0 0 12px;margin:0 0 20px}
+}
+@media (max-width:960px){
+  .tiers{grid-template-columns:1fr;max-width:480px;margin:0 auto}
+  .tier--pro{transform:none}                   /* 破格回退；不换 order，DOM/视觉顺序一致 */
+  .seg-trust{margin-left:0;width:100%}
+}
+@media (max-width:700px){
+  .top-in{padding:12px 0 0;row-gap:4px}
+  .nav{order:3;width:100%;overflow-x:auto;gap:20px;padding:6px 0 10px;margin-left:0;
+    -webkit-overflow-scrolling:touch}
+  .top-in .btn{margin-left:auto}
+  .ver{display:none}
+  .foot-in{flex-direction:column;align-items:flex-start;gap:12px}
+  .foot-links{margin-left:0}
+}
+@media (max-width:560px){
+  .intro h1{font-size:clamp(36px,11vw,44px)}
+  .cta .acts{flex-direction:column;align-items:stretch;gap:16px}
+  .cta .acts .tlink{text-align:center;border:none;text-decoration:underline;
+    text-underline-offset:.25em;text-decoration-color:var(--p-ink-30)}
+  .faq summary{padding-right:36px}
+}
+
+/* ── 输出视图：深底转浅，交互层隐藏，折叠全展开 ─── */
+@media print{
+  :root{
+    --night:#FFFFFF;--night-2:#FFFFFF;--night-3:#FFFFFF;
+    --ink:#26221B;--ink-72:rgba(38,34,27,.72);--ink-55:rgba(38,34,27,.58);
+    --ink-38:rgba(38,34,27,.4);
+    --line:rgba(38,34,27,.15);--line-2:rgba(38,34,27,.22);
+    --amber:#8A5A1B;--amber-2:#8A5A1B;
+    --amber-soft:rgba(138,90,27,.08);
+  }
+  body{background:#fff}
+  body::after,.skip{display:none}
+  .top,.seg,.acts,.tier .btn{display:none}     /* tier-micro 是信息文案，打印保留 */
+  .tiers{grid-template-columns:repeat(3,1fr)}
+  .tier,.tier--pro{transform:none;box-shadow:none;border:1px solid var(--p-line)}
+  .tier--pro .tier-name i,.tier--pro .tier-tag,.tier--pro .price-sub,
+  .tier--pro .tier-micro,.tier--pro .feats .all{color:rgba(38,34,27,.55)}
+  .badge{position:static;display:inline-block;transform:none;margin-bottom:10px;box-shadow:none}
+  .faq details>*{display:block!important}      /* 折叠内容打印时展开 */
+  .faq details{border-top:1px solid var(--p-line)}
+  .cta{background:#fff;color:#26221B}
+  .intro,.bill,.cmp,.faq,.cta{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="https://inkwell.app/" aria-label="墨迹 Inkwell 首页"><b>墨迹</b><i>INKWELL</i></a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#plans" aria-current="page">定价</a>
+      <a href="#compare">功能对比</a>
+      <a href="#faq">答疑</a>
+    </nav>
+    <span class="ver" aria-hidden="true">v2.4.1</span>
+    <a class="btn btn--ghost btn--sm" href="#dl">免费下载</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ══ 定向｜岗：定向+勾住｜定价哲学即主张句 ══ -->
+  <section class="intro" aria-labelledby="intro-t">
+    <div class="wrap intro-in">
+      <p class="mnote"><b>价目 OPEN LEDGER</b>价格写在纸面上<br>没有第二页价</p>
+      <p class="kicker a0">定价 PRICING · 答于 v2.4.1</p>
+      <h1 id="intro-t" class="a1">本地功能，<br>永远免费。</h1>
+      <p class="deck a2">你写的每个字都存在自己的磁盘上——那部分不收钱，也永远不收。订阅只为两件有持续成本的事：<b>多端同步</b>与<b>团队协作</b>。不买断，不画大饼，随时取消。</p>
+      <p class="creed a3"><span>本地功能永久免费</span><span>订阅只付同步与协作</span><span>年付 30 天可退</span><span>随时取消</span></p>
+    </div>
+  </section>
+
+  <!-- ══ 货架｜岗：比较（本页主件）｜三档均权，Pro 为被照亮的一块 ══ -->
+  <section class="bill" id="plans" aria-labelledby="plans-t">
+    <div class="wrap">
+      <h2 id="plans-t" class="sr-only">三档定价</h2>
+
+      <div class="seg-row reveal">
+        <fieldset class="seg" id="cycle">
+          <legend class="sr-only">计费周期</legend>
+          <label><input type="radio" name="cycle" value="year" checked><span>按年付</span></label>
+          <label><input type="radio" name="cycle" value="month"><span>按月付</span></label>
+        </fieldset>
+        <p class="seg-note" id="cycle-note">年付 <span class="save">省 ¥28 起</span> · 随时取消</p>
+        <p class="seg-trust">30 天无理由退款 · 取消即转 Free，笔记不受影响</p>
+      </div>
+
+      <div class="tiers">
+
+        <!-- Free：写完就走 -->
+        <article class="tier reveal">
+          <h3 class="tier-name"><b>Free</b><i>写完就走</i></h3>
+          <p class="tier-tag">一个人，一台设备，够写很多年</p>
+          <p class="price">
+            <span class="price-num"><span class="n"><span class="cur">¥</span>0</span></span>
+            <span class="price-sub">永久免费 · 不用注册 · 不用信用卡</span>
+          </p>
+          <ul class="feats">
+            <li><b>无限笔记</b>，本地 .md 纯文本</li>
+            <li>全文检索，毫秒级</li>
+            <li>双向链接与关系图谱</li>
+            <li>单设备</li>
+            <li>深色模式随系统</li>
+          </ul>
+          <a class="btn btn--ghost" href="#dl">免费下载</a>
+          <p class="tier-micro">核心功能一个不缺</p>
+        </article>
+
+        <!-- Pro：被照亮的一块（signature 峰值） -->
+        <article class="tier tier--pro reveal d1">
+          <span class="badge">多数写字的人，选这档</span>
+          <h3 class="tier-name"><b>Pro</b><i>都连上</i></h3>
+          <p class="tier-tag">书房、路上、另一台电脑</p>
+          <p class="price" aria-live="polite" aria-atomic="true">
+            <span class="price-num"><span class="n"><span class="cur">¥</span><span class="pval" data-year="68" data-month="8">68</span><span class="price-per" data-year="/年" data-month="/月">/年</span></span></span>
+            <span class="price-sub"><span class="psub" data-year="≈ ¥5.7/月 · 月付 ¥8/月" data-month="按月付 · 年付 ¥68 省 ¥28">≈ ¥5.7/月 · 月付 ¥8/月</span></span>
+          </p>
+          <ul class="feats">
+            <li class="all">Free 全部，外加——</li>
+            <li><b>多设备同步</b>，端到端加密</li>
+            <li>版本历史 30 天</li>
+            <li>PDF / Docx 导出</li>
+            <li>主题商店</li>
+          </ul>
+          <a class="btn btn--paper" id="cta-pro" href="https://inkwell.app/billing/pro?cycle=year">升级 Pro · <span class="pbtn" data-year="¥68/年" data-month="¥8/月">¥68/年</span></a>
+          <p class="tier-micro">随时取消 · 30 天可退</p>
+        </article>
+
+        <!-- Studio：一群人一起写 -->
+        <article class="tier reveal d2">
+          <h3 class="tier-name"><b>Studio</b><i>一起写</i></h3>
+          <p class="tier-tag">编辑部、课题组、小团队</p>
+          <p class="price" aria-live="polite" aria-atomic="true">
+            <span class="price-num"><span class="n"><span class="cur">¥</span><span class="pval" data-year="168" data-month="18">168</span><span class="price-per" data-year="/年" data-month="/月">/年</span></span></span>
+            <span class="price-sub"><span class="psub" data-year="≈ ¥14/月 · 月付 ¥18/月" data-month="按月付 · 年付 ¥168 省 ¥48">≈ ¥14/月 · 月付 ¥18/月</span></span>
+          </p>
+          <ul class="feats">
+            <li class="all">Pro 全部，外加——</li>
+            <li><b>协作工作区</b>，≤10 人</li>
+            <li>API 访问</li>
+            <li>白标导出</li>
+            <li>优先支持，4 小时内回复</li>
+          </ul>
+          <a class="btn btn--ghost" id="cta-studio" href="https://inkwell.app/billing/studio?cycle=year">升级 Studio · <span class="pbtn" data-year="¥168/年" data-month="¥18/月">¥168/年</span></a>
+          <p class="tier-micro">年付约省 2 成 · 按月也可</p>
+        </article>
+
+      </div>
+
+      <p class="bill-note reveal d2">价格为人民币含税价 · 学生与教育工作者 5 折，凭 edu 邮箱申请 → <a class="faq-link" href="mailto:edu@inkwell.app">edu@inkwell.app</a></p>
+    </div>
+  </section>
+
+  <!-- ══ 对比台账｜岗：深化｜mono 高密度台账（L4 收紧区）══ -->
+  <section class="cmp" id="compare" aria-labelledby="cmp-t">
+    <div class="wrap">
+      <div class="cmp-col">
+        <p class="mnote"><b>台账</b>✓ = 含<br>— = 不含<br>数字 = 上限</p>
+        <div class="reveal">
+          <p class="kicker">对照着挑</p>
+          <h2 id="cmp-t">三档之间，差的都在这张表上。</h2>
+          <p class="sub">没有「详情咨询销售」。能写清的都写清，写不清的在答疑里答。</p>
+        </div>
+        <div class="tbl-scroll reveal d1">
+          <table class="cmp-t">
+            <caption>墨迹 Inkwell 功能对比 · v2.4.1 口径</caption>
+            <thead>
+              <tr>
+                <th scope="col">功能</th>
+                <th scope="col" class="c">Free<small>¥0</small></th>
+                <th scope="col" class="c p">Pro<small><span class="thead-p" data-year="¥68/年" data-month="¥8/月">¥68/年</span></small></th>
+                <th scope="col" class="c">Studio<small><span class="thead-p" data-year="¥168/年" data-month="¥18/月">¥168/年</span></small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="grp"><th scope="rowgroup" colspan="4">书写 —— 永远免费的部分</th></tr>
+              <tr><th scope="row" class="f">笔记数</th><td class="c y">无限</td><td class="c y p">无限</td><td class="c y">无限</td></tr>
+              <tr><th scope="row" class="f">全文检索</th><td class="c y">毫秒级</td><td class="c y p">毫秒级</td><td class="c y">毫秒级</td></tr>
+              <tr><th scope="row" class="f">双向链接 / 图谱</th><td class="c y">✓</td><td class="c y p">✓</td><td class="c y">✓</td></tr>
+              <tr><th scope="row" class="f">本地 .md 纯文本</th><td class="c y">✓</td><td class="c y p">✓</td><td class="c y">✓</td></tr>
+              <tr class="grp"><th scope="rowgroup" colspan="4">同步与历史 —— 订阅为之付费的部分</th></tr>
+              <tr><th scope="row" class="f">设备数</th><td class="c no">1 台</td><td class="c y p">不限</td><td class="c y">不限</td></tr>
+              <tr><th scope="row" class="f">多端同步（端到端加密）</th><td class="c no">—</td><td class="c y p">✓</td><td class="c y">✓</td></tr>
+              <tr><th scope="row" class="f">版本历史</th><td class="c no">—</td><td class="c y p">30 天</td><td class="c y">30 天</td></tr>
+              <tr class="grp"><th scope="rowgroup" colspan="4">导出与外观</th></tr>
+              <tr><th scope="row" class="f">PDF / Docx 导出</th><td class="c no">—</td><td class="c y p">✓</td><td class="c y">✓</td></tr>
+              <tr><th scope="row" class="f">主题商店</th><td class="c no">—</td><td class="c y p">✓</td><td class="c y">✓</td></tr>
+              <tr><th scope="row" class="f">白标导出</th><td class="c no">—</td><td class="c no p">—</td><td class="c y">✓</td></tr>
+              <tr class="grp"><th scope="rowgroup" colspan="4">协作与支持</th></tr>
+              <tr><th scope="row" class="f">协作工作区</th><td class="c no">—</td><td class="c no p">—</td><td class="c y">≤10 人</td></tr>
+              <tr><th scope="row" class="f">API 访问</th><td class="c no">—</td><td class="c no p">—</td><td class="c y">✓</td></tr>
+              <tr><th scope="row" class="f">支持</th><td class="c">社区</td><td class="c p">邮件 · 24h</td><td class="c">优先 · 4h</td></tr>
+              <tr class="price-row"><th scope="row" class="f mono">合计</th><td class="c y">¥0</td><td class="c y p"><span class="thead-p" data-year="¥68/年" data-month="¥8/月">¥68/年</span></td><td class="c y"><span class="thead-p" data-year="¥168/年" data-month="¥18/月">¥168/年</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cmp-foot reveal d1">「不限」= 不限制设备台数，账号本人使用 · 协作工作区按席位计，¥168/年含 10 席 · 取消订阅后回落 Free，已导出文件与本地笔记原样保留</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 排疑｜岗：排疑（买断/取消/退款/隐私/Free 够吗）══ -->
+  <section class="faq" id="faq" aria-labelledby="faq-t">
+    <div class="wrap">
+      <div class="faq-col">
+        <p class="mnote"><b>答于 v2.4.1</b>未删改<br>以账单页为准</p>
+        <div class="reveal">
+          <p class="kicker">掏钱之前</p>
+          <h2 id="faq-t">你可能想问的，先答了。</h2>
+        </div>
+        <div class="reveal d1">
+          <details>
+            <summary>为什么没有买断版？</summary>
+            <div class="a"><p>同步和协作是每月都在发生的服务器成本，买断价要么虚高、要么靠后来者续命，最后停更跑路。我们选择只对持续发生的成本持续收费——<b>本地功能不收钱，也就永远不会"停更收回"</b>。</p></div>
+          </details>
+          <details>
+            <summary>免费版会一直免费吗？</summary>
+            <div class="a"><p>会。「本地功能永久免费」写在产品承诺里：你的笔记是本地 .md 文件，打开、写、搜、链接，都不经过我们的服务器，想收也收不走。</p></div>
+          </details>
+          <details>
+            <summary>取消订阅会怎样？</summary>
+            <div class="a"><p>应用内两步取消，不用找客服。到期自动回落 Free：多设备同步停止，<b>笔记、版本记录里恢复的文件、已导出的 PDF 全部原样保留</b>。想回来，数据都在。</p></div>
+          </details>
+          <details>
+            <summary>年付后悔了能退吗？</summary>
+            <div class="a"><p>支付后 30 天内无条件退全款，邮件 <a class="faq-link" href="mailto:billing@inkwell.app">billing@inkwell.app</a> 说一声就行，不问理由。超过 30 天按比例退剩余月份。</p></div>
+          </details>
+          <details>
+            <summary>同步的笔记存在哪？安全吗？</summary>
+            <div class="a"><p>端到端加密：离开设备前已加密，服务器上存的是密文，我们读不了你的内容。也可以完全自托管——同步走你自己的 <code>iCloud</code> 或 <code>WebDAV</code>，一分钱不付给我们。</p></div>
+          </details>
+          <details>
+            <summary>月付和年付差多少？</summary>
+            <div class="a"><p>Pro 月付一年合计 ¥96，年付 ¥68，<b>省 ¥28</b>；Studio 一年 ¥216，年付 ¥168，<b>省 ¥48</b>。年付约省两到三成——切换上方的「按月付」，数字自己算给你看。</p></div>
+          </details>
+          <details>
+            <summary>Studio 的协作工作区适合谁？</summary>
+            <div class="a"><p>≤10 人的小团队：编辑部共用一个选题库、课题组共享文献笔记、工作室白标导出交付物。10 席以内一个价，不按人头加钱。</p></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 收口｜岗：收口+次级出口（整张稿纸点亮 · 回扣「本地免费」）══ -->
+  <section class="cta" id="dl" aria-labelledby="cta-t">
+    <div class="wrap">
+      <p class="kicker reveal">还没想好，就先写</p>
+      <h2 id="cta-t" class="reveal d1">字是自己的，<br>钱只花在同步上。</h2>
+      <p class="sub reveal d1">下载 Free，不注册，不写也能删干净。写到需要第二台设备的那天，再回来这一页。</p>
+      <div class="acts reveal d2">
+        <a class="btn btn--paper" href="https://inkwell.app/downloads/inkwell-2.4.1-macos.dmg" download>↓ 下载 macOS 版</a>
+        <a class="btn btn--ghost-p" href="https://inkwell.app/downloads/inkwell-2.4.1-win.exe" download>↓ Windows 版</a>
+      </div>
+      <p class="micro reveal d2">Apple Silicon / Intel · Windows 10+ x64 · v2.4.1 · 约 18 MB · 免费版含全部核心功能</p>
+      <p class="chips reveal d2">.md 纯文本 · 本地优先 · 不注册也能用 · 随时取消</p>
+      <p class="alt reveal d2">或先回到 <a href="https://inkwell.app/">功能页</a> 看它怎么工作 · 账单问题 <a href="mailto:billing@inkwell.app">billing@inkwell.app</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="brand" href="https://inkwell.app/"><b>墨迹</b><i>INKWELL</i></a>
+    <span class="foot-note">© 2026 墨迹 Inkwell · 本地功能永久免费 · 订阅只付同步与协作</span>
+    <nav class="foot-links" aria-label="页脚链接">
+      <a href="https://inkwell.app/changelog">更新日志</a>
+      <a href="https://inkwell.app/privacy">隐私承诺</a>
+      <a href="https://inkwell.app/terms">服务条款</a>
+      <a href="mailto:billing@inkwell.app">billing@inkwell.app</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+/* 渐进增强：.js 已在 head 按 reduced-motion 判定。
+   ① 计费切换：radio 原生键盘/读屏，JS 只更新数字、单位、副文案与 CTA 链接的 cycle 参数。
+   ② 无 JS / reduced-motion：静态默认态=年付价，月付价常显于副文案，信息不丢。 */
+(function(){
+  var form=document.getElementById('cycle');
+  if(!form)return;
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* 只对含可变数字（.pval）的价格做滑换——Free ¥0 不变不扫 */
+  var nums=[].slice.call(document.querySelectorAll('.price-num'))
+    .filter(function(n){return n.querySelector('.pval')});
+
+  function apply(cycle){
+    /* 价格数字 + 单位 */
+    [].slice.call(document.querySelectorAll('.pval')).forEach(function(el){
+      el.textContent=el.getAttribute('data-'+cycle);
+    });
+    [].slice.call(document.querySelectorAll('.price-per')).forEach(function(el){
+      el.textContent=el.getAttribute('data-'+cycle);
+    });
+    [].slice.call(document.querySelectorAll('.psub')).forEach(function(el){
+      el.textContent=el.getAttribute('data-'+cycle);
+    });
+    [].slice.call(document.querySelectorAll('.pbtn')).forEach(function(el){
+      el.textContent=el.getAttribute('data-'+cycle);
+    });
+    [].slice.call(document.querySelectorAll('.thead-p')).forEach(function(el){
+      el.textContent=el.getAttribute('data-'+cycle);
+    });
+    /* 切换说明 */
+    document.getElementById('cycle-note').innerHTML = cycle==='year'
+      ? '年付 <span class="save">省 ¥28 起</span> · 随时取消'
+      : '按月付 · 年付更省（<span class="save">省 ¥28–48</span>）';
+    /* CTA 链接携带周期 */
+    ['cta-pro','cta-studio'].forEach(function(id){
+      var a=document.getElementById(id);
+      if(a)a.href=a.href.replace(/cycle=(year|month)/,'cycle='+cycle);
+    });
+    /* 数字滑换动效（expressive 唯一配额；reduced-motion 由 CSS 全灭） */
+    nums.forEach(function(n){
+      n.classList.remove('swap');void n.offsetWidth;
+      if(!reduced)n.classList.add('swap');
+    });
+  }
+  form.addEventListener('change',function(e){
+    if(e.target.name==='cycle')apply(e.target.value);
+  });
+
+  /* 滚动入场：一次，不重复；无 IO 直接全亮 */
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(!('IntersectionObserver' in window)||!document.documentElement.classList.contains('js')){
+    els.forEach(function(e){e.classList.add('in')});
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}
+    });
+  },{threshold:.18,rootMargin:'0px 0px -6% 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

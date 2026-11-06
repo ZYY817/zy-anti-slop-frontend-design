@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>设置中心 · 面板动画修复版</title>
+<style>
+  /* ===== 修复版：每处改动可回溯到词条决策点（见 record.md）===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0f1114; --panel: #171a1f; --line: #262b33;
+    --text: #e6e8eb; --text-2: #9aa3ad; --accent: #5e6ad2;
+    --r-sm: 8px; --r-lg: 12px;
+    --ease-panel: cubic-bezier(.4, 0, .2, 1);      /* B45：展开收起用标准缓出 */
+    --dur-panel: 280ms;
+  }
+  body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .container { max-width: 640px; margin: 0 auto; padding: 40px 20px 200px; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 28px; }
+
+  /* 手风琴：去掉 max-height 代理——高度由 JS 实测驱动（见脚本）*/
+  .acc-item {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--r-lg); margin-bottom: 12px;
+  }
+  .acc-head {
+    width: 100%; background: none; border: none; color: var(--text); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; font-size: 15px; font-weight: 500; text-align: left;
+  }
+  .acc-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-lg); }
+  .acc-head .icon {
+    font-size: 18px; color: var(--text-2); display: inline-block;
+    transition: transform var(--dur-panel) var(--ease-panel);  /* K5：与 body 同曲线同时长 */
+  }
+  .acc-item.open .icon { transform: rotate(180deg); }
+  .acc-body { height: 0; overflow: hidden; }
+  .acc-body .inner { padding: 0 20px 18px; color: var(--text-2); font-size: 14px; line-height: 1.7; }
+
+  #openSheet {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; border: none; border-radius: var(--r-sm);
+    padding: 12px 28px; font-size: 14px; font-weight: 500; cursor: pointer;
+  }
+  #openSheet:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  /* K14/K5：backdrop 透明度与 sheet 进度联动，不用 display 瞬切 */
+  .backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    opacity: 0; pointer-events: none; transition: opacity var(--dur-panel) linear;
+  }
+  .backdrop.on { opacity: 1; pointer-events: auto; }
+
+  /* K1·停靠：三档 detents——closed(100%) / peek(55%) / full(8%) */
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 92vh; max-width: 640px;
+    margin: 0 auto; background: #1a1e26; border: 1px solid var(--line); border-bottom: none;
+    border-radius: 20px 20px 0 0; transform: translateY(100%);
+    padding: 16px 24px 32px; touch-action: none; will-change: transform;
+  }
+  .sheet .grabber {
+    width: 40px; height: 4px; background: rgba(255,255,255,.25);
+    border-radius: 2px; margin: 0 auto 20px; cursor: grab;
+  }
+  .sheet h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+  .sheet p { color: var(--text-2); font-size: 14px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>设置中心</h1>
+
+  <div class="acc-item">
+    <button class="acc-head" aria-expanded="false">账号与隐私 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>管理你的账号信息、登录设备和隐私偏好。你可以控制谁可以看到你的个人资料、活动状态以及在线时间。</p>
+      <p>隐私设置变更会立即生效，并同步到所有已登录设备。</p>
+    </div></div>
+  </div>
+  <div class="acc-item">
+    <button class="acc-head" aria-expanded="false">通知偏好 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>选择接收哪些类型的通知：产品更新、安全提醒、营销活动。</p>
+      <p>重要安全通知无法关闭，这是保护账号的必要措施。</p>
+    </div></div>
+  </div>
+  <div class="acc-item">
+    <button class="acc-head" aria-expanded="false">外观与显示 <span class="icon">▾</span></button>
+    <div class="acc-body"><div class="inner">
+      <p>自定义界面主题、字体大小和显示密度。支持跟随系统设置的自动切换。</p>
+      <p>深色模式在 OLED 屏幕上可以节省电量。</p>
+    </div></div>
+  </div>
+</div>
+
+<button id="openSheet">打开分享面板</button>
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="分享面板">
+  <div class="grabber"></div>
+  <h2>分享此页面</h2>
+  <p>复制链接或选择分享渠道。拖拽面板可停靠在三个高度档位。</p>
+</div>
+
+<script>
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = 'cubic-bezier(.4, 0, .2, 1)', BASE_MS = 280;
+
+/* ===== K5·中断接续：手风琴实测高度动画 =====
+   决策点答案：
+   ① 测量——scrollHeight 实测，不用 max-height 代理（消灭隐形动画段）
+   ② 接管——动画中再点击：cancel() 旧动画，以当前 computed height 为新起点
+   ③ 接续时长——按剩余距离比例：dur = BASE_MS × |start-target|/total，反向也比例缩短
+   ④ 终态——展开完成写 height:auto（布局安全），收起写 0
+   ⑤ aria——expanded 在点击时更新（状态=意图，不等动画完） */
+document.querySelectorAll('.acc-item').forEach(item => {
+  const head = item.querySelector('.acc-head');
+  const body = item.querySelector('.acc-body');
+  let anim = null;
+
+  head.addEventListener('click', () => {
+    const open = !item.classList.contains('open');
+    item.classList.toggle('open', open);
+    head.setAttribute('aria-expanded', open);
+
+    if (reducedMotion) { body.style.height = open ? 'auto' : '0'; return; }
+
+    if (anim) anim.cancel();                                   // 中断接管
+    const start = parseFloat(getComputedStyle(body).height);   // 当前实际高度为起点
+    const target = open ? body.scrollHeight : 0;
+    const total = body.scrollHeight || 1;
+    const dur = Math.max(80, BASE_MS * Math.abs(target - start) / total); // 距离比例时长
+
+    body.style.height = start + 'px';
+    anim = body.animate({ height: [start + 'px', target + 'px'] }, { duration: dur, easing: EASE });
+    anim.onfinish = () => { body.style.height = open ? 'auto' : '0'; anim = null; };
+  });
+});
+
+/* ===== K1·停靠 + 吸附：底部面板三档 + 速度裁决 =====
+   决策点答案：
+   ① 档位集合——closed(100%) / peek(55%) / full(8%)，各档有语义名
+   ② 吸附裁决——|v|>0.5px/ms flick 方向胜；否则就近档位
+   ③ 边缘阻尼——拖过 top 边界时 dy/3 阻力（K1·几何约束）
+   ④ 跟手协议——拖拽中 transition:none + transform 直写；松手统一走落定动画
+   ⑤ 联动——backdrop opacity = 1 - ty 进度，不用 display 瞬切 */
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+const trigger = document.getElementById('openSheet');
+const DETENTS = { full: 8, peek: 55, closed: 100 };            // translateY %
+let curTy = 100, dragging = false;
+
+function setSheet(ty, {animate = true} = {}) {
+  curTy = ty;
+  if (!animate || reducedMotion) {
+    sheet.style.transition = 'none';
+    sheet.style.transform = `translateY(${ty}%)`;
+    void sheet.offsetHeight;                                   // 强制立帧，防下次 transition 吞掉
+    sheet.style.transition = '';
+  } else {
+    const dist = Math.abs(ty - (lastTy ?? ty));
+    const dur = Math.min(320, 160 + dist * 4);                 // 落定时长随距离
+    sheet.style.transition = `transform ${dur}ms cubic-bezier(.32, .72, 0, 1)`;
+    sheet.style.transform = `translateY(${ty}%)`;
+  }
+  lastTy = ty;
+  backdrop.style.opacity = Math.max(0, 1 - ty / 100) * (ty < 100 ? 1 : 0);
+  backdrop.classList.toggle('on', ty < 100);
+}
+let lastTy = 100;
+
+function openSheet()  { setSheet(DETENTS.peek); sheet.querySelector('.grabber').focus?.(); }
+function closeSheet() { setSheet(DETENTS.closed); trigger.focus(); }  // K14：焦点归还
+
+trigger.onclick = openSheet;
+backdrop.onclick = closeSheet;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && curTy < 100) closeSheet(); });
+
+// 拖拽：downY 记起点，samples 只为算速度
+let samples = [], downY = 0;
+sheet.addEventListener('pointerdown', e => {
+  dragging = true; downY = e.clientY;
+  samples = [{y: e.clientY, t: performance.now()}];
+  sheet.setPointerCapture(e.pointerId);
+  sheet.style.transition = 'none';
+});
+sheet.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  samples.push({y: e.clientY, t: performance.now()});
+  if (samples.length > 4) samples.shift();                     // 速度样本只留最近 4 个
+  const dy = (e.clientY - downY) / sheet.offsetHeight * 100;   // 位移永远相对按下点
+  let ty = curTy + dy;
+  if (ty < DETENTS.full) ty = DETENTS.full + (ty - DETENTS.full) / 3;  // 顶部边缘阻尼
+  ty = Math.min(ty, 100);
+  sheet.style.transform = `translateY(${ty}%)`;
+  backdrop.style.opacity = Math.max(0, 1 - ty / 100);          // 拖拽中背板也跟手
+});
+sheet.addEventListener('pointerup', e => {
+  if (!dragging) return; dragging = false;
+  const now = performance.now();
+  const recent = samples.filter(s => now - s.t < 150);         // 150ms 窗口算速度
+  const v = recent.length > 1 ? (e.clientY - recent[0].y) / (now - recent[0].t) : 0; // px/ms
+  const dy = (e.clientY - downY) / sheet.offsetHeight * 100;
+  const releaseTy = Math.min(Math.max(curTy + dy, DETENTS.full), 100);
+
+  let target;
+  if (Math.abs(v) > 0.5) {                                     // flick：方向胜
+    const order = [DETENTS.full, DETENTS.peek, DETENTS.closed];
+    const i = order.findIndex(d => Math.abs(d - curTy) < 1);
+    target = v < 0 ? order[Math.max(0, i - 1)] : order[Math.min(2, i + 1)];
+  } else {                                                     // 慢速：就近吸附
+    target = Object.values(DETENTS).reduce((a, b) =>
+      Math.abs(b - releaseTy) < Math.abs(a - releaseTy) ? b : a);
+  }
+  setSheet(target);
+  if (target === DETENTS.closed) trigger.focus();
+});
+</script>
+</body>
+</html>

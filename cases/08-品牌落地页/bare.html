@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山雾 Mistveil — 海拔两千米的清晨</title>
+<style>
+:root{
+  --paper:#ECE9E0; --paper2:#E3DED1; --ink:#20251F; --ink2:#5B6056;
+  --line:#C5BFAD; --mist:#F6F4EC;
+  --g-fir:linear-gradient(180deg,#9FB5A6 0%,#4C6A5B 42%,#26382F 100%);
+  --g-lily:linear-gradient(180deg,#F4EFE2 0%,#DDD2A9 48%,#A8925D 100%);
+  --g-veti:linear-gradient(180deg,#9A7F5C 0%,#66513A 48%,#382C1F 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);color:var(--ink);
+  font:15px/1.95 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
+  overflow-x:hidden;
+}
+::selection{background:#3A4A3E;color:var(--mist)}
+.serif{font-family:"Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif}
+.mono{font-family:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  font-variant-numeric:tabular-nums;letter-spacing:.08em;font-style:normal}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,64px)}
+
+/* ---------- paper grain ---------- */
+body::after{content:"";position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- telemetry bar ---------- */
+.topbar{position:fixed;inset:0 0 auto 0;height:36px;z-index:60;display:flex;align-items:center;gap:14px;
+  padding:0 16px;font-size:10px;color:var(--ink2);white-space:nowrap;
+  background:rgba(236,233,224,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+.topbar b{color:var(--ink);font-weight:600}
+.topbar .push{flex:1}
+.hs{display:inline}
+@media(max-width:759px){.hs{display:none}}
+
+/* ---------- altitude rail ---------- */
+#rail{position:fixed;left:0;top:36px;bottom:0;width:54px;z-index:50;display:none;
+  border-right:1px solid var(--line);background:rgba(236,233,224,.55)}
+@media(min-width:760px){#rail{display:block}}
+.tick{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.tick em{position:absolute;left:7px;top:3px;font-size:8.5px;font-style:normal;color:var(--ink2)}
+#railMarker{position:absolute;left:0;right:0;pointer-events:none}
+#railMarker i{display:block;width:18px;height:1px;background:var(--ink)}
+#railMarker span{position:absolute;left:6px;top:5px;font-size:9px;color:var(--ink)}
+main{position:relative}
+@media(min-width:760px){main{margin-left:54px}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;overflow:hidden;
+  background:linear-gradient(180deg,#EDEAE1 0%,#E7E3D6 52%,#D9D4C3 78%,#CEC9B8 100%)}
+.hero-inner{position:relative;z-index:5;padding:110px clamp(20px,6vw,80px) 140px;max-width:900px}
+.eyebrow{font-size:11px;color:var(--ink2);margin-bottom:34px}
+.eyebrow::before{content:"";display:inline-block;width:34px;height:1px;background:var(--ink2);
+  vertical-align:middle;margin-right:12px}
+h1{font-size:clamp(40px,8.2vw,88px);line-height:1.28;font-weight:600;letter-spacing:.02em}
+h1 .thin{font-weight:400;color:var(--ink2)}
+.lede{max-width:30em;margin-top:40px;color:var(--ink2);font-size:15px}
+.hero-note{position:absolute;left:clamp(20px,6vw,80px);bottom:38px;z-index:6;font-size:10px;color:var(--ink2)}
+.hero-note b{display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(5px)}}
+.brandmark{position:absolute;right:clamp(8px,4vw,56px);top:16%;z-index:4;
+  writing-mode:vertical-rl;font-size:clamp(72px,13vw,150px);letter-spacing:.14em;line-height:1;
+  color:transparent;-webkit-text-stroke:1px rgba(32,37,31,.42);user-select:none;pointer-events:none}
+@supports not (-webkit-text-stroke:1px #000){.brandmark{color:rgba(32,37,31,.1)}}
+/* cloud sea */
+.cloud{position:absolute;left:-15%;width:130%;pointer-events:none}
+.cloud::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(60% 100% at 50% 45%,rgba(248,246,239,.96),rgba(248,246,239,0) 72%);
+  filter:blur(16px);animation:drift var(--d,20s) ease-in-out infinite alternate}
+.c1{bottom:-14%;height:52%;z-index:3}.c1::before{--d:22s}
+.c2{bottom:2%;height:44%;z-index:2;opacity:.75}.c2::before{--d:17s;animation-delay:-6s;filter:blur(24px)}
+.c3{bottom:16%;height:36%;z-index:1;opacity:.5}.c3::before{--d:27s;animation-delay:-13s;filter:blur(30px)}
+@keyframes drift{from{transform:translateX(-3.5%)}to{transform:translateX(3.5%)}}
+.horizon{position:absolute;left:0;right:0;bottom:33%;height:1px;background:rgba(32,37,31,.22);z-index:1}
+.sun{position:absolute;right:16%;bottom:36%;width:clamp(64px,9vw,96px);aspect-ratio:1;z-index:2;
+  border:1px solid rgba(32,37,31,.4);border-radius:50%;background:rgba(245,238,216,.5)}
+
+/* ---------- section chrome ---------- */
+.sec-head{border-top:1px solid var(--line);padding:clamp(56px,9vh,110px) 0 0}
+.sec-head .k{font-size:10px;color:var(--ink2);display:block;margin-bottom:22px}
+.sec-head h2{font-size:clamp(28px,4.6vw,46px);font-weight:600;line-height:1.4}
+.sec-head .sub{max-width:34em;margin-top:20px;color:var(--ink2);font-size:14px}
+
+/* ---------- fragrances ---------- */
+.frag{padding:clamp(72px,11vh,130px) 0;border-bottom:1px solid var(--line)}
+.frag:last-of-type{border-bottom:0}
+.frag-grid{display:grid;grid-template-columns:64px 108px 220px 1fr;gap:clamp(20px,4vw,60px);
+  align-items:start}
+.frag.rev .frag-grid{grid-template-columns:64px 1fr 220px 108px}
+.frag-no{font-size:11px;color:var(--ink2);padding-top:8px}
+.frag-name .v{writing-mode:vertical-rl;font-size:clamp(52px,6.5vw,76px);letter-spacing:.16em;
+  line-height:1;font-weight:600}
+.frag-name .en{display:block;margin-top:16px;font-size:9.5px;color:var(--ink2);
+  writing-mode:vertical-rl;letter-spacing:.18em}
+.frag.rev .frag-name{order:4;justify-self:end;text-align:right}
+.frag.rev .frag-copy{order:2}
+.frag.rev .bottle{order:3}
+.frag.rev .frag-no{order:1}
+/* the bottle — pure CSS */
+.bottle{width:150px;justify-self:center;text-align:center}
+.bottle .cap{width:34px;height:15px;background:var(--ink);border-radius:2px;margin:0 auto}
+.bottle .neck{width:26px;height:16px;border:1px solid var(--ink);border-bottom:0;margin:0 auto}
+.glass{position:relative;width:118px;height:284px;margin:0 auto;overflow:hidden;
+  border:1px solid var(--ink);border-radius:8px 8px 16px 16px;
+  background:linear-gradient(105deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 34%)}
+.glass .vapor{position:absolute;top:6%;left:12%;right:12%;height:34%;
+  background:linear-gradient(180deg,rgba(250,248,242,.95),rgba(250,248,242,0));
+  filter:blur(9px);opacity:.75}
+.glass .oil{position:absolute;left:0;right:0;bottom:0;height:var(--f,60%);
+  border-top:1px solid rgba(252,250,244,.75);
+  transform:scaleY(0);transform-origin:bottom;
+  transition:transform 1.8s cubic-bezier(.19,.86,.22,1) .25s}
+.bottle.in .glass .oil{transform:scaleY(1)}
+.oil.g-fir{background:var(--g-fir)}.oil.g-lily{background:var(--g-lily)}.oil.g-veti{background:var(--g-veti)}
+.bottle figcaption{margin-top:18px;font-size:9.5px;color:var(--ink2);letter-spacing:.12em}
+.frag-copy{max-width:30em;padding-top:6px}
+.frag-line{font-size:clamp(21px,2.9vw,30px);line-height:1.75;font-weight:500}
+.notes{margin-top:34px;border-top:1px solid var(--line)}
+.notes>div{display:flex;gap:18px;padding:11px 0;border-bottom:1px solid var(--line);font-size:11px}
+.notes dt{color:var(--ink2);min-width:3.5em}
+.frag-meta{margin-top:26px;font-size:10.5px;color:var(--ink2)}
+.frag-meta em{font-style:normal;color:var(--ink)}
+.alt-chip{display:inline-block;border:1px solid var(--ink2);border-radius:999px;
+  padding:3px 11px;font-size:9.5px;color:var(--ink2);margin-bottom:22px;letter-spacing:.2em}
+
+/* ---------- machine ---------- */
+.machine{border-top:1px solid var(--line);padding:clamp(72px,11vh,130px) 0;
+  background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%)}
+.m-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(30px,6vw,90px);align-items:center;margin-top:56px}
+.device-wrap{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:90px}
+.plume{position:absolute;top:0;left:50%;width:120px;height:150px;transform:translateX(-50%);pointer-events:none}
+.plume i{position:absolute;left:50%;bottom:0;width:16px;height:56px;border-radius:50%;
+  background:linear-gradient(180deg,rgba(250,248,242,0),rgba(250,248,242,.9));
+  filter:blur(7px);opacity:0;animation:rise 4.2s ease-in infinite}
+.plume i:nth-child(2){animation-delay:1.4s;left:58%;height:70px}
+.plume i:nth-child(3){animation-delay:2.8s;left:42%;height:64px}
+@keyframes rise{0%{transform:translate(-50%,30px) scaleX(1);opacity:0}
+  30%{opacity:.85}100%{transform:translate(-50%,-96px) scaleX(2.6);opacity:0}}
+.device{position:relative;width:clamp(150px,18vw,190px);height:clamp(190px,22vw,240px);
+  border:1px solid var(--ink);border-radius:26px 26px 34px 34px;
+  background:linear-gradient(90deg,#CFCAB9 0%,#F0EDE4 42%,#E4DFD2 62%,#C6C0AE 100%)}
+.device .vent{position:absolute;top:26px;left:50%;transform:translateX(-50%);
+  width:56px;height:5px;border-radius:99px;background:var(--ink)}
+.device .led{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  width:6px;height:6px;border-radius:50%;background:#8FA38F;box-shadow:0 0 10px 2px rgba(143,163,143,.55)}
+.d-shadow{width:60%;height:12px;margin-top:18px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(32,37,31,.28),transparent);filter:blur(4px)}
+.m-copy .m-line{font-size:clamp(26px,3.6vw,40px);line-height:1.5;font-weight:600;margin-bottom:22px}
+.m-copy>p:not(.m-line){max-width:30em;color:var(--ink2);font-size:14px}
+.spec{display:grid;grid-template-columns:1fr 1fr;margin-top:38px;border-top:1px solid var(--line)}
+.spec>div{padding:14px 0;border-bottom:1px solid var(--line)}
+.spec dt{font-size:9px;color:var(--ink2);margin-bottom:4px}
+.spec dd{font-size:13px;color:var(--ink)}
+.price{margin-top:30px;font-size:11px;color:var(--ink2)}
+.price a{border-bottom:1px solid var(--ink);color:var(--ink);text-decoration:none}
+
+/* ---------- interlude (signature) ---------- */
+.interlude{position:relative;min-height:92vh;min-height:92svh;background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none;
+  -webkit-user-select:none}
+.interlude svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}
+.inter-inner{position:relative;z-index:4;text-align:center;padding:80px 24px}
+.inter-tag{font-size:10px;letter-spacing:.3em;opacity:.55;margin-bottom:38px}
+#lineA{font-size:clamp(30px,6vw,58px);line-height:1.5;font-weight:500;transition:opacity .1s linear}
+#lineB{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:6;
+  font-size:clamp(30px,6vw,58px);line-height:1.5;font-weight:500;color:var(--ink);
+  opacity:0;pointer-events:none;padding:0 24px}
+.fog{position:absolute;inset:0;z-index:5;opacity:0;pointer-events:none}
+.fog i{position:absolute;left:-25%;width:150%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(240,237,228,.97),rgba(240,237,228,0) 74%);
+  filter:blur(26px)}
+.fog i:nth-child(1){bottom:-30%;height:70%}
+.fog i:nth-child(2){bottom:-8%;height:60%;opacity:.85}
+.fog i:nth-child(3){bottom:22%;height:48%;opacity:.6}
+.fog i:nth-child(4){bottom:52%;height:40%;opacity:.35}
+.breath{position:relative;z-index:7;margin-top:56px;width:74px;height:74px;border-radius:50%;
+  border:1px solid rgba(236,233,224,.65);background:transparent;color:var(--paper);
+  cursor:pointer;touch-action:none;-webkit-touch-callout:none}
+.breath span{font-family:"Songti SC","STSong","SimSun",serif;font-size:19px;display:block}
+.breath::after{content:"";position:absolute;inset:-7px;border-radius:50%;
+  border:1px solid rgba(236,233,224,.22);transition:transform .5s ease}
+.breath:active::after{transform:scale(1.12)}
+#holdHint{margin-top:26px;font-size:10px;letter-spacing:.22em;opacity:.55;min-height:1.5em}
+
+/* ---------- craft ---------- */
+.craft{padding-bottom:clamp(72px,11vh,130px)}
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);margin-top:60px;
+  border-top:1px solid var(--line)}
+.steps li{padding:26px 26px 40px 0;border-bottom:1px solid var(--line)}
+.steps .n{font-size:10px;color:var(--ink2)}
+.steps h3{font-size:clamp(34px,4.4vw,52px);font-weight:600;margin:14px 0 12px;line-height:1.1}
+.steps p{font-size:13px;color:var(--ink2);max-width:15em}
+.steps .d{display:block;margin-top:16px;font-size:9px;color:var(--ink2);letter-spacing:.2em}
+.yield{margin-top:44px;font-size:11px;color:var(--ink2)}
+.yield em{font-style:normal;color:var(--ink)}
+
+/* ---------- story / footer ---------- */
+.story{border-top:1px solid var(--line);padding:clamp(72px,11vh,120px) 0}
+.story-p{font-size:clamp(19px,2.7vw,27px);line-height:2.1;max-width:26em}
+.story-p b{font-weight:600}
+.foot{border-top:1px solid var(--ink);padding:70px 0 46px;background:var(--paper2)}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;align-items:end}
+.foot-brand{font-size:clamp(40px,5.6vw,64px);font-weight:600;line-height:1}
+.foot-brand span{display:block;margin-top:10px;font-size:10px;letter-spacing:.4em;color:var(--ink2)}
+.foot nav{display:flex;flex-direction:column;gap:9px;font-size:11px}
+.foot nav a{text-decoration:none;color:var(--ink2)}
+.foot nav a:hover{color:var(--ink)}
+.foot .geo{font-size:10px;color:var(--ink2);line-height:2}
+.foot-note{grid-column:1/-1;margin-top:36px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:9.5px;color:var(--ink2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+/* ---------- reveal ---------- */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+
+/* ---------- mobile ---------- */
+@media(max-width:759px){
+  .frag-grid,.frag.rev .frag-grid{grid-template-columns:1fr;gap:26px}
+  .frag-grid>*{order:0!important}
+  .frag.rev .frag-name{justify-self:start;text-align:left}
+  .frag-name .v{writing-mode:horizontal-tb;font-size:44px}
+  .frag-name .en{writing-mode:horizontal-tb;margin-top:8px}
+  .bottle{transform:scale(.88);transform-origin:top center}
+  .m-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .foot-grid{grid-template-columns:1fr;align-items:start}
+  .brandmark{top:auto;bottom:9%;opacity:.6}
+  h1{font-size:clamp(36px,10.5vw,44px)}
+}
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .glass .oil{transform:scaleY(1)}
+  .js .rv{opacity:1;transform:none}
+  .plume i{opacity:.5;transform:translate(-50%,-30px)}
+  .hero-note b{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar mono" aria-label="野外台站数据">
+  <span>MISTVEIL<i class="hs" style="font-style:normal"> FIELD STATION</i></span>
+  <span class="hs">27°06′N 100°11′E</span>
+  <span class="hs">日出 06:47</span>
+  <span class="push"></span>
+  <span>ALT <b id="altNow">2600</b>M</span>
+  <span class="hs">雾 <b id="fogPct">76</b>%</span>
+  <span><b id="clock">--:--:--</b></span>
+</header>
+
+<aside id="rail" class="mono" aria-hidden="true">
+  <div id="railTicks" style="position:absolute;inset:0"></div>
+  <div id="railMarker"><i></i><span id="railAlt">2600</span></div>
+</aside>
+
+<main>
+
+<!-- ============ HERO · 2600m ============ -->
+<section class="hero" id="top">
+  <div class="horizon"></div>
+  <div class="sun" data-ps="0.05"></div>
+  <div class="cloud c3" data-ps="0.08"></div>
+  <div class="cloud c2" data-ps="0.14"></div>
+  <div class="cloud c1" data-ps="0.22"></div>
+  <div class="brandmark serif">山雾</div>
+  <div class="hero-inner">
+    <p class="eyebrow mono">MISTVEIL · 高山植物蒸馏 · 独立香薰</p>
+    <h1 class="serif">海拔两千米的清晨，<br><span class="thin">装进瓶子里。</span></h1>
+    <p class="lede">我们在山上收雾。冷杉、野姜花、岩兰草——三种气味，三个海拔。本页即一条下山路：向下滚，沿山走。</p>
+  </div>
+  <p class="hero-note mono">SCROLL = DESCEND <b>↓</b> 2600M → 600M</p>
+</section>
+
+<!-- ============ SCENTS ============ -->
+<header class="sec-head wrap">
+  <span class="k mono">01 — 气味 THE SCENTS</span>
+  <h2 class="serif rv">三种清晨，三种海拔。</h2>
+  <p class="sub rv">香气按其生长的海拔排序——越高越清冽，越低越沉稳。气味不是配方，是地形。</p>
+</header>
+
+<div class="wrap">
+
+<section class="frag" id="fir">
+  <div class="frag-grid">
+    <div class="frag-no mono">No.01</div>
+    <div class="frag-name"><span class="v serif">冷杉</span><span class="en mono">FIR · 2400M</span></div>
+    <figure class="bottle">
+      <i class="cap"></i><i class="neck"></i>
+      <div class="glass"><div class="vapor"></div><div class="oil g-fir" style="--f:62%"></div></div>
+      <figcaption class="mono">10 mL · 蒸馏批次 №07</figcaption>
+    </figure>
+    <div class="frag-copy rv">
+      <span class="alt-chip mono">ALT 2400M · 雪线之下</span>
+      <p class="frag-line serif">针叶上的霜先化，<br>味道比光醒得更快。</p>
+      <dl class="notes mono">
+        <div><dt>前调</dt><dd>冷杉针叶 · 雪线风</dd></div>
+        <div><dt>中调</dt><dd>高山雪松 · 岩上苔藓</dd></div>
+        <div><dt>尾调</dt><dd>冷矿岩</dd></div>
+      </dl>
+      <p class="frag-meta mono">气质 <em>清冽，向上</em> — 给醒来的第一小时</p>
+    </div>
+  </div>
+</section>
+
+<section class="frag rev" id="lily">
+  <div class="frag-grid">
+    <div class="frag-no mono">No.02</div>
+    <div class="frag-name"><span class="v serif">野姜花</span><span class="en mono">GINGER LILY · 1800M</span></div>
+    <figure class="bottle">
+      <i class="cap"></i><i class="neck"></i>
+      <div class="glass"><div class="vapor"></div><div class="oil g-lily" style="--f:68%"></div></div>
+      <figcaption class="mono">10 mL · 蒸馏批次 №11</figcaption>
+    </figure>
+    <div class="frag-copy rv">
+      <span class="alt-chip mono">ALT 1800M · 溪谷转弯处</span>
+      <p class="frag-line serif">溪谷转弯处，<br>白花先开到雾外面。</p>
+      <dl class="notes mono">
+        <div><dt>前调</dt><dd>野姜花 · 晨露</dd></div>
+        <div><dt>中调</dt><dd>山栀子 · 溪石</dd></div>
+        <div><dt>尾调</dt><dd>青草地衣</dd></div>
+      </dl>
+      <p class="frag-meta mono">气质 <em>湿润，明亮</em> — 给午后的一点倦</p>
+    </div>
+  </div>
+</section>
+
+<section class="frag" id="veti">
+  <div class="frag-grid">
+    <div class="frag-no mono">No.03</div>
+    <div class="frag-name"><span class="v serif">岩兰草</span><span class="en mono">VETIVER · 1200M</span></div>
+    <figure class="bottle">
+      <i class="cap"></i><i class="neck"></i>
+      <div class="glass"><div class="vapor"></div><div class="oil g-veti" style="--f:74%"></div></div>
+      <figcaption class="mono">10 mL · 蒸馏批次 №04</figcaption>
+    </figure>
+    <div class="frag-copy rv">
+      <span class="alt-chip mono">ALT 1200M · 根须之下</span>
+      <p class="frag-line serif">根向下十米，<br>替山记住每一场雨。</p>
+      <dl class="notes mono">
+        <div><dt>前调</dt><dd>岩兰草根 · 湿土</dd></div>
+        <div><dt>中调</dt><dd>赭岩 · 枯蕨</dd></div>
+        <div><dt>尾调</dt><dd>檀木微烟</dd></div>
+      </dl>
+      <p class="frag-meta mono">气质 <em>沉稳，向下</em> — 给睡前熄灯之后</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- ============ MACHINE · 900m ============ -->
+<section class="machine" id="machine">
+  <div class="wrap">
+    <span class="mono" style="font-size:10px;color:var(--ink2)">02 — 器物 THE VESSEL</span>
+    <div class="m-grid">
+      <figure class="device-wrap rv" style="margin:0">
+        <div class="plume" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="device" role="img" aria-label="「半山」超声雾化香薰机，石灰色圆柱机身，顶部正升起一缕雾"><i class="vent"></i><i class="led"></i></div>
+        <div class="d-shadow"></div>
+      </figure>
+      <div class="m-copy rv">
+        <span class="alt-chip mono">No.04 · 「半山」· MIST AT 900M</span>
+        <p class="m-line serif">山搬不走，<br>雾可以。</p>
+        <p>超声雾化香薰机。雾量两档：「山雨」急，「山岚」缓。声音低到听不见——像山本身。滴三滴精油进去，房间下一场很小的雾。</p>
+        <dl class="spec mono">
+          <div><dt>水箱</dt><dd>300 mL</dd></div>
+          <div><dt>雾化</dt><dd>2.4 MHz 超声</dd></div>
+          <div><dt>续航</dt><dd>8 h 间歇喷雾</dd></div>
+          <div><dt>噪音</dt><dd>≤ 30 dB</dd></div>
+        </dl>
+        <p class="price mono">首批 · 冬至开窖 — <a href="#foot">预订名录 →</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERLUDE · signature ============ -->
+<section class="interlude" id="mist" aria-label="雾间：按住圆钮，让雾漫上来">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="none" stroke="rgba(236,233,224,.14)" stroke-width="1">
+      <path d="M-40 620 C 200 560 380 690 620 620 S 980 540 1240 610"/>
+      <path d="M-40 520 C 180 470 400 580 640 520 S 960 450 1240 510"/>
+      <path d="M-40 430 C 220 390 420 480 660 430 S 940 370 1240 420"/>
+      <path d="M-40 350 C 240 320 430 390 680 350 S 920 300 1240 340"/>
+      <path d="M-40 285 C 260 262 450 315 700 285 S 900 248 1240 275"/>
+    </g>
+  </svg>
+  <div class="inter-inner">
+    <p class="inter-tag mono">INTERLUDE · 雾间</p>
+    <p id="lineA" class="serif">看不见山的时候，</p>
+    <button id="breath" class="breath" aria-label="按住，让雾漫上来"><span>息</span></button>
+    <p id="holdHint" class="mono">按住 · 让雾漫上来</p>
+  </div>
+  <div class="fog" id="fog" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <p id="lineB" class="serif" aria-hidden="true">山离你最近。</p>
+</section>
+
+<!-- ============ CRAFT ============ -->
+<section class="craft wrap" id="craft">
+  <header class="sec-head" style="border-top:0;padding-top:clamp(56px,9vh,110px)">
+    <span class="k mono">03 — 工艺 CRAFT</span>
+    <h2 class="serif rv">一瓶精油的下山路。</h2>
+  </header>
+  <ol class="steps">
+    <li class="rv"><span class="n mono">01</span><h3 class="serif">采</h3>
+      <p>日出前的两个小时，只取雾未散时的枝叶。</p><span class="d mono">05:00–07:00 · 含水 ≥82%</span></li>
+    <li class="rv"><span class="n mono">02</span><h3 class="serif">蒸</h3>
+      <p>低温慢蒸四十小时，让香气按自己的顺序出来。</p><span class="d mono">≤45°C · 40 H</span></li>
+    <li class="rv"><span class="n mono">03</span><h3 class="serif">沉</h3>
+      <p>静置九十天。火气散尽，气味自己排好队。</p><span class="d mono">90 DAYS · 避光</span></li>
+    <li class="rv"><span class="n mono">04</span><h3 class="serif">装</h3>
+      <p>琥珀瓶灌装，瓶内刻意留一层雾。</p><span class="d mono">10 ML · 手工封蜡</span></li>
+  </ol>
+  <p class="yield mono rv"><em>600 kg 针叶 ≈ 1 L 精油</em> — 出成率是山说了算，我们不还价。</p>
+</section>
+
+<!-- ============ STORY ============ -->
+<section class="story wrap">
+  <p class="story-p serif rv">山雾是一间落在滇西北褶皱里的<b>两人蒸馏所</b>。<br>
+  一年只采三季；每一季，<br>只留下得起雾的清晨。</p>
+</section>
+
+<!-- ============ FOOTER · 600m ============ -->
+<footer class="foot" id="foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand serif">山雾<span class="mono">MISTVEIL</span></div>
+    <nav class="mono" aria-label="产品">
+      <a href="#fir">冷杉 FIR</a><a href="#lily">野姜花 GINGER LILY</a>
+      <a href="#veti">岩兰草 VETIVER</a><a href="#machine">「半山」香薰机</a>
+    </nav>
+    <p class="geo mono">27°06′N 100°11′E · 蒸馏所 ALT 2000M<br>你已行至山脚 · 海拔 600M · 雾起时见</p>
+    <p class="foot-note mono">
+      <span>本页无一张照片 — 雾、瓶与器物皆由代码绘出。</span>
+      <span>© 2025 山雾 MISTVEIL</span>
+    </p>
+  </div>
+</footer>
+
+</main>
+
+<script>
+document.documentElement.classList.add('js');
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+
+/* clock + telemetry */
+var clock=$('#clock');
+function t(){var d=new Date();clock.textContent=[d.getHours(),d.getMinutes(),d.getSeconds()]
+  .map(function(n){return String(n).padStart(2,'0')}).join(':')}
+t();setInterval(t,1000);
+var fogPct=$('#fogPct');
+if(fogPct)setInterval(function(){fogPct.textContent=Math.round(72+Math.sin(Date.now()/9000)*12)},1200);
+
+/* altitude rail */
+var track=$('#railTicks');
+for(var a=2600;a>=600;a-=200){
+  var tk=document.createElement('div');tk.className='tick';
+  tk.style.top=(4+(2600-a)/2000*92)+'%';
+  tk.innerHTML='<em>'+a+'</em>';track.appendChild(tk);
+}
+var marker=$('#railMarker'),railAlt=$('#railAlt'),altNow=$('#altNow'),ps=$$('[data-ps]');
+function onScroll(){
+  var h=document.documentElement,
+      p=Math.min(1,Math.max(0,h.scrollTop/Math.max(1,h.scrollHeight-h.clientHeight))),
+      alt=Math.round(2600-p*2000);
+  altNow.textContent=alt;railAlt.textContent=alt;
+  marker.style.top=(4+p*92)+'%';
+  if(!RM)for(var i=0;i<ps.length;i++)
+    ps[i].style.transform='translateY('+(h.scrollTop*parseFloat(ps[i].dataset.ps))+'px)';
+}
+addEventListener('scroll',onScroll,{passive:true});
+addEventListener('resize',onScroll);onScroll();
+
+/* reveal + oil rise */
+var io=new IntersectionObserver(function(es){
+  es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})
+},{threshold:.22});
+$$('.rv,.bottle').forEach(function(el){io.observe(el)});
+
+/* signature: hold to flood with fog */
+var fog=$('#fog'),lineA=$('#lineA'),lineB=$('#lineB'),hint=$('#holdHint'),btn=$('#breath');
+var f=0,holding=false,auto=0,last=performance.now(),hs='';
+function frame(t){
+  var dt=Math.min(50,t-last)/1000;last=t;
+  var target=holding?1:(auto?0.55:0);
+  f+=(target-f)*Math.min(1,dt*(holding?1.5:2.4));
+  f=Math.max(0,Math.min(1,f));
+  fog.style.opacity=f.toFixed(3);
+  lineA.style.opacity=Math.max(0,1-f*1.15).toFixed(3);
+  lineB.style.opacity=Math.max(0,Math.min(1,(f-0.55)/0.35)).toFixed(3);
+  var nh = holding ? (f>0.75?'雾满了 —— 山只剩气味':'吸气 —— 雾正漫过针叶林')
+                   : (f>0.12?'呼气 —— 山还在':'按住 · 让雾漫上来');
+  if(nh!==hs){hs=nh;hint.textContent=nh}
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+function hold(e){e.preventDefault();holding=true;if(e.pointerId!=null&&btn.setPointerCapture)try{btn.setPointerCapture(e.pointerId)}catch(_){}}
+function drop(){holding=false}
+btn.addEventListener('pointerdown',hold);
+btn.addEventListener('pointerup',drop);
+btn.addEventListener('pointercancel',drop);
+btn.addEventListener('pointerleave',drop);
+btn.addEventListener('lostpointercapture',drop);
+btn.addEventListener('contextmenu',function(e){e.preventDefault()});
+btn.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){holding=true;e.preventDefault()}});
+btn.addEventListener('keyup',drop);btn.addEventListener('blur',drop);
+/* one gentle auto-pass when the section first appears */
+new IntersectionObserver(function(es,o){
+  if(es[0].isIntersecting&&!RM){auto=1;setTimeout(function(){auto=0},1600);o.disconnect()}
+},{threshold:.4}).observe($('#mist'));
+</script>
+</body>
+</html>

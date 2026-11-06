@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>织梭 · 通知中心</title>
+<style>
+/* ============================================================
+   织梭 Shuttle · 通知中心演示
+   设计令牌：墨底纸面 / 柿橙单强调 / 类型色条 / mono 元信息
+   ============================================================ */
+:root {
+  --ink:        #17140F;
+  --ink-soft:   #221E18;
+  --ink-line:   #34302A;
+  --paper:      #FBFAF7;
+  --paper-dim:  #F5F2EB;
+  --tint-unread:#F6F0E6;
+  --fg:         #24211B;
+  --fg-mute:    #6E685C;
+  --fg-faint:   #777162;      /* 纸面上 ~4.6:1，供 11px 元信息使用 */
+  --top-fg:     #ABA28F;      /* 墨底上的次级文字，~5.9:1 */
+  --line:       #E7E2D6;
+  --accent:     #D9531E;
+  --accent-ink: #B44316;      /* 深一档：白字在其上 ~6.6:1，兼做徽章底色 */
+  --accent-lt:  #E8773F;      /* 墨底上的强调文字，~5.2:1 */
+  --t-mention:  #D9531E;
+  --t-assign:   #2F7D5B;
+  --t-reply:    #3F6491;
+  --t-system:   #8A8375;
+  --ring:       rgba(217, 83, 30, .45);
+  --shadow-pop: 0 1px 2px rgba(23,20,15,.06), 0 8px 24px rgba(23,20,15,.12), 0 24px 56px rgba(23,20,15,.14);
+  --sans: "PingFang SC","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  --mono: ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --ease-spring: cubic-bezier(.34,1.4,.64,1);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+[hidden] { display:none !important; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family: var(--sans);
+  background: var(--ink);
+  color: var(--fg);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.55;
+}
+/* 唯一装饰手法：顶部一层暖光晕（透明度<6%） */
+body::before {
+  content:""; position:fixed; inset:0; pointer-events:none;
+  background: radial-gradient(1200px 420px at 50% -160px, rgba(217,83,30,.07), transparent 70%);
+}
+::selection { background: rgba(217,83,30,.22); }
+button { font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; }
+ul { list-style:none; }
+:focus-visible { outline:2px solid var(--ring); outline-offset:2px; border-radius:4px; }
+.visually-hidden {
+  position:absolute!important; width:1px;height:1px; overflow:hidden;
+  clip-path:inset(50%); white-space:nowrap;
+}
+
+/* ============ 顶栏 ============ */
+.topbar {
+  position:relative; z-index:10;
+  display:flex; align-items:center; justify-content:space-between;
+  height:58px; padding:0 20px;
+  background: rgba(23,20,15,.92);
+  border-bottom:1px solid var(--ink-line);
+  backdrop-filter: blur(8px);
+}
+.tb-left, .tb-right { display:flex; align-items:center; gap:8px; }
+.brand {
+  display:flex; align-items:center; gap:9px;
+  color:var(--paper); text-decoration:none;
+  font-size:15px; font-weight:650; letter-spacing:.02em;
+  margin-right:18px;
+}
+.brand svg { display:block; }
+.brand-en {
+  font-family:var(--mono); font-size:10px; letter-spacing:.22em;
+  color:var(--top-fg); font-weight:500; margin-top:2px;
+}
+.nav { display:flex; gap:2px; }
+.nav-link {
+  color:var(--top-fg); text-decoration:none; font-size:13.5px;
+  padding:7px 12px; border-radius:7px; transition:color .15s, background .15s;
+}
+.nav-link:hover { color:var(--paper); background:rgba(251,250,247,.06); }
+.nav-link.is-current { color:var(--paper); background:rgba(251,250,247,.09); font-weight:560; }
+
+.search-pill {
+  display:flex; align-items:center; gap:8px;
+  height:32px; padding:0 12px;
+  border:1px solid var(--ink-line); border-radius:8px;
+  color:var(--top-fg); font-size:12.5px;
+  transition:border-color .15s, color .15s;
+  margin-right:4px;
+}
+.search-pill:hover { border-color:#4d473c; color:#c9c2b2; }
+.search-pill kbd {
+  font-family:var(--mono); font-size:10.5px;
+  border:1px solid var(--ink-line); border-radius:4px; padding:1px 5px;
+}
+.search-pill svg { width:13px; height:13px; }
+
+/* ============ 铃铛与徽标 ============ */
+.bell-wrap { position:relative; }
+.icon-btn {
+  position:relative; display:grid; place-items:center;
+  width:36px; height:36px; border-radius:9px;
+  color:#CFC8B8; transition:background .15s, color .15s;
+}
+.icon-btn:hover { background:rgba(251,250,247,.08); color:var(--paper); }
+.icon-btn[aria-expanded="true"] { background:rgba(251,250,247,.1); color:var(--paper); }
+.icon-btn svg { width:19px; height:19px; }
+
+.badge {
+  position:absolute; top:1px; right:-1px;
+  min-width:17px; height:17px; padding:0 4px;
+  display:grid; place-items:center;
+  background:var(--accent-ink); color:#FFF8F0;
+  border-radius:9px; border:2px solid var(--ink);
+  font-family:var(--mono); font-size:10px; font-weight:600;
+  font-variant-numeric:tabular-nums;
+  pointer-events:none;
+  transition:opacity .18s, transform .18s;
+}
+.badge.is-zero { opacity:0; transform:scale(.5); }
+.badge.is-bump { animation:badge-pop .45s var(--ease-spring); }
+@keyframes badge-pop {
+  0% { transform:scale(.6); } 55% { transform:scale(1.3); } 100% { transform:scale(1); }
+}
+
+.avatar-btn {
+  width:30px; height:30px; border-radius:50%;
+  background:#4E6E5D; color:#EAF3EE;
+  font-size:12.5px; font-weight:600; margin-left:6px;
+  transition:transform .15s;
+}
+.avatar-btn:hover { transform:scale(1.06); }
+
+/* ============ 通知面板 ============ */
+.panel {
+  position:absolute; top:calc(100% + 10px); right:-6px; z-index:40;
+  width:400px; max-height:min(560px, calc(100vh - 96px));
+  display:flex; flex-direction:column;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow-pop);
+  transform-origin:top right;
+  opacity:0; transform:scale(.96) translateY(-6px);
+  transition:opacity .18s var(--ease-out), transform .18s var(--ease-out);
+}
+.panel.is-open { opacity:1; transform:scale(1) translateY(0); }
+/* 衔接咬合：面板与铃铛之间的小喙 */
+.panel::before {
+  content:""; position:absolute; top:-6px; right:16px;
+  width:12px; height:12px;
+  background:var(--paper);
+  border-left:1px solid var(--line); border-top:1px solid var(--line);
+  transform:rotate(45deg);
+}
+
+.p-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px 12px;
+  border-bottom:1px solid var(--line);
+}
+.p-head h2 { font-size:15px; font-weight:650; letter-spacing:.01em; }
+.ghost-btn {
+  display:flex; align-items:center; gap:5px;
+  font-size:12.5px; font-weight:560; color:var(--fg-mute);
+  padding:5px 9px; border-radius:7px;
+  transition:color .15s, background .15s;
+}
+.ghost-btn svg { width:13px; height:13px; }
+.ghost-btn:hover:not(:disabled) { color:var(--accent-ink); background:var(--tint-unread); }
+.ghost-btn:active:not(:disabled) { transform:scale(.96); }
+.ghost-btn:disabled { color:var(--fg-faint); opacity:.55; cursor:not-allowed; }
+
+.p-body { overflow-y:auto; overscroll-behavior:contain; flex:1;
+  scrollbar-width:thin; scrollbar-color:#C9C2B2 transparent;
+}
+/* 底部渐隐暗示可滚动（B74 12.2） */
+.p-body.is-scrollable {
+  mask-image:linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+}
+
+/* ---- 分组 ---- */
+.group { padding-top:4px; }
+.group + .group { border-top:1px solid var(--line); margin-top:4px; }
+.g-title {
+  position:sticky; top:0; z-index:2;
+  display:flex; align-items:center; gap:8px;
+  padding:9px 16px 7px;
+  background:var(--paper);
+  font-size:11.5px; font-weight:600; color:var(--fg-mute);
+  letter-spacing:.06em;
+}
+.g-count {
+  font-family:var(--mono); font-size:10.5px; font-weight:600;
+  color:var(--accent-ink); background:var(--tint-unread);
+  border:1px solid #EBDCC8; border-radius:6px; padding:0 6px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---- 单条通知 ---- */
+.notif {
+  position:relative;
+  display:grid;
+  grid-template-columns:3px 34px 1fr auto;
+  gap:11px; align-items:start;
+  padding:11px 14px 11px 0;
+  cursor:pointer;
+  transition:background .15s;
+}
+.notif:hover { background:rgba(23,20,15,.035); }
+.type-bar {
+  width:3px; align-self:stretch; min-height:44px;
+  margin:2px 0;
+  border-radius:0 2px 2px 0;
+  background:var(--tc, var(--t-system));
+}
+.notif.is-unread { background:var(--tint-unread); }
+.notif.is-unread:hover { background:#F1E9DA; }
+.notif.is-read .type-bar { opacity:.35; }   /* 已读：色条降噪，未读实心 */
+
+.avatar {
+  width:34px; height:34px; border-radius:50%;
+  display:grid; place-items:center;
+  font-size:13px; font-weight:600; color:#FFFBF5;
+  background:var(--ac, #8A8375);
+  margin-top:1px;
+  user-select:none;
+}
+.notif.is-read .avatar { filter:saturate(.35); opacity:.8; }
+.avatar.is-sys { background:#EFEAE0; color:var(--fg-mute); border:1px solid var(--line); }
+.avatar.is-sys svg { width:16px; height:16px; }
+
+.n-body { min-width:0; }
+.n-line {
+  font-size:13px; line-height:1.5; color:var(--fg-mute);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.n-line strong { color:var(--fg); font-weight:560; }
+.notif.is-unread .n-line strong { font-weight:650; }
+.n-excerpt {
+  margin-top:3px;
+  font-size:12.5px; color:var(--fg-mute); line-height:1.5;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.n-meta {
+  display:flex; align-items:center; gap:8px; margin-top:5px;
+}
+.n-type {
+  font-size:10.5px; font-weight:600; letter-spacing:.04em;
+  color:var(--tc, var(--t-system));
+}
+.n-time {
+  font-family:var(--mono); font-size:11px; color:var(--fg-faint);
+  font-variant-numeric:tabular-nums;
+}
+
+/* 未读点 = 标记已读按钮（指示器与操作合一） */
+.read-dot {
+  position:relative;
+  width:20px; height:20px; margin-top:7px;
+  display:grid; place-items:center;
+  border-radius:50%;
+  transition:transform .15s, background .15s;
+}
+.read-dot::before {
+  content:""; width:8px; height:8px; border-radius:50%;
+  background:var(--accent);
+  transition:transform .15s var(--ease-spring);
+}
+.read-dot svg {
+  position:absolute; width:11px; height:11px;
+  color:var(--accent-ink); opacity:0; transform:scale(.5);
+  transition:opacity .12s, transform .12s;
+}
+.read-dot:hover::before { transform:scale(2.1); opacity:.16; }
+.read-dot:hover svg { opacity:1; transform:scale(1); }
+.read-dot:active { transform:scale(.85); }
+/* 触屏/无 hover：点保持可见（它本身就是指示器），不藏功能 */
+@media (hover:hover) and (pointer:fine) {
+  .read-dot { opacity:.55; }
+  .notif:hover .read-dot, .notif:focus-within .read-dot { opacity:1; }
+}
+
+/* 条目进出动画（B74 十） */
+.notif.is-entering { animation:item-in .3s var(--ease-out); }
+@keyframes item-in {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.notif.is-leaving { animation:item-out .18s ease-in forwards; }
+@keyframes item-out {
+  to { opacity:0; transform:translateX(10px); }
+}
+.notif.is-flash { animation:flash-bg 1.1s ease-out; }
+@keyframes flash-bg {
+  0%,100% { background:var(--tint-unread); }
+  25% { background:#F0E0CB; }
+}
+
+/* ---- 组内空态 / 全空态（B52） ---- */
+.g-empty {
+  display:flex; align-items:center; gap:7px;
+  padding:12px 16px 14px;
+  font-size:12.5px; color:var(--fg-mute);
+}
+.g-empty svg { width:15px; height:15px; color:var(--t-assign); }
+
+.p-empty {
+  display:flex; flex-direction:column; align-items:center;
+  text-align:center; padding:52px 28px 44px;
+}
+.p-empty .e-art { margin-bottom:18px; opacity:.9; animation:e-in .4s var(--ease-out); }
+.p-empty h3 { font-size:15px; font-weight:620; margin-bottom:6px; animation:e-in .4s .08s var(--ease-out) backwards; }
+.p-empty p {
+  font-size:12.5px; color:var(--fg-mute); line-height:1.65; max-width:250px;
+  animation:e-in .4s .14s var(--ease-out) backwards;
+}
+@keyframes e-in { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none; } }
+
+.p-foot {
+  border-top:1px solid var(--line);
+  padding:10px 16px;
+}
+.p-foot a {
+  display:block; text-align:center;
+  font-size:12.5px; font-weight:560; color:var(--fg-mute);
+  text-decoration:none; padding:5px; border-radius:7px;
+  transition:color .15s, background .15s;
+}
+.p-foot a:hover { color:var(--accent-ink); background:var(--tint-unread); }
+
+/* ============ Toast（轻打断通道） ============ */
+.toast-root {
+  position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  z-index:70; display:flex; flex-direction:column; gap:12px;
+  width:min(420px, calc(100vw - 32px));
+  pointer-events:none;
+}
+.toast {
+  pointer-events:auto;
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; gap:10px;
+  padding:12px 12px 14px 0;
+  background:var(--paper); color:var(--fg);
+  border:1px solid var(--line); border-radius:11px;
+  box-shadow:var(--shadow-pop);
+  animation:toast-in .28s var(--ease-out);
+}
+@keyframes toast-in {
+  from { opacity:0; transform:translateY(-14px) scale(.97); }
+  to   { opacity:1; transform:none; }
+}
+.toast.is-out { animation:toast-out .18s ease-in forwards; }
+@keyframes toast-out {
+  to { opacity:0; transform:translateY(-10px) scale(.98); }
+}
+.toast .type-bar { width:3px; align-self:stretch; margin-left:0; border-radius:0 2px 2px 0; }
+.t-ava {
+  width:30px; height:30px; border-radius:50%; flex:none;
+  display:grid; place-items:center;
+  font-size:12px; font-weight:600; color:#FFFBF5;
+}
+.t-text { flex:1; min-width:0; font-size:12.5px; line-height:1.45; color:var(--fg-mute); }
+.t-text b { color:var(--fg); font-weight:620; }
+.t-act {
+  flex:none; font-size:12px; font-weight:620; color:var(--accent-ink);
+  padding:5px 9px; border-radius:6px;
+  transition:background .15s;
+}
+.t-act:hover { background:var(--tint-unread); }
+.t-close {
+  flex:none; width:24px; height:24px; border-radius:6px;
+  display:grid; place-items:center; color:var(--fg-faint);
+  transition:background .15s, color .15s;
+}
+.t-close:hover { background:var(--paper-dim); color:var(--fg); }
+.t-close svg { width:12px; height:12px; }
+.t-prog {
+  position:absolute; left:0; bottom:0; height:2.5px; width:100%;
+  background:var(--accent); opacity:.55;
+  transform-origin:left; transform:scaleX(1);
+  /* 进度由 JS rAF 驱动，与计时器严格同步（hover 暂停不撒谎） */
+}
+
+/* ============ 演示区 ============ */
+.stage {
+  position:relative;
+  max-width:640px; margin:0 auto; padding:96px 24px 60px;
+}
+.stage .kicker {
+  font-family:var(--mono); font-size:11px; letter-spacing:.24em;
+  color:var(--accent-lt); font-weight:600; margin-bottom:16px;
+}
+.stage h1 {
+  color:var(--paper); font-size:30px; font-weight:650;
+  letter-spacing:.01em; line-height:1.3; margin-bottom:14px;
+}
+.stage .lede { color:var(--fg-faint); font-size:14px; line-height:1.8; max-width:460px; margin-bottom:36px; }
+.stage .lede code {
+  font-family:var(--mono); font-size:12px;
+  color:#CFC8B8; background:rgba(251,250,247,.07);
+  border:1px solid var(--ink-line); border-radius:5px; padding:1px 6px;
+}
+.demo-bar { display:flex; gap:10px; }
+.demo-btn {
+  height:36px; padding:0 16px;
+  display:flex; align-items:center; gap:7px;
+  border:1px solid var(--ink-line); border-radius:9px;
+  color:#CFC8B8; font-size:13px; font-weight:560;
+  transition:background .15s, color .15s, transform .1s;
+}
+.demo-btn svg { width:14px; height:14px; }
+.demo-btn:hover { background:rgba(251,250,247,.07); color:var(--paper); }
+.demo-btn:active { transform:scale(.96); }
+.demo-btn.is-primary { background:var(--accent); border-color:var(--accent); color:#FFF3EA; }
+.demo-btn.is-primary:hover { background:var(--accent-ink); }
+
+.hints {
+  margin-top:72px; padding-top:22px;
+  border-top:1px solid var(--ink-line);
+  display:flex; gap:26px; flex-wrap:wrap;
+}
+.hint { font-size:12px; color:var(--top-fg); display:flex; gap:8px; align-items:baseline; }
+.hint b { color:#C4BCA9; font-weight:560; }
+.hint .dot { color:var(--accent-lt); }
+
+@media (max-width:560px) {
+  .nav { display:none; }
+  .search-pill { display:none; }
+  .panel { position:fixed; top:66px; right:10px; left:10px; width:auto; }
+  .stage { padding-top:64px; }
+}
+
+/* reduced-motion：保留状态信息，关掉位移/弹性 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+  .t-prog { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 顶栏 ================= -->
+<header class="topbar">
+  <div class="tb-left">
+    <a class="brand" href="#">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="17" height="17" rx="5" stroke="#D9531E" stroke-width="1.6"/>
+        <path d="M5.5 12.5 14.5 7.5M7 14.5 14.5 10.5" stroke="#D9531E" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      织梭<span class="brand-en">SHUTTLE</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="nav-link is-current" href="#">工作台</a>
+      <a class="nav-link" href="#">项目</a>
+      <a class="nav-link" href="#">文档</a>
+      <a class="nav-link" href="#">日程</a>
+    </nav>
+  </div>
+
+  <div class="tb-right">
+    <button class="search-pill" type="button">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.5"/><path d="m10.6 10.6 2.9 2.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      搜索<kbd>⌘K</kbd>
+    </button>
+
+    <div class="bell-wrap">
+      <button id="bellBtn" class="icon-btn" type="button"
+              aria-haspopup="true" aria-expanded="false" aria-controls="notifPanel"
+              aria-label="通知，4 条未读">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 3a4.6 4.6 0 0 0-4.6 4.6v2.7l-1.15 2.3a.6.6 0 0 0 .54.9h10.42a.6.6 0 0 0 .54-.9l-1.15-2.3V7.6A4.6 4.6 0 0 0 10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M8.2 16a1.9 1.9 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span id="badge" class="badge" aria-hidden="true">4</span>
+      </button>
+
+      <section id="notifPanel" class="panel" hidden aria-label="通知中心">
+        <header class="p-head">
+          <h2>通知</h2>
+          <button id="markAllBtn" class="ghost-btn" type="button">
+            <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7.5 5.5 11 12 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            全部已读
+          </button>
+        </header>
+
+        <div class="p-body" id="panelBody">
+          <section class="group" id="unreadGroup" aria-label="未读通知">
+            <h3 class="g-title">未读<span class="g-count" id="unreadCount">4</span></h3>
+            <ul id="unreadList"></ul>
+            <div class="g-empty" id="unreadEmpty" hidden>
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.4"/><path d="M5.4 8.2 7.2 10 10.7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              未读都处理完了
+            </div>
+          </section>
+
+          <section class="group" id="readGroup" aria-label="已读通知">
+            <h3 class="g-title">已读</h3>
+            <ul id="readList"></ul>
+          </section>
+
+          <div class="p-empty" id="allEmpty" hidden>
+            <svg class="e-art" width="92" height="92" viewBox="0 0 92 92" fill="none" aria-hidden="true">
+              <rect x="14" y="30" width="64" height="46" rx="8" stroke="#B7AF9F" stroke-width="2"/>
+              <path d="M14 42l32 20 32-20" stroke="#B7AF9F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="70" cy="24" r="11" fill="#F6F0E6" stroke="#D9531E" stroke-width="2"/>
+              <path d="M65.5 24l3 3 6-6" stroke="#D9531E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3>通知都看完了</h3>
+            <p>有人 @ 你、给你派任务或回复评论时，会第一时间出现在这里。</p>
+          </div>
+        </div>
+
+        <footer class="p-foot">
+          <a href="#" id="viewAllLink">查看全部通知</a>
+        </footer>
+      </section>
+    </div>
+
+    <button class="avatar-btn" type="button" aria-label="我的账户">沈</button>
+  </div>
+</header>
+
+<!-- ================= 演示区 ================= -->
+<main class="stage">
+  <p class="kicker">COMPONENT&nbsp;&nbsp;/&nbsp;&nbsp;NOTIFICATION CENTER</p>
+  <h1>通知中心 · 下拉面板</h1>
+  <p class="lede">
+    点顶栏右侧的铃铛展开面板。@提及 与 任务指派 到达时走<code>轻打断</code>（顶部 toast 预览）；
+    回复与系统通知走<code>零打断</code>（仅徽标 +1）。面板已打开时，一切到达都降级为列表内滑入。
+  </p>
+  <div class="demo-bar">
+    <button class="demo-btn is-primary" id="simulateBtn" type="button">
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.5v4M7 5.5l2-2M7 5.5 5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 8.5v2.5a1.5 1.5 0 0 0 1.5 1.5h6a1.5 1.5 0 0 0 1.5-1.5V8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      模拟新通知
+    </button>
+    <button class="demo-btn" id="resetBtn" type="button">
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M12.2 7A5.2 5.2 0 1 1 10.6 3M12.2 1.8v2.7H9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      重置数据
+    </button>
+    <button class="demo-btn" id="clearBtn" type="button">
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 4h8M5.5 4V2.8a.8.8 0 0 1 .8-.8h1.4a.8.8 0 0 1 .8.8V4M4.5 4l.6 7.2a1.5 1.5 0 0 0 1.5 1.4h.8a1.5 1.5 0 0 0 1.5-1.4L9.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      清空列表
+    </button>
+  </div>
+
+  <div class="hints">
+    <span class="hint"><span class="dot">·</span><b>标记已读</b>点条目右侧未读点，或点条目本身</span>
+    <span class="hint"><span class="dot">·</span><b>Esc</b>关闭面板，焦点归还铃铛</span>
+    <span class="hint"><span class="dot">·</span><b>全部已读</b>可在 6 秒内撤销</span>
+    <span class="hint"><span class="dot">·</span><b>7 秒后</b>会自动到达一条新通知</span>
+  </div>
+</main>
+
+<!-- toast 与读屏播报 -->
+<div class="toast-root" id="toastRoot" aria-live="polite"></div>
+<div class="visually-hidden" id="announcer" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   数据层 —— 真实语义 mock（提及/指派/回复/系统 四类）
+   ============================================================ */
+const TYPE = {
+  mention: { color:'var(--t-mention)', label:'提及' },
+  assign:  { color:'var(--t-assign)',  label:'指派' },
+  reply:   { color:'var(--t-reply)',   label:'回复' },
+  system:  { color:'var(--t-system)',  label:'系统' },
+};
+/* 到达呈现分级：只有「需要本人动作」的类型才升级到轻打断 toast */
+const TOAST_TYPES = new Set(['mention', 'assign']);
+
+const initialData = [
+  { id:'n1',  type:'mention', actor:'林晚舟', ac:'#A8532F', target:'「Q4 品牌改版 · 情绪板」',
+    excerpt:'第三版的配色方向能帮我看一下吗？陶土橙和赭石两个方向我拿不准。', time:'8 分钟前', unread:true },
+  { id:'n2',  type:'assign',  actor:'周其衡', ac:'#2F7D5B', target:'任务「结算页地址表单重构」',
+    excerpt:'指派给你，截止 11 月 14 日。优先级：高。', time:'26 分钟前', unread:true },
+  { id:'n3',  type:'reply',   actor:'苏蔓',   ac:'#4A6A8A', target:'「侧边栏响应式」',
+    excerpt:'这个断点改成 768px 我也同意，平板竖屏下顺很多。', time:'1 小时前', unread:true },
+  { id:'n4',  type:'mention', actor:'陈既白', ac:'#7A5C3A', target:'文档「API 网关迁移方案」',
+    excerpt:'3.2 节的重试策略你有空补两句意见吗？', time:'2 小时前', unread:true },
+  { id:'n5',  type:'assign',  actor:'何一苇', ac:'#6A5A80', target:'任务「设计评审 #42 纪要整理」',
+    excerpt:'指派给你，截止明天中午前发出即可。', time:'昨天 16:40', unread:false },
+  { id:'n6',  type:'system',  actor:null,     target:'「像素流」项目组',
+    excerpt:'你已被设为管理员，现在可以管理成员与权限。', time:'昨天 11:02', unread:false },
+  { id:'n7',  type:'reply',   actor:'赵砚秋', ac:'#80584E', target:'「数据看板联调」',
+    excerpt:'数据源我换成分库 2 了，延迟从 40s 降到 6s。', time:'昨天 09:18', unread:false },
+  { id:'n8',  type:'system',  actor:null,     target:'安全策略',
+    excerpt:'工作区已开启「两步验证」强制策略，下周一生效。', time:'2 天前', unread:false },
+  { id:'n9',  type:'mention', actor:'林晚舟', ac:'#A8532F', target:'看板「招聘漏斗 · 11 月」',
+    excerpt:'设计岗的简历池我标了几份重点，麻烦过目。', time:'3 天前', unread:false },
+  { id:'n10', type:'system',  actor:null,     target:'每周摘要',
+    excerpt:'上周你的团队完成了 23 项任务，比上上周多 5 项。', time:'4 天前', unread:false },
+];
+
+/* 实时到达的候选池（循环取用） */
+const arrivalPool = [
+  { type:'mention', actor:'温叙白', ac:'#8A4A3A', target:'「移动端导航改版」',
+    excerpt:'原型里手势返回的两套方案，你倾向哪个？', time:'刚刚' },
+  { type:'assign',  actor:'周其衡', ac:'#2F7D5B', target:'任务「发布检查清单 · v2.4」',
+    excerpt:'指派给你，截止本周五下班前。', time:'刚刚' },
+  { type:'reply',   actor:'苏蔓',   ac:'#4A6A8A', target:'「账单页空态」',
+    excerpt:'同意，插画风格保持和全局一致就行。', time:'刚刚' },
+  { type:'system',  actor:null,     target:'存储用量提醒',
+    excerpt:'工作区附件用量已达 80%，可清理旧文件或升级。', time:'刚刚' },
+];
+
+let notifications = [];
+let arrivalIdx = 0;
+let arrivalSeq = 0;
+
+/* ============================================================
+   DOM 引用
+   ============================================================ */
+const bellBtn      = document.getElementById('bellBtn');
+const badge        = document.getElementById('badge');
+const panel        = document.getElementById('notifPanel');
+const panelBody    = document.getElementById('panelBody');
+const unreadList   = document.getElementById('unreadList');
+const readList     = document.getElementById('readList');
+const unreadCount  = document.getElementById('unreadCount');
+const unreadEmpty  = document.getElementById('unreadEmpty');
+const allEmpty     = document.getElementById('allEmpty');
+const unreadGroup  = document.getElementById('unreadGroup');
+const readGroup    = document.getElementById('readGroup');
+const markAllBtn   = document.getElementById('markAllBtn');
+const toastRoot    = document.getElementById('toastRoot');
+const announcer    = document.getElementById('announcer');
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function iconFor(type) {
+  const p = {
+    mention:'M8 3.5a4.5 4.5 0 1 0 4.3 5.8M13.5 6.2v2.6a2 2 0 0 1-4 0V6.6a2 2 0 0 1 4-.4M11.5 8.8a3.4 3.4 0 0 1-3.5 3',
+    assign :'M2.2 2.2h11.6v11.6H2.2zM5 8l2.2 2.2L11 6.4',
+    reply  :'M2.5 3.5h11v7.2h-6L4 13.6v-2.9H2.5z',
+    system :'M8 2v2.2M8 11.8V14M2 8h2.2M11.8 8H14M5.3 5.3 4 4M10.7 5.3 12 4M5.3 10.7 4 12M10.7 10.7 12 12M8 6.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8',
+  }[type];
+  return `<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="${p}" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function notifEl(n) {
+  const t = TYPE[n.type];
+  const li = document.createElement('li');
+  li.className = 'notif ' + (n.unread ? 'is-unread' : 'is-read');
+  li.dataset.id = n.id;
+  li.style.setProperty('--tc', t.color);
+  li.setAttribute('role','listitem');
+  li.title = n.unread ? '点击查看（并标为已读）' : '';
+
+  const avatar = n.actor
+    ? `<div class="avatar" style="--ac:${n.ac}" aria-hidden="true">${n.actor[0]}</div>`
+    : `<div class="avatar is-sys" aria-hidden="true">${iconFor('system')}</div>`;
+
+  const action = {
+    mention: `在 ${n.target} 中提到了你`,
+    assign:  `将 ${n.target} 指派给你`,
+    reply:   `在 ${n.target} 的评论中回复了你`,
+    system:  '',
+  }[n.type];
+  const lineHtml = n.actor
+    ? `<strong>${n.actor}</strong> ${action}`
+    : `<strong>${n.target}</strong>`;
+
+  li.innerHTML = `
+    <span class="type-bar" aria-hidden="true"></span>
+    ${avatar}
+    <div class="n-body">
+      <p class="n-line">${lineHtml}</p>
+      <p class="n-excerpt">${n.excerpt}</p>
+      <div class="n-meta">
+        <span class="n-type" style="--tc:${t.color}">${t.label}</span>
+        <time class="n-time">${n.time}</time>
+      </div>
+    </div>
+    ${n.unread ? `<button class="read-dot" type="button" aria-label="标记为已读" title="标记已读">
+      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6.2 5 8.7 9.7 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>` : ''}`;
+
+  li.addEventListener('click', (e) => {
+    if (e.target.closest('.read-dot')) return;
+    if (n.unread) markRead(n.id);
+  });
+  const dot = li.querySelector('.read-dot');
+  if (dot) dot.addEventListener('click', () => markRead(n.id));
+  return li;
+}
+
+function renderAll() {
+  unreadList.innerHTML = ''; readList.innerHTML = '';
+  for (const n of notifications) {
+    (n.unread ? unreadList : readList).appendChild(notifEl(n));
+  }
+  syncChrome();
+}
+
+/* 徽标 / 计数 / 空态 / 按钮态 一处同步 */
+function syncChrome() {
+  const unread = notifications.filter(n => n.unread);
+  const c = unread.length;
+
+  badge.textContent = c > 99 ? '99+' : String(c);
+  badge.classList.toggle('is-zero', c === 0);
+  bellBtn.setAttribute('aria-label', c ? `通知，${c > 99 ? '99 条以上' : c + ' 条'}未读` : '通知');
+  unreadCount.textContent = c;
+  unreadCount.hidden = c === 0;
+
+  markAllBtn.disabled = c === 0;
+  markAllBtn.title = c === 0 ? '没有未读通知' : '将全部通知标为已读';
+
+  const hasAny = notifications.length > 0;
+  allEmpty.hidden = hasAny;
+  unreadGroup.hidden = !hasAny;
+  readGroup.hidden = !hasAny || notifications.every(n => n.unread);
+  unreadEmpty.hidden = !(hasAny && c === 0);
+
+  panelBody.classList.toggle('is-scrollable',
+    panelBody.scrollHeight > panelBody.clientHeight + 8);
+}
+
+function bumpBadge() {
+  badge.classList.remove('is-bump');
+  void badge.offsetWidth;
+  badge.classList.add('is-bump');
+}
+
+function announce(msg) {
+  announcer.textContent = '';
+  requestAnimationFrame(() => { announcer.textContent = msg; });
+}
+
+/* ============================================================
+   状态操作：标记已读 / 全部已读 / 撤销
+   ============================================================ */
+function moveToRead(n, el) {
+  const done = () => {
+    el.remove();
+    const fresh = notifEl(n);
+    fresh.classList.add('is-entering');
+    readList.prepend(fresh);
+    syncChrome();
+  };
+  if (reduced) return done();
+  el.classList.add('is-leaving');
+  setTimeout(done, 170);
+}
+
+function markRead(id) {
+  const n = notifications.find(x => x.id === id);
+  if (!n || !n.unread) return;
+  const el = unreadList.querySelector(`[data-id="${id}"]`);
+  n.unread = false;
+  if (el) moveToRead(n, el); else renderAll();
+  announce(`已将${n.actor ? n.actor + '的' : '一条'}通知标为已读`);
+}
+
+function markAllRead() {
+  const unread = notifications.filter(n => n.unread);
+  if (!unread.length) return;
+  const snapshot = unread.map(n => n.id);
+  const els = [...unreadList.children];
+  els.forEach((el, i) => setTimeout(() => el.classList.add('is-leaving'), reduced ? 0 : i * 40));
+  unread.forEach(n => n.unread = false);
+  setTimeout(() => {
+    unreadList.innerHTML = '';
+    /* 按原未读顺序插到已读组顶部（insertBefore 保序） */
+    snapshot.forEach((id, i) => {
+      const n = notifications.find(x => x.id === id);
+      const fresh = notifEl(n);
+      fresh.classList.add('is-entering');
+      readList.insertBefore(fresh, readList.children[i] || null);
+    });
+    syncChrome();
+  }, reduced ? 0 : els.length * 40 + 160);
+
+  showUndoToast(snapshot.length, () => {
+    snapshot.forEach(id => {
+      const n = notifications.find(x => x.id === id);
+      if (n) n.unread = true;
+    });
+    renderAll();
+    bumpBadge();
+    unreadList.querySelectorAll('.notif').forEach(el => el.classList.add('is-entering'));
+    announce(`已撤销，${snapshot.length} 条通知恢复为未读`);
+  });
+  announce(`已将 ${snapshot.length} 条通知标为已读，可撤销`);
+}
+
+/* ============================================================
+   面板开合（非模态浮层：不锁滚、Esc/外点关、焦点归还）
+   ============================================================ */
+let panelOpen = false;
+let hideTimer = null;
+
+function openPanel() {
+  if (panelOpen) return;
+  panelOpen = true;
+  clearTimeout(hideTimer);
+  panel.hidden = false;
+  requestAnimationFrame(() => panel.classList.add('is-open'));
+  bellBtn.setAttribute('aria-expanded', 'true');
+  panelBody.classList.toggle('is-scrollable',
+    panelBody.scrollHeight > panelBody.clientHeight + 8);
+}
+
+function closePanel(returnFocus = false) {
+  if (!panelOpen) return;
+  panelOpen = false;
+  panel.classList.remove('is-open');
+  bellBtn.setAttribute('aria-expanded', 'false');
+  hideTimer = setTimeout(() => { panel.hidden = true; }, reduced ? 0 : 190);
+  if (returnFocus) bellBtn.focus();
+}
+
+bellBtn.addEventListener('click', () => {
+  panelOpen ? closePanel() : openPanel();
+});
+
+document.addEventListener('pointerdown', (e) => {
+  if (!panelOpen) return;
+  if (!panel.contains(e.target) && !bellBtn.contains(e.target)) closePanel();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    /* 先关最上层：所有存活 toast，再关面板并归还焦点 */
+    toastRoot.querySelectorAll('.toast').forEach(dismissToast);
+    closePanel(true);
+  }
+});
+
+markAllBtn.addEventListener('click', markAllRead);
+
+/* ============================================================
+   Toast 通道（轻打断）：合并窗口 / hover 暂停 / 撤销条
+   ============================================================ */
+let liveToast = null;          /* 当前到达 toast */
+let toastItems = [];           /* 合并窗口内累计的通知 */
+
+function makeToastShell(kind) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.setAttribute('role', 'status');
+  return t;
+}
+
+/* 计时器 + rAF 进度条同源驱动：hover/focus 暂停时进度条同步冻结 */
+function armTimer(t, ms, onDone) {
+  clearTimeout(t._timer);
+  cancelAnimationFrame(t._raf);
+  t._total = ms;
+  t._remain = ms;
+  const prog = t.querySelector('.t-prog');
+  const tick = () => {
+    const remain = Math.max(0, t._endsAt - Date.now());
+    if (prog) prog.style.transform = `scaleX(${remain / t._total})`;
+    if (remain > 0) t._raf = requestAnimationFrame(tick);
+  };
+  const run = () => {
+    t._endsAt = Date.now() + t._remain;
+    t._timer = setTimeout(onDone, t._remain);
+    if (!reduced) t._raf = requestAnimationFrame(tick);
+  };
+  const pause = () => {
+    clearTimeout(t._timer);
+    cancelAnimationFrame(t._raf);
+    t._remain = Math.max(0, t._endsAt - Date.now());
+  };
+  t.onpointerenter = pause;  t.onfocusin = pause;
+  t.onpointerleave = run;    t.onfocusout = run;
+  run();
+}
+
+function dismissToast(t) {
+  if (!t || t._done) return;
+  t._done = true;
+  clearTimeout(t._timer);
+  cancelAnimationFrame(t._raf);
+  if (t._kind === 'arrival') toastItems = [];
+  t.classList.add('is-out');
+  setTimeout(() => { t.remove(); if (liveToast === t) liveToast = null; }, reduced ? 0 : 190);
+}
+
+/* 到达 toast：高优先级类型才走这里；5s 窗口内合并计数 */
+function showArrivalToast(n) {
+  toastItems.push(n);
+  if (liveToast && !liveToast._done && liveToast._kind === 'arrival') {
+    /* 合并：更新为「N 条新通知」 */
+    const latest = toastItems[toastItems.length - 1];
+    const txt = liveToast.querySelector('.t-text');
+    txt.innerHTML = toastItems.length === 1
+      ? singleLine(latest)
+      : `<b>${latest.actor || '系统'}</b> 等 ${toastItems.length} 条新通知`;
+    armTimer(liveToast, 5000, () => dismissToast(liveToast));
+    return;
+  }
+  const t = makeToastShell('arrival');
+  t._kind = 'arrival';
+  t.innerHTML = `
+    <span class="type-bar" style="--tc:${TYPE[n.type].color};background:${TYPE[n.type].color}"></span>
+    ${n.actor ? `<span class="t-ava" style="background:${n.ac}">${n.actor[0]}</span>` : `<span class="t-ava" style="background:#EFEAE0;color:var(--fg-mute)">${iconFor('system')}</span>`}
+    <span class="t-text">${singleLine(n)}</span>
+    <button class="t-act" type="button">查看</button>
+    <button class="t-close" type="button" aria-label="关闭">
+      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <span class="t-prog" aria-hidden="true"></span>`;
+  t.querySelector('.t-act').addEventListener('click', () => {
+    const firstId = toastItems[0] && toastItems[0].id;   /* 先取再清（dismiss 会清空合并池） */
+    dismissToast(t);
+    openPanel();
+    if (firstId) {
+      const el = unreadList.querySelector(`[data-id="${firstId}"]`);
+      if (el) { el.scrollIntoView({ block:'nearest' }); el.classList.add('is-flash'); }
+    }
+  });
+  t.querySelector('.t-close').addEventListener('click', () => { dismissToast(t); });
+  toastRoot.appendChild(t);
+  liveToast = t;
+  armTimer(t, 5000, () => { dismissToast(t); toastItems = []; });
+}
+
+function singleLine(n) {
+  const verb = n.type === 'mention' ? '提到了你' : n.type === 'assign' ? '给你派了任务' : '回复了你';
+  return n.actor ? `<b>${n.actor}</b> 在 ${n.target} ${verb}` : `<b>${n.target}</b>`;
+}
+
+/* 撤销 toast（K·撤销：整组可逆 → toast+undo，不弹确认） */
+function showUndoToast(count, onUndo) {
+  const t = makeToastShell('undo');
+  t._kind = 'undo';
+  t.innerHTML = `
+    <span class="type-bar" style="background:var(--t-system)"></span>
+    <span class="t-text">已将 <b>${count} 条</b>通知标为已读</span>
+    <button class="t-act" type="button">撤销</button>
+    <button class="t-close" type="button" aria-label="关闭">
+      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <span class="t-prog" aria-hidden="true" style="background:var(--fg-faint)"></span>`;
+  let undone = false;
+  t.querySelector('.t-act').addEventListener('click', () => {
+    undone = true; onUndo(); dismissToast(t);
+  });
+  t.querySelector('.t-close').addEventListener('click', () => dismissToast(t));
+  toastRoot.appendChild(t);
+  armTimer(t, 6000, () => dismissToast(t));
+}
+
+/* ============================================================
+   实时到达：分级通道（K·打断层级升级链）
+   ============================================================ */
+function arriveNext() {
+  const tpl = arrivalPool[arrivalIdx % arrivalPool.length];
+  arrivalIdx++;
+  const n = { ...tpl, id:'arr-' + (++arrivalSeq), unread:true };
+  notifications.unshift(n);
+
+  /* 列表就地更新 + 徽标 +1（零打断层） */
+  const el = notifEl(n);
+  el.classList.add('is-entering');
+  unreadList.prepend(el);
+  syncChrome();
+  bumpBadge();
+
+  /* 面板关着且类型需要本人动作 → 升级轻打断 toast（toast 自身在 aria-live 区播报）；
+     面板开着则已就地呈现，不再打扰；低优先级类型只做零打断播报 */
+  if (!panelOpen && TOAST_TYPES.has(n.type)) {
+    showArrivalToast(n);
+  } else {
+    announce(`收到新通知：${n.actor ? n.actor + ' ' : ''}${n.target}`);
+  }
+}
+
+document.getElementById('simulateBtn').addEventListener('click', arriveNext);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  notifications = JSON.parse(JSON.stringify(initialData));
+  toastItems = [];
+  toastRoot.querySelectorAll('.toast').forEach(dismissToast);
+  renderAll();
+  announce('演示数据已重置');
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  notifications = [];
+  toastItems = [];
+  toastRoot.querySelectorAll('.toast').forEach(dismissToast);
+  renderAll();
+  announce('通知列表已清空');
+});
+document.getElementById('viewAllLink').addEventListener('click', e => e.preventDefault());
+
+/* ============================================================
+   启动
+   ============================================================ */
+notifications = JSON.parse(JSON.stringify(initialData));
+renderAll();
+setTimeout(arriveNext, 7000);   /* 首次自动到达一条，演示打断分级 */
+</script>
+</body>
+</html>

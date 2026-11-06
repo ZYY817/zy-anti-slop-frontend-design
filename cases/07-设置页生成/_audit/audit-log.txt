@@ -1,0 +1,131 @@
+
+================ armP ================
+  [shot] P-01-desktop-general.png
+  [shot] P-sec-editor.png
+  [shot] P-sec-appearance.png
+  [shot] P-sec-sync.png
+  [shot] P-sec-keys.png
+  [shot] P-sec-data.png
+--- P 搜索 ---
+nav items (无查询): 6
+输入"快捷"后: nav=1, sub项=8, 计数=8
+  [shot] P-search-kuaijie.png
+点击搜索子项后 active section: keys | flash row: 保存文稿
+清空后 nav items: 6 PASS
+无匹配空态: {"hidden":false,"text":"没有匹配「zzqwx」的设置项"}
+--- P 外观 ---
+深色: data-theme=dark, bg rgb(244, 242, 236) -> rgb(20, 21, 25)
+  [shot] P-dark.png
+accent: "#3f4a56" -> "#b14a38" PASS
+密度行高: standard=73.96875px compact=61.96875px relaxed=87.96875px PASS
+--- P 控件 ---
+开关 checkUpdate: true -> false PASS
+下拉 startup: daily PASS
+localStorage 持久化 startup = daily
+字号滑杆: preview 16px -> 16px, 显示=20px FAIL
+行宽 seg -> preview maxWidth: 46ch
+--- P 快捷键 ---
+可重绑 6 条, 固定 2 条
+录制态文案: 按下新快捷键…
+绑定结果(第2条): Ctrl+Alt+J PASS
+冲突提示: 与「保存文稿」冲突 | search 仍为: Ctrl+K
+  [shot] P-key-conflict.png
+按 Ctrl+K 后焦点: searchInput PASS
+按 Ctrl+\ 侧栏收起: PASS
+--- P 同步 ---
+设备数: 3
+同步中态: title="同步中…" btn.disabled=true
+  [shot] P-syncing.png
+同步完成: title="已同步" sub="上次同步：刚刚" toast="侧栏已展开"
+设备移除二次确认: PASS
+取消移除后设备数: 3
+e2e 开关: true -> false PASS
+--- P 存储 ---
+导出: inkwell-notes-20261104.zip, 1860B, 魔数=504b0304 (真ZIP) PASS
+导入: docs 128 -> 129 PASS
+模态打开: true | 文案: 将永久删除 129 篇文稿（24.6）与全部缓存。此操作不可撤销。
+  [shot] P-modal.png
+取消: 模态关闭=true, docs 仍=129
+确认清空: docs=0 PASS
+  [shot] P-after-clear.png
+对比度 P: desc 4.64:1, nav 4.64:1
+prefs 持久化存在: true
+JS errors: none
+  [shot] full-armP.png
+  [shot] pw-P-375.png
+P@375: scrollWidth=375 innerWidth=375 无横向溢出 PASS
+P@375 横向导航可用: items=6, 点击"快捷键"后 active=keys
+  [shot] P-375-keys.png
+P@375 搜"导出": nav=1
+
+================ armQ ================
+字体加载状态: loaded
+  [shot] Q-01-desktop-hero.png
+  [shot] full-armQ.png
+  [shot] Q-sec-editor.png
+  [shot] Q-sec-appearance.png
+  [shot] Q-sec-sync.png
+  [shot] Q-sec-keys.png
+  [shot] Q-sec-data.png
+  [shot] Q-sec-about.png
+--- Q 搜索 ---
+nav items(无查询): 7
+输入"快捷": nav=1, hit计数=["9"], keys区可见行=9, <mark>=0, meta="9 项"
+  [shot] Q-search-kuaijie.png
+清空: nav=7 (原7), 可见data-kw行=33 PASS
+无匹配: 空态=true, 建议词=["字体","同步","快捷键","导出","密度"]
+  [shot] Q-search-empty.png
+点建议词后搜索值: 字体
+--- Q 外观 ---
+深色: data-theme=dark, bg rgb(246, 242, 233) -> rgb(27, 25, 21)
+  [shot] Q-dark.png
+accent: "#3f5d4c" -> "#9e4534" (data-accent=vermilion) PASS
+密度行高: default=60.921875px compact=48.234375px comfortable=73.609375px PASS
+--- Q 控件 ---
+e2e: true->false, desc "已开启 · 密钥仅存于本机，服务端只…" -> "未开启 · 同步内容将以服务端可解密…" PASS
+打字机开关: false->true, 预览高亮行=true PASS
+启动行为 select: hint="→ 文稿库" PASS
+字号滑杆: preview 16px->16px, cfg="20px · 44em · 思源宋体 · typewriter:on · spell:on · tab:indent" FAIL
+--- Q 快捷键 ---
+快捷键行 8, 可重绑 6
+录制态: 请按新快捷键…Esc 取消
+绑定结果(new): Ctrl+Alt+J PASS
+无修饰键: err="S · 需包含 Ctrl / Alt / ⌘" save仍=Ctrl+S
+保留键 Ctrl+W: err="Ctrl+W 是系统保留键，不可绑定"
+冲突二次确认: Ctrl+Shift+F 已分配给「全局搜索」
+       替换
+       取消
+  [shot] Q-key-conflict.png
+替换后: side=Ctrl+Shift+F, find=未绑定 (find应变为未绑定)
+恢复默认后 new: Ctrl+N
+按 Ctrl+K(命令面板绑定) 后焦点: btnKbdReset (绑定是否真执行动作)
+--- Q 同步 ---
+设备数: 3
+同步中: main="正在同步…" disabled=true dot="status-dot syncing"
+  [shot] Q-syncing.png
+同步完成: main="所有设备已同步" sub "端到端加密" -> "11:16 · 端到端加密", 设备态=["刚刚","刚刚","刚刚"]
+--- Q 存储 ---
+导出: inkwell-export-2026-11-04.zip, 1119B, 魔数=504b0304 (真ZIP) PASS
+导入: docs 1,204 -> 1,205
+dialog.open=true, 确认钮disabled=true (需勾选)
+dialog 文案: 将永久删除本机 1,205 篇文稿与全部本地索引（386.2 MB）。此操作不可撤销，云端副本不受影响。
+  [shot] Q-modal.png
+取消: closed=true, docs仍=1,205
+门槛: 未勾选点确认后docs=1,205; 勾选后确认可点=true; 清空后docs=0
+检查更新 toast: 已是最新版本 · v1.4.2
+诊断日志下载: inkwell-diagnostic.txt
+切英文: h1="Settings" nav1="01General" PASS
+  [shot] Q-en.png
+页面链接: ["#top"]
+#top 锚点目标存在: true
+滚动到 keys 后 scrollspy active = keys PASS
+对比度 Q: desc 5.21:1, nav 5.21:1, note 2.75:1
+save-state 当前: saved
+JS errors: none
+  [shot] pw-Q-375.png
+Q@375: scrollWidth=375 innerWidth=375 无横向溢出 PASS
+Q@375 触屏点"紧凑"后 density=default (应被钳为 default)
+Q@375 导航点击后 active: keys
+  [shot] Q-375-keys.png
+Q@375 搜"导出": nav=2
+Q reduced-motion 下 .peak opacity=1 (入场编排应跳过=1)

@@ -17,6 +17,8 @@
 - 装饰：千篇一律 soft shadow、过度 blur、为动而动
 - 文案："Built for the modern team"、"Unlock your potential"
 
+> **边界（过修正警示）**：以上禁忌针对**展示型页面的默认组合**——"三卡片"指营销页特性/定价的**均权网格**，不是禁用一切卡片容器。工具页/数据页用卡片做**分组容器**（一卡=一组设置/一组指标）是合法的块化手段；该禁的是无差别卡面平铺。case07 实证：设置页把卡片禁掉改台账长滚，用户盲判视觉反输卡片分组方案——分组容器选型见 `B87`§十一"分组容器岗"。
+
 ---
 
 ## 角色定位（官方 skill 的精髓）
@@ -42,7 +44,7 @@
   - 创业/启动感：Clash Display、Satoshi、Cabinet Grotesk
   - 技术专业：IBM Plex 家族、Source Sans 3
   - 独特现代：Bricolage Grotesque、Obviously
-- 配对原则：**高反差才有记忆点**。Display + monospace、serif + geometric sans、可变字体跨字重。
+- 配对原则：**高反差才有记忆点**。Display + monospace、serif + geometric sans、可变字体跨字重（参数与配对三关系 → `B86§一`）。
 - 用极端：100/200 与 800/900 对比，不要 400 vs 600；字号跳跃 3 倍以上，不要 1.5 倍。
 - 选一个标志性字体，果断使用，从 Google Fonts 加载。**写代码前先陈述你的字体选择。**
 
@@ -54,13 +56,13 @@
 
 ### 3. 动效（Motion）
 - **一个精心编排的时刻 > 散落的微交互**（官方原话：one well-orchestrated page load with staggered reveals creates more delight than scattered micro-interactions）
-- 首选纯 CSS 实现；React 用 Motion 库
+- 首选纯 CSS 实现；React 用 Motion 库（参数/性格/双轨配额 → `B86§六` + `K18`）
 - 用 scroll-triggering 和 hover 惊喜
 - ⚠️ **反直觉提醒：多余的动画会让设计显得 AI 生成。** 有时 less is more。
 
 ### 4. 空间构图（Spatial Composition）
-- 非预期布局：非对称、重叠、对角流、破格元素
-- 慷慨的负空间 **或** 受控的密度（二选一，必须是刻意的选择）
+- 非预期布局：非对称、重叠、对角流、破格元素（构图系统 → `B86§三`，破格配额 → `K18`）
+- 慷慨的负空间 **或** 受控的密度（二选一，必须是刻意的选择——密度节奏 → `K18`）
 
 ### 5. 背景与细节（Backgrounds & Visual Details）
 - 创造氛围与深度，不默认纯色：渐变网格（mesh）、噪点纹理、几何图案、分层透明度、戏剧性阴影、装饰边框、自定义光标、颗粒叠加（grain）
@@ -82,7 +84,7 @@
 </always_use_solarpunk_theme>
 ```
 
-可复用主题：日式侘寂、瑞士国际主义、粗野主义、编辑/杂志感、赛博终端、纸张/印刷感、复古科幻、液态玻璃、新金属、RPG 幻想、Solarpunk。完整流派见 E1 / B34。
+可复用主题：日式侘寂、瑞士国际主义、粗野主义、编辑/杂志感、赛博终端、纸张/印刷感、复古科幻、液态玻璃、新金属、RPG 幻想、Solarpunk。完整流派见 `E1`/`B34`，风格词牌 → `B16`，年代文化锚 → `B86§十二`。
 
 ---
 

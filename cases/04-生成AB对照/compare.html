@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>通知中心 · V0 vs V1 vs V1b vs V1c 对照</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: system-ui, sans-serif; background:#111; color:#eee; height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:16px; padding:10px 20px; border-bottom:1px solid #333; font-size:13px; flex-wrap:wrap; }
+  header b { color:#8f98e8; }
+  header .hint { color:#888; font-size:12px; }
+  .cols { flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:1px; background:#333; }
+  .col { display:flex; flex-direction:column; background:#000; }
+  .col h2 { font-size:12.5px; padding:8px 12px; background:#1a1a1a; color:#bbb; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+  .col h2 .tag { font-size:11px; font-weight:400; color:#777; }
+  .col h2 a { color:#6f79d8; font-weight:400; }
+  .col.win h2 { color:#8fd8a0; }
+  iframe { flex:1; width:100%; border:none; background:#fff; }
+</style>
+</head>
+<body>
+<header>
+  <b>A/B 盲测对照 · 三轮演进</b>
+  <span>V0 裸跑 62/71/65.5 ｜ V1 无方向卡 73.5 ｜ V1b +方向卡 79.5 ｜ <b style="color:#8fd8a0">V1c +呼吸峰 79.5</b></span>
+  <span class="hint">三轮盲审口径不同只看相对差。V1c 关键：密度节奏 9.0 vs V0 5.5（"全页均匀中密"）——呼吸峰条款落地，直接看你的眼睛认不认</span>
+</header>
+<div class="cols">
+  <div class="col"><h2>V0 · 裸跑 <span class="tag">暖纸/柿橙 自由发挥</span><a href="v0.html" target="_blank">↗</a></h2><iframe src="v0.html"></iframe></div>
+  <div class="col"><h2>V1 · 武装·旧 <span class="tag">墨底纸面 织梭</span><a href="v1.html" target="_blank">↗</a></h2><iframe src="v1.html"></iframe></div>
+  <div class="col"><h2>V1b · 武装·方向卡 <span class="tag">青瓷台账 朱砂未读</span><a href="v1b.html" target="_blank">↗</a></h2><iframe src="v1b.html"></iframe></div>
+  <div class="col win"><h2>V1c · 武装·方向卡+呼吸峰 <span class="tag">海港值守 午夜海×灯塔光</span><a href="v1c.html" target="_blank">↗</a></h2><iframe src="v1c.html"></iframe></div>
+</div>
+</body>
+</html>

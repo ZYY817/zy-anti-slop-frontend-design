@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>case07 设置页终版对照 · 墨迹 Inkwell</title>
+<style>
+  body{margin:0;background:#141210;color:#d8d2c4;font:14px/1.6 system-ui,sans-serif}
+  header{padding:16px 24px;border-bottom:1px solid #2a2620;display:flex;gap:20px;align-items:baseline;flex-wrap:wrap}
+  h1{font-size:15px;margin:0;font-weight:600}
+  .meta{opacity:.6;font-size:12px}
+  .meta a{color:#8a8272}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2a2620}
+  .col{background:#141210;min-width:0}
+  .col h2{padding:10px 16px;margin:0;font-size:12px;letter-spacing:.08em;border-bottom:1px solid #2a2620;display:flex;justify-content:space-between;align-items:center;font-weight:500}
+  .col h2 a{font-size:11px;color:#8a8272;text-decoration:none}
+  .col h2 a:hover{color:#d9a24b}
+  iframe{display:block;width:100%;height:calc(100vh - 130px);border:0;background:#000}
+  footer{padding:10px 24px;border-top:1px solid #2a2620;font-size:12px;opacity:.65}
+  footer a{color:#8a8272;margin-right:16px}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>case07 · 终版对照（SKILL版验证）</h1>
+  <span class="meta">左=裸跑 armP · 右=armed7(SKILL.md 时代:两阶段流程+层级链+反收敛换代)</span>
+  <span class="meta"><a href="brief.md">任务书</a> · <a href="record.md">完整记录</a></span>
+</header>
+<div class="cols">
+  <div class="col">
+    <h2>armP 裸跑 <a href="armP.html" target="_blank">新窗口 ↗</a></h2>
+    <iframe src="armP.html" title="armP"></iframe>
+  </div>
+  <div class="col">
+    <h2>armed7 SKILL版 <a href="armed7.html" target="_blank">新窗口 ↗</a></h2>
+    <iframe src="armed7.html" title="armed7"></iframe>
+  </div>
+</div>
+<footer>
+  演进链：<a href="armQ.html">armQ 台账(过修正)</a><a href="armed2.html">armed2(指征堆叠)</a><a href="armed3.html">armed3(彩度高)</a><a href="armed7.html">armed7 SKILL版</a>
+</footer>
+</body>
+</html>
+EOF
+start "" "http://localhost:8877/compare.html" && echo opened

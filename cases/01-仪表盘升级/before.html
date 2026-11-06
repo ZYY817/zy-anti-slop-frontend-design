@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SaaS 数据仪表盘</title>
+<style>
+  /* ===== 基线：典型 AI 生成仪表盘，保留真实缺陷 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;            /* 默认字体 */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 紫蓝渐变 */
+    min-height: 100vh;
+    color: #fff;
+  }
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px;
+  }
+  .logo { font-size: 20px; font-weight: 700; }
+  .nav-links a { color: rgba(255,255,255,.8); margin-left: 24px; text-decoration: none; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+  h1 { font-size: 42px; margin: 40px 0 8px; }
+  .subtitle { color: rgba(255,255,255,.7); margin-bottom: 40px; }
+  /* 三张圆角卡片——经典 slop */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+  .card {
+    background: rgba(255,255,255,.12); backdrop-filter: blur(12px);  /* 玻璃卡片 */
+    border-radius: 20px; padding: 28px;
+    transition: transform .3s;
+  }
+  .card:hover { transform: scale(1.03); }                            /* scale hover */
+  .card .num { font-size: 40px; font-weight: 700; margin: 12px 0 4px; }
+  .card .label { color: rgba(255,255,255,.7); font-size: 14px; }
+  .card .trend { color: #4ade80; font-size: 13px; margin-top: 8px; }
+  /* 数据表格——全 slop 规格 */
+  .panel {
+    background: rgba(255,255,255,.12); backdrop-filter: blur(12px);
+    border-radius: 20px; padding: 28px;
+  }
+  table { width: 100%; border-collapse: collapse; color: #fff; }
+  th, td { padding: 14px 16px; text-align: left; }
+  thead tr { background: rgba(255,255,255,.1); }
+  tbody tr:nth-child(even) { background: rgba(255,255,255,.06); }    /* 斑马纹 */
+  tbody tr:hover { background: rgba(255,255,255,.14); }              /* +hover */
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,.1); }        /* +分隔线 三件套全上 */
+  tr.selected { border: 2px solid #facc15; }                         /* border 选中会跳行 */
+  .btn {
+    background: #3b82f6; color: #fff; border: none; border-radius: 10px;
+    padding: 10px 20px; cursor: pointer; font-size: 14px;
+    transition: transform .2s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn.danger { background: #ef4444; }
+  .badge { background: #3b82f6; border-radius: 20px; padding: 2px 10px; font-size: 12px; }
+  input {
+    padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.3);
+    background: rgba(255,255,255,.1); color: #fff; width: 220px;
+  }
+  .toast {
+    position: fixed; top: 20px; right: 20px; background: #333;
+    padding: 14px 20px; border-radius: 10px; display: none;
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">📊 DataDash</div>
+  <div class="nav-links">
+    <a href="#">概览</a><a href="#">报表</a><a href="#">团队</a><a href="#">设置</a>
+    <span class="badge">5</span>
+  </div>
+</nav>
+<div class="container">
+  <h1>数据概览</h1>
+  <p class="subtitle">实时掌握你的业务核心指标</p>
+
+  <div class="cards">
+    <div class="card"><div class="label">总收入</div><div class="num">¥1,284,392</div><div class="trend">↑ 12.5% vs 上月</div></div>
+    <div class="card"><div class="label">活跃用户</div><div class="num">84,291</div><div class="trend">↑ 8.2% vs 上月</div></div>
+    <div class="card"><div class="label">转化率</div><div class="num">4.7%</div><div class="trend">↑ 0.6% vs 上月</div></div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2>最近订单</h2>
+      <div><input placeholder="搜索订单…"><button class="btn" style="margin-left:8px">导出</button></div>
+    </div>
+    <table>
+      <thead><tr><th>订单号</th><th>客户</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td>#10028</td><td>陈雪晴</td><td>¥12,840.50</td><td><span class="badge">已完成</span></td><td>10-21 14:32</td><td><button class="btn">查看</button> <button class="btn danger">删除</button></td></tr>
+        <tr class="selected"><td>#10027</td><td>李铭轩</td><td>¥8,340.00</td><td><span class="badge">进行中</span></td><td>10-21 11:08</td><td><button class="btn">查看</button> <button class="btn danger">删除</button></td></tr>
+        <tr><td>#10026</td><td>王晓萌</td><td>¥156,200.75</td><td><span class="badge">已完成</span></td><td>10-20 18:44</td><td><button class="btn">查看</button> <button class="btn danger">删除</button></td></tr>
+        <tr><td>#10025</td><td>张天佑</td><td>¥3,299.99</td><td><span class="badge">待支付</span></td><td>10-20 09:15</td><td><button class="btn">查看</button> <button class="btn danger">删除</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="toast" id="toast">操作成功</div>
+<script>
+  // 缺陷行为：删除直接弹确认 modal 式 alert；toast 一闪而过不可交互；搜索无防抖
+  document.querySelectorAll('.btn.danger').forEach(b => b.addEventListener('click', () => {
+    if (confirm('确定删除该订单？')) { showToast('已删除'); }
+  }));
+  document.querySelector('input').addEventListener('input', e => showToast('搜索: ' + e.target.value)); // 每键一 toast
+  function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
+</script>
+</body>
+</html>

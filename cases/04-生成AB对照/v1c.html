@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>栈桥 Pier · 工作台</title>
+<!-- ═══════════════════════════════════════════════════════
+  v1c · 方向卡（Z1 第0层轻量方向卡 · 5 项，写码前承诺）
+
+  ① 气质三词：安静 / 精确 / 有秩序 ——「海港值守日志」。
+     通知中心 = 值更台上记的每一笔：不吵、可查、一笔是一笔。
+  ② 配色来源与剂量：「午夜海 × 灯塔光束」。
+     顶栏深海军墨 #14223C / 页底雾港米白 #F2F0E9 / 纸面 #FBFAF5。
+     品牌动作 = 海军墨自身（单色纪律，不另立彩色品牌色）；
+     灯塔光束琥珀 #B8860B 专司"信号"（徽标/未读方钉/到达 toast），
+     不做装饰、不做品牌强调，全页同屏 ≤6 处。
+  ③ 材质档：哑光纸面 + 1px 发丝线 + 单层浅投影。
+     装饰手法仅 1 种：值守区下缘"海平线"渐变发丝线。
+     圆角系统 4/6/10（方钉/条目/面板），全部小圆角——
+     "方钉"是本案形状签名：头像、徽标、未读点、chip 记号全为方。
+  ④ 密度与呼吸峰：基准 L3→L4（列表区 L4：正文 13px、
+     条目 ≈52px、gap 8-12px、mono 元信息 11px）。
+     呼吸峰 = 页首「值守摘要」区，全页唯一放开密度区（L1.5）：
+     padding-block 76px、问候 ≤24ch、四周零卡片纯负空间。
+     节奏：顶栏 L3 → 值守区 L1.5（呼吸）→ 双列 L4（收紧）→ 页脚 L4。
+     【第一禁忌】均匀中等密度铺满全页 = 模板感（cases/04 二轮实证）。
+  ⑤ 反面清单：均匀中密铺满 / Inter·Roboto / 紫蓝渐变 /
+     蓝点未读默认 / 三圆角卡 hero / emoji 图标 / "暂无数据" /
+     modal=0 之外的一切弹窗 / 孤立组件演示页（范围钉死）/
+     外露 demo 触发钮（到达由模拟推送节律触发）。
+═══════════════════════════════════════════════════════ -->
+<style>
+/* ── tokens ─────────────────────────────────────────── */
+:root{
+  --paper:      #F2F0E9;  /* 雾港米白 */
+  --card:       #FBFAF5;  /* 日志纸面 */
+  --navy:       #14223C;  /* 午夜海·顶栏/动作 */
+  --navy-2:     #1E3050;  /* navy 抬升 */
+  --ink:        #212B3B;  /* 主墨 */
+  --ink-2:      #47536A;  /* 次墨 */
+  --ink-3:      #59627A;  /* 辅助墨(小字仍≥4.5:1) */
+  --line:       #DDD8C6;  /* 发丝线 */
+  --line-2:     #E9E5D8;
+  --beam:       #9A7208;  /* 灯塔光束·信号琥珀(图形/钉) */
+  --beam-txt:   #7E5F08;  /* 琥珀文本级(浅底小字 ≥4.5:1) */
+  --beam-brt:   #E8AE1F;  /* 亮琥珀·深底徽标 */
+  --beam-tint:  #F7F0DC;  /* 未读行暖光 */
+  --beam-glow:  rgba(232,174,31,.20);
+  --steel:      #4E6E84;  /* 回复 chip */
+  --ease-out:   cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.4,.44,1);
+  --sans: "PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  --mono: ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  --r-sm:4px; --r-md:8px; --r-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-padding-top:76px}
+body{
+  font-family:var(--sans);background:var(--paper);color:var(--ink);
+  font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+::selection{background:var(--navy);color:var(--paper)}
+.mono{font-family:var(--mono);font-feature-settings:"tnum" 1}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+a{color:var(--navy);text-decoration:none}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:var(--r-sm)}
+.topbar :focus-visible{outline-color:var(--beam-brt)}
+.panel :focus-visible{outline-color:var(--beam)}
+
+/* ── 顶栏（L3 · 60px）───────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:10;height:60px;
+  display:flex;align-items:center;gap:28px;padding:0 24px;
+  background:var(--navy);color:#E8EBF2;
+}
+.brand{display:flex;align-items:center;gap:10px;color:#F4F2EA;text-decoration:none}
+.brand-peg{width:16px;height:16px;border-radius:3px;background:var(--beam-brt);
+  box-shadow:0 0 0 2px rgba(232,174,31,.25);flex:none}
+.brand-name{font-weight:600;font-size:15px;letter-spacing:.02em}
+.brand-sub{font-family:var(--mono);font-size:10.5px;color:#8D99B5;letter-spacing:.14em;margin-left:2px}
+.topnav{display:flex;gap:4px;margin-left:8px}
+.topnav a{
+  color:#A7B1C7;font-size:13.5px;padding:8px 12px;border-radius:var(--r-md);
+  transition:color .15s;
+}
+@media(hover:hover) and (pointer:fine){
+  .topnav a:hover{color:#F4F2EA;background:var(--navy-2)}
+}
+.topnav a[aria-current="page"]{color:#F4F2EA;position:relative}
+.topnav a[aria-current="page"]::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;
+  height:2px;background:var(--beam-brt);border-radius:1px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.search-pill{
+  display:flex;align-items:center;gap:8px;color:#8D99B5;font-size:12.5px;
+  border:1px solid #2C3E63;border-radius:var(--r-md);padding:6px 12px;
+  font-family:var(--mono);
+  transition:color .15s,border-color .15s;
+}
+@media(hover:hover) and (pointer:fine){.search-pill:hover{color:#D5DCEC;border-color:#4A5E8A}}
+.search-pill kbd{font-family:var(--mono);font-size:10.5px;color:#6E7B9B;border:1px solid #2C3E63;
+  border-radius:3px;padding:1px 5px}
+.avatar{
+  width:32px;height:32px;border-radius:var(--r-sm);background:#3D5A80;color:#F0EDE2;
+  font-size:13px;font-weight:600;display:grid;place-items:center;
+}
+@media(hover:hover) and (pointer:fine){.avatar:hover{background:#4A6A94}}
+
+/* ── 铃铛与徽标 ─────────────────────────────────────── */
+.bell-wrap{position:relative}
+.bell{
+  position:relative;width:38px;height:38px;border-radius:var(--r-md);
+  display:grid;place-items:center;color:#C7CFDF;
+  transition:background .15s,color .15s;
+}
+@media(hover:hover) and (pointer:fine){.bell:hover{background:var(--navy-2);color:#F4F2EA}}
+.bell[aria-expanded="true"]{background:var(--navy-2);color:var(--beam-brt)}
+.bell svg{width:20px;height:20px}
+.bell.is-swing svg{animation:swing .55s var(--ease-out);transform-origin:50% 2px}
+@keyframes swing{
+  0%{transform:rotate(0)} 18%{transform:rotate(14deg)} 36%{transform:rotate(-11deg)}
+  54%{transform:rotate(7deg)} 72%{transform:rotate(-4deg)} 100%{transform:rotate(0)}
+}
+.badge{
+  position:absolute;top:2px;right:0;min-width:17px;height:17px;padding:0 4px;
+  border-radius:4px;background:var(--beam-brt);color:var(--navy);
+  font-family:var(--mono);font-size:10.5px;font-weight:700;line-height:17px;text-align:center;
+  box-shadow:0 0 0 2px var(--navy);
+}
+.badge.is-pop{animation:pop .38s var(--ease-spring)}
+@keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+/* ── 通知面板（z:40 · visibility 单机制显隐）──────────── */
+.panel{
+  position:absolute;top:calc(100% + 12px);right:0;width:412px;max-width:calc(100vw - 24px);
+  background:var(--card);color:var(--ink);border-radius:var(--r-lg);
+  border:1px solid var(--line);
+  box-shadow:0 2px 6px rgba(20,34,60,.06),0 18px 44px -8px rgba(20,34,60,.22);
+  visibility:hidden;opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;
+  transition:visibility 0s linear .2s,opacity .2s var(--ease-out),transform .2s var(--ease-out);
+  z-index:40;
+}
+.panel.is-open{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+.panel::before{ /* 方钉指向标——咬回铃铛，呼应方钉签名 */
+  content:"";position:absolute;top:-5px;right:16px;width:10px;height:10px;
+  background:var(--card);border:1px solid var(--line);border-right:0;border-bottom:0;
+  transform:rotate(45deg);border-radius:2px 0 0 0;
+}
+.p-head{
+  display:flex;align-items:baseline;gap:12px;padding:14px 16px 12px;
+  border-bottom:1px solid var(--line-2);
+}
+.p-head h2{font-size:14px;font-weight:600;letter-spacing:.01em}
+.p-head .p-count{font-size:10.5px;color:var(--beam-txt);letter-spacing:.08em;margin-left:2px}
+.p-acts{margin-left:auto;display:flex;gap:2px}
+.p-acts button{
+  font-size:12px;color:var(--ink-2);padding:5px 9px;border-radius:var(--r-sm);
+  transition:color .15s,background .15s;
+}
+@media(hover:hover) and (pointer:fine){.p-acts button:hover{color:var(--navy);background:var(--paper)}}
+.p-acts button:disabled{color:#A9AD99;cursor:not-allowed}
+@media(hover:hover) and (pointer:fine){.p-acts button:disabled:hover{background:none;color:#A9AD99}}
+.p-body{max-height:min(430px,calc(100vh - 190px));overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#C9C4B2 transparent;position:relative}
+.p-body::-webkit-scrollbar{width:8px}
+.p-body::-webkit-scrollbar-thumb{background:#CFCAB8;border-radius:4px;border:2px solid var(--card)}
+.g-head{
+  position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;
+  padding:8px 16px 6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  color:var(--ink-3);background:var(--card);
+}
+.g-head::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.g-head .g-n{color:var(--beam-txt);font-weight:700}
+.p-list{list-style:none}
+/* 底部"可继续滚动"渐隐——仅在可滚且未到底时挂载 */
+.p-fade{height:26px;margin-top:-26px;position:sticky;bottom:0;pointer-events:none;z-index:3;
+  background:linear-gradient(to bottom,rgba(251,250,245,0),var(--card))}
+.p-foot{
+  border-top:1px solid var(--line-2);padding:10px 16px;
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.06em;
+  display:flex;align-items:center;gap:6px;
+}
+.p-foot svg{width:11px;height:11px;flex:none}
+
+/* ── 通知条目（值更日志行：mono 时辰列 + 方头 + 文 + 方钉）── */
+.n-item{
+  display:grid;grid-template-columns:44px 30px 1fr 30px;gap:10px;align-items:start;
+  padding:11px 14px 11px 16px;position:relative;
+  transition:background .15s;
+}
+.n-item + .n-item{border-top:1px solid var(--line-2)}
+@media(hover:hover) and (pointer:fine){.n-item:hover{background:rgba(20,34,60,.035)}}
+.n-item.is-unread{background:var(--beam-tint)}
+@media(hover:hover) and (pointer:fine){.n-item.is-unread:hover{background:#F3EACF}}
+.n-item.is-flash{animation:flash 1.4s var(--ease-out)}
+@keyframes flash{0%{background:var(--beam-glow)}100%{background:var(--flash-end,transparent)}}
+.n-item.is-unread{--flash-end:var(--beam-tint)}
+.n-item:not(.is-unread){--flash-end:transparent}
+.n-li-enter{animation:li-in .28s var(--ease-out)}
+@keyframes li-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.n-li-leave{transition:height .26s var(--ease-out),opacity .2s ease-in;overflow:hidden;height:auto}
+.n-time{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.02em;
+  padding-top:2px;white-space:nowrap;
+}
+.n-item.is-unread .n-time{color:var(--beam-txt);font-weight:700}
+.n-ava{
+  width:30px;height:30px;border-radius:5px;background:var(--ac,#3D5A80);color:#F4F2EA;
+  display:grid;place-items:center;font-size:12px;font-weight:600;flex:none;
+}
+.n-main{min-width:0}
+.n-text{font-size:12.8px;line-height:1.5;color:var(--ink-2);display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.n-text b{color:var(--ink);font-weight:600}
+.n-item.is-unread .n-text{color:var(--ink)}
+.n-text q{quotes:"「" "」";color:var(--ink-3);font-style:normal}
+.n-text q::before,.n-text q::after{color:var(--ink-3)}
+.n-meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
+  font-size:10px;letter-spacing:.1em;
+}
+.chip::before{content:"";width:6px;height:6px;border-radius:1.5px;background:currentColor}
+.chip.mention{color:var(--beam-txt)}
+.chip.assign{color:var(--navy)}
+.chip.reply{color:var(--steel)}
+.chip.system{color:var(--ink-3)}
+.n-proj{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.04em}
+.n-due{
+  font-family:var(--mono);font-size:10px;color:var(--beam-txt);
+  border:1px solid #DECC97;border-radius:4px;padding:1px 6px;letter-spacing:.06em;
+}
+/* 方钉：未读 = 实心琥珀钉即"标已读"；已读 = 空心钉即"标未读"。指示器即操作，常驻不依赖 hover */
+.n-peg{
+  width:30px;height:30px;border-radius:var(--r-sm);display:grid;place-items:center;
+  margin-top:0;position:relative;flex:none;
+}
+.n-peg .peg{width:8px;height:8px;border-radius:2px;background:var(--beam);
+  transition:transform .18s var(--ease-spring),opacity .15s,background .15s}
+.n-peg svg{width:14px;height:14px;color:var(--beam);opacity:0;transform:scale(.5);
+  position:absolute;transition:opacity .15s,transform .18s var(--ease-spring)}
+.n-item.is-read .n-peg .peg{background:transparent;box-shadow:inset 0 0 0 1.5px #B9B49F;opacity:.55}
+.n-item.is-read .n-peg svg{color:var(--ink-3)}
+@media(hover:hover) and (pointer:fine){
+  .n-peg:hover{background:rgba(20,34,60,.06)}
+  .n-peg:hover .peg{transform:scale(.3);opacity:0}
+  .n-peg:hover svg{opacity:1;transform:scale(1)}
+  .n-item.is-read .n-peg:hover svg{color:var(--navy)}
+}
+.n-peg:focus-visible{outline-color:var(--beam)}
+.n-peg:focus-visible .peg{transform:scale(.3);opacity:0}
+.n-peg:focus-visible svg{opacity:1;transform:scale(1)}
+/* 触屏命中区扩到 44px（视觉仍 30px 方钉槽） */
+.n-peg::after{content:"";position:absolute;inset:-7px}
+
+/* ── 面板空态（已清空型：庆祝语气）──────────────────── */
+.n-empty{padding:44px 24px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0}
+.n-empty svg{width:72px;height:56px;margin-bottom:16px;opacity:.9}
+.n-empty h3{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.n-empty p{font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:26ch;margin-bottom:18px}
+.n-empty .btn-ghost{
+  font-size:12.5px;color:var(--navy);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:7px 16px;transition:border-color .15s,background .15s;
+}
+@media(hover:hover) and (pointer:fine){.n-empty .btn-ghost:hover{border-color:var(--navy);background:var(--paper)}}
+/* 未读清零小条（组内"已清空"态） */
+.g-clear{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  font-size:12px;color:var(--ink-3);
+}
+.g-clear svg{width:15px;height:15px;color:var(--ok,#4C7A5C);flex:none}
+.g-clear .gc-t b{color:var(--ink);font-weight:600}
+
+/* ── Toast（z:70 · 恒压面板）────────────────────────── */
+.toast-root{
+  position:fixed;top:72px;right:20px;z-index:70;display:flex;flex-direction:column;gap:12px;
+  width:352px;max-width:calc(100vw - 32px);pointer-events:none;
+}
+.toast{
+  pointer-events:auto;background:var(--navy);color:#E8EBF2;border-radius:var(--r-md);
+  box-shadow:0 14px 40px -6px rgba(20,34,60,.45);overflow:hidden;position:relative;
+  animation:t-in .28s var(--ease-out);
+}
+@keyframes t-in{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
+.toast.is-leaving{animation:t-out .18s ease-in forwards}
+@keyframes t-out{to{opacity:0;transform:translateY(-10px) scale(.98)}}
+.toast-in{display:flex;gap:11px;padding:13px 14px 15px;align-items:flex-start}
+.toast-sig{width:8px;height:8px;border-radius:2px;background:var(--beam-brt);margin-top:6px;flex:none}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:600;color:#F4F2EA;line-height:1.4}
+.toast-desc{font-size:12px;color:#9AA5BF;margin-top:2px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.toast-desc q{quotes:"「" "」";font-style:normal;color:#B7C0D4}
+.toast-desc b{color:#D5DCEC}
+.toast-act{
+  flex:none;font-size:12px;font-weight:600;color:var(--beam-brt);border:1px solid rgba(232,174,31,.4);
+  border-radius:var(--r-sm);padding:5px 10px;margin-top:2px;
+  transition:background .15s,border-color .15s;
+}
+@media(hover:hover) and (pointer:fine){.toast-act:hover{background:rgba(232,174,31,.14);border-color:var(--beam-brt)}}
+.toast-x{flex:none;width:24px;height:24px;border-radius:var(--r-sm);display:grid;place-items:center;
+  color:#8D99B5;margin-top:-2px}
+@media(hover:hover) and (pointer:fine){.toast-x:hover{color:#F4F2EA;background:var(--navy-2)}}
+.toast-x svg{width:12px;height:12px}
+.toast-bar{height:2px;background:rgba(232,174,31,.22)}
+.toast-bar i{display:block;height:100%;width:100%;background:var(--beam-brt);transform-origin:left}
+/* undo toast 变体：纸面而非海军墨——"系统回音"与"信号到达"分色 */
+.toast.undo{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.toast.undo .toast-sig{background:#C9C4B2}
+.toast.undo .toast-title{color:var(--ink);font-weight:500}
+.toast.undo .toast-act{color:var(--navy);border-color:var(--line)}
+@media(hover:hover) and (pointer:fine){.toast.undo .toast-act:hover{background:var(--paper);border-color:var(--navy)}}
+.toast.undo .toast-x{color:var(--ink-3)}
+@media(hover:hover) and (pointer:fine){.toast.undo .toast-x:hover{color:var(--ink);background:var(--paper)}}
+.toast.undo .toast-bar{background:var(--line-2)}
+.toast.undo .toast-bar i{background:var(--navy)}
+
+/* ── 工作台：呼吸峰「值守摘要」（L1.5）───────────────── */
+main{display:block}
+.watch{
+  max-width:1160px;margin:0 auto;padding:76px 32px 64px;position:relative;
+}
+.watch-eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink-3);
+  display:flex;align-items:center;gap:10px;margin-bottom:26px;
+}
+.watch-eyebrow .dot{width:7px;height:7px;border-radius:2px;background:var(--beam-txt);flex:none}
+.watch-h{
+  font-size:clamp(30px,3.6vw,42px);font-weight:300;line-height:1.3;letter-spacing:-.01em;
+  color:var(--ink);max-width:24ch;
+}
+.watch-h b{font-weight:600}
+.watch-h .hl{color:var(--beam-txt);font-weight:600}
+.watch-sub{
+  margin-top:20px;font-size:14px;color:var(--ink-2);max-width:56ch;line-height:1.7;
+}
+.watch-sub .mono{font-size:12.5px;color:var(--ink-3)}
+/* 海平线：全页唯一装饰手法——值守区收束的渐变发丝线 */
+.horizon{
+  border:0;height:1px;margin-top:64px;
+  background:linear-gradient(to right,var(--line) 0%,var(--line) 34%,rgba(221,216,198,0) 78%);
+}
+
+/* ── 工作区双列（L4 紧凑档 · 38:62 非对称）───────────── */
+.grid{
+  max-width:1160px;margin:0 auto;padding:0 32px 56px;
+  display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:start;
+}
+.sect-h{
+  display:flex;align-items:baseline;gap:10px;margin-bottom:6px;
+}
+.sect-h h2{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink)}
+.sect-h .mono{font-size:10.5px;color:var(--ink-3);letter-spacing:.12em}
+.t-list{list-style:none;border-top:1px solid var(--line-2)}
+.t-item{
+  display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:center;
+  padding:13px 2px;border-bottom:1px solid var(--line-2);
+}
+.t-check{
+  width:17px;height:17px;border-radius:4px;border:1.5px solid #767E6B;background:transparent;
+  display:grid;place-items:center;transition:background .15s,border-color .15s;justify-self:start;
+}
+.t-check svg{width:11px;height:11px;color:var(--card);opacity:0;transform:scale(.5);
+  transition:opacity .12s,transform .16s var(--ease-spring)}
+.t-check[aria-checked="true"]{background:var(--navy);border-color:var(--navy)}
+.t-check[aria-checked="true"] svg{opacity:1;transform:scale(1)}
+@media(hover:hover) and (pointer:fine){.t-check:hover{border-color:var(--navy)}}
+.t-name{font-size:13.5px;color:var(--ink);transition:color .15s}
+.t-item.is-done .t-name{color:var(--ink-3);text-decoration:line-through;text-decoration-color:#B9B49F}
+.t-id{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.06em;margin-right:8px}
+.t-side{display:flex;align-items:center;gap:8px}
+.t-proj{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.05em;white-space:nowrap}
+.t-due{font-family:var(--mono);font-size:10px;color:var(--beam-txt);border:1px solid #DECC97;
+  border-radius:4px;padding:1.5px 6px;letter-spacing:.05em;white-space:nowrap}
+.t-due.done-due{color:var(--ink-3);border-color:var(--line)}
+/* 在泊项目 */
+.pj-list{list-style:none;border-top:1px solid var(--line-2)}
+.pj-item{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:12px 2px;
+  border-bottom:1px solid var(--line-2);align-items:baseline}
+.pj-name{font-size:13px;color:var(--ink)}
+.pj-note{grid-column:1;font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.05em}
+.pj-pct{font-family:var(--mono);font-size:11px;color:var(--navy);font-weight:700}
+.pj-bar{grid-column:1/-1;height:3px;background:var(--line-2);border-radius:2px;overflow:hidden;margin-top:2px}
+.pj-bar i{display:block;height:100%;background:var(--navy);border-radius:2px}
+/* 本更水位 */
+.wl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--line-2)}
+.wl{padding:14px 2px 4px}
+.wl + .wl{border-left:1px solid var(--line-2);padding-left:16px}
+.wl-n{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--navy);line-height:1.1}
+.wl-n.beam{color:var(--beam-txt)}
+.wl-l{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.12em;margin-top:4px}
+.page-foot{
+  max-width:1160px;margin:0 auto;padding:0 32px 48px;
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.08em;
+  display:flex;gap:16px;align-items:center;
+}
+.page-foot::before{content:"";width:7px;height:7px;border-radius:2px;background:#C9C4B2}
+
+/* ── 响应式：移动端重排不是缩小 ─────────────────────── */
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr;gap:36px}
+  .topnav{display:none}
+}
+@media (max-width:640px){
+  .topbar{padding:0 14px;gap:14px}
+  .search-pill{display:none}
+  .panel{position:fixed;top:64px;left:12px;right:12px;width:auto;max-height:calc(100dvh - 84px)}
+  .panel::before{right:32px}
+  .p-body{max-height:calc(100dvh - 220px)}
+  .watch{padding:52px 20px 44px}
+  .horizon{margin-top:44px}
+  .grid{padding:0 20px 44px}
+  .toast-root{left:12px;right:12px;top:68px;width:auto}
+  .n-time{display:none}
+  .n-item{grid-template-columns:30px 1fr 30px}
+  .n-item{padding-left:14px}
+  .watch-h{font-size:29px}
+}
+
+/* ── reduced-motion：全量降级（K14/双端门禁）────────── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+  .toast-bar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 顶栏 ══ -->
+<header class="topbar">
+  <a class="brand" href="#top" aria-label="栈桥 Pier 首页">
+    <span class="brand-peg" aria-hidden="true"></span>
+    <span class="brand-name">栈桥</span>
+    <span class="brand-sub" aria-hidden="true">PIER</span>
+  </a>
+  <nav class="topnav" aria-label="主导航">
+    <a href="#watch" aria-current="page">工作台</a>
+    <a href="#today">今日到港</a>
+    <a href="#projects">在泊项目</a>
+  </nav>
+  <div class="top-right">
+    <button class="search-pill" id="searchPill" type="button">
+      <kbd>⌘K</kbd><span>快速查找</span>
+    </button>
+    <div class="bell-wrap">
+      <button class="bell" id="bell" type="button" aria-expanded="false" aria-controls="panel"
+              aria-label="通知，4 条未读">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9a6 6 0 1 1 12 0c0 4.2 1.6 6 2.4 7H3.6C4.4 15 6 13.2 6 9Z"/>
+          <path d="M10 20a2.2 2.2 0 0 0 4 0"/>
+        </svg>
+        <span class="badge" id="badge">4</span>
+      </button>
+
+      <!-- 通知中心：非模态 Disclosure（K14·浮层 / B76 Disclosure 模式） -->
+      <section class="panel" id="panel" role="region" aria-label="通知中心">
+        <header class="p-head">
+          <h2>通知<span class="p-count mono" id="pCount">未读 4</span></h2>
+          <div class="p-acts">
+            <button type="button" id="markAll" title="把全部通知标为已读">全部已读</button>
+            <button type="button" id="clearRead" title="移除全部已读通知，可撤销">清除已读</button>
+          </div>
+        </header>
+        <div class="p-body" id="pBody" tabindex="0" aria-label="通知列表，可滚动">
+          <div class="g-head" id="ghUnread"><span>未读</span><span class="g-n" id="nUnread">4</span></div>
+          <ul class="p-list" id="listUnread"></ul>
+          <div class="g-clear" id="gClear" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            <span class="gc-t"><b>未读清零</b> · 这一更没有要找你的事</span>
+          </div>
+          <div class="g-head" id="ghRead"><span>已读</span><span class="g-n" id="nRead" style="color:var(--ink-3)">6</span></div>
+          <ul class="p-list" id="listRead"></ul>
+          <div class="n-empty" id="nEmpty" hidden>
+            <svg viewBox="0 0 72 56" fill="none" stroke="#8B927E" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M30 18h12l4 14H26l4-14Z"/>
+              <rect x="33" y="8" width="6" height="10" rx="1"/>
+              <path d="M36 5v3"/>
+              <path d="M10 40c4 0 4 2.5 8 2.5S22 40 26 40s4 2.5 8 2.5 4-2.5 8-2.5 4 2.5 8 2.5 4-2.5 8-2.5" />
+              <path d="M16 48c4 0 4 2.5 8 2.5S28 48 32 48s4 2.5 8 2.5 4-2.5 8-2.5"/>
+            </svg>
+            <h3>海面很平静</h3>
+            <p>到港的通知会按更次记在这里——@提及、任务指派、回复与系统通告。</p>
+            <button class="btn-ghost" type="button" id="emptyBack">回到工作台</button>
+          </div>
+          <div class="p-fade" id="pFade" hidden></div>
+        </div>
+        <footer class="p-foot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span>通知保留最近 30 天 · 更早的已归档</span>
+        </footer>
+      </section>
+    </div>
+    <button class="avatar" id="avatarBtn" type="button" aria-label="账户：沈澜">沈</button>
+  </div>
+</header>
+
+<main>
+  <!-- ══ 呼吸峰：值守摘要（全页唯一 L1.5 放开密度区）══ -->
+  <section class="watch" id="watch" aria-labelledby="watchH">
+    <p class="watch-eyebrow">
+      <span class="dot" aria-hidden="true"></span>
+      <span>10月14日 · 周二 · 甲班 · 第 3 更 · 雾转晴 18°C</span>
+    </p>
+    <h1 class="watch-h" id="watchH">早上好，沈澜。<br>
+      <span id="watchLine"><b>3</b> 项任务今日到港，<b class="hl">4</b> 条通知在等你。</span>
+    </h1>
+    <p class="watch-sub" id="watchSub">
+      「临渊 App 3.0」进入视觉收尾，「桅杆 2.0」昨夜完成构建发版。
+      <span class="mono">NEXT TIDE 14:20 · 周更例会</span>
+    </p>
+    <hr class="horizon">
+  </section>
+
+  <!-- ══ 工作区（L4 收紧）══ -->
+  <div class="grid">
+    <section id="today" aria-labelledby="todayH">
+      <div class="sect-h">
+        <h2 id="todayH">今日到港</h2><span class="mono" id="todayCount">4 BERTHS</span>
+      </div>
+      <ul class="t-list" id="taskList">
+        <li class="t-item is-done">
+          <button class="t-check" type="button" role="checkbox" aria-checked="true" aria-label="完成：空态插画色板修正">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>
+          </button>
+          <span class="t-name"><span class="t-id">T-224</span>空态插画色板修正——与导航信号色解耦</span>
+          <span class="t-side"><span class="t-proj">临渊 App 3.0</span><span class="t-due done-due">上午已离泊</span></span>
+        </li>
+        <li class="t-item">
+          <button class="t-check" type="button" role="checkbox" aria-checked="false" aria-label="完成：通知面板触屏走查">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>
+          </button>
+          <span class="t-name"><span class="t-id">T-231</span>通知面板·触屏走查——岑远早班指派</span>
+          <span class="t-side"><span class="t-proj">桅杆设计系统</span><span class="t-due">截止 明天 18:00</span></span>
+        </li>
+        <li class="t-item">
+          <button class="t-check" type="button" role="checkbox" aria-checked="false" aria-label="完成：审桅杆新组件文档">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>
+          </button>
+          <span class="t-name"><span class="t-id">T-232</span>审「桅杆 2.0」新发布的 32 个组件文档</span>
+          <span class="t-side"><span class="t-proj">桅杆设计系统</span><span class="t-due">截止 周四</span></span>
+        </li>
+        <li class="t-item">
+          <button class="t-check" type="button" role="checkbox" aria-checked="false" aria-label="完成：Q4 排期确认">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>
+          </button>
+          <span class="t-name"><span class="t-id">T-233</span>Q4 排期确认，回复陆一鸣资源优先级</span>
+          <span class="t-side"><span class="t-proj">数据看板 Q4</span><span class="t-due">截止 今天 17:00</span></span>
+        </li>
+      </ul>
+    </section>
+
+    <aside>
+      <section id="projects" aria-labelledby="pjH" style="margin-bottom:36px">
+        <div class="sect-h"><h2 id="pjH">在泊项目</h2><span class="mono">4 MOORED</span></div>
+        <ul class="pj-list">
+          <li class="pj-item">
+            <span class="pj-name">临渊 App 3.0 改版</span><span class="pj-pct">62%</span>
+            <span class="pj-note">视觉收尾 · 空态插画评审中</span>
+            <span class="pj-bar"><i style="width:62%"></i></span>
+          </li>
+          <li class="pj-item">
+            <span class="pj-name">官网落地页焕新</span><span class="pj-pct">81%</span>
+            <span class="pj-note">首屏性能预算复核通过</span>
+            <span class="pj-bar"><i style="width:81%"></i></span>
+          </li>
+          <li class="pj-item">
+            <span class="pj-name">设计系统「桅杆」2.0</span><span class="pj-pct">94%</span>
+            <span class="pj-note">昨夜构建完成 · 32 组件已发布</span>
+            <span class="pj-bar"><i style="width:94%"></i></span>
+          </li>
+          <li class="pj-item">
+            <span class="pj-name">数据看板 Q4</span><span class="pj-pct">35%</span>
+            <span class="pj-note">存储配额 80% · 待排期确认</span>
+            <span class="pj-bar"><i style="width:35%"></i></span>
+          </li>
+        </ul>
+      </section>
+      <section aria-labelledby="wlH">
+        <div class="sect-h"><h2 id="wlH">本更水位</h2><span class="mono">TIDE LOG</span></div>
+        <div class="wl-grid" role="group" aria-label="本更摘要数据">
+          <div class="wl"><div class="wl-n beam" id="wlUnread">4</div><div class="wl-l">未读通知</div></div>
+          <div class="wl"><div class="wl-n" id="wlTasks">3</div><div class="wl-l">今日待办</div></div>
+          <div class="wl"><div class="wl-n">12</div><div class="wl-l">本周已闭环</div></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="page-foot">
+    <span>栈桥 PIER · 协作工作台</span><span>更次 03 · 记录于 10:26</span>
+  </footer>
+</main>
+
+<!-- toast 通道（aria-live 容器级 polite，toast 本体 role=status） -->
+<div class="toast-root" id="toastRoot" aria-live="polite" aria-label="通知提示"></div>
+<div class="sr-only" id="announcer" aria-live="polite"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   行为层 · 决策落地（词条决策点在注释中标注）
+   K14·打断分级 / K14·Toast队列 / K14·徽标未读 / K14·浮层栈
+   K12·撤销 / K3·触屏 / K6·穿透 / K18·配额
+═══════════════════════════════════════════════════════ */
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+
+/* ── 数据：真实语义 mock（值更日志）───────────────────── */
+const TYPE = {
+  mention:{label:'提及', cls:'mention'},
+  assign :{label:'指派', cls:'assign'},
+  reply  :{label:'回复', cls:'reply'},
+  system :{label:'系统', cls:'system'},
+};
+const AVA = {
+  '苏晓棠':'#3D5A80','岑远':'#5F7A6A','陆一鸣':'#8A6A4F',
+  '白蔚':'#4E6E7A','何叔衡':'#6E6378','栈桥助手':'#59627A',
+};
+let ITEMS = [
+  {id:'n1',type:'mention',actor:'苏晓棠',time:'09:42',abs:'10月14日 09:42',
+   text:'<b>苏晓棠</b> 在「临渊 App · 空态插画评审」里提到你：<q>第三张的灯塔隐喻和信号色有点撞，你有空看下色板吗？</q>',
+   proj:'临渊 App 3.0',read:false},
+  {id:'n2',type:'assign',actor:'岑远',time:'08:15',abs:'10月14日 08:15',
+   text:'<b>岑远</b> 把任务指派给你：<b>T-231</b>「通知面板 · 触屏走查」——重点看标已读按钮在触屏上的可达性。',
+   proj:'桅杆设计系统',due:'截止 明天 18:00',read:false},
+  {id:'n3',type:'reply',actor:'白蔚',time:'昨19:08',abs:'10月13日 19:08',
+   text:'<b>白蔚</b> 回复了你的评论「分页接口要不要带未读数」：<q>带了，unread_count 直接挂在 meta 里，不用另外请求。</q>',
+   proj:'数据看板 Q4',read:false},
+  {id:'n4',type:'system',actor:'栈桥助手',time:'昨17:30',abs:'10月13日 17:30',
+   text:'「桅杆 2.0」组件库构建完成，<b>32 个组件</b>已发布到工作区，更新日志已同步。',
+   proj:'桅杆设计系统',read:false},
+  {id:'n5',type:'mention',actor:'陆一鸣',time:'周二',abs:'10月13日 11:20',
+   text:'<b>陆一鸣</b> 在周报里提到你：<q>本周视觉走查通过率 96%，@沈澜 整理的验收清单起了关键作用。</q>',
+   proj:'团队协作',read:true},
+  {id:'n6',type:'assign',actor:'岑远',time:'周二',abs:'10月13日 09:04',
+   text:'<b>岑远</b> 把任务指派给你：<b>T-198</b>「官网落地页 · 首屏性能预算复核」——已随昨日清单闭环。',
+   proj:'官网焕新',read:true},
+  {id:'n7',type:'reply',actor:'苏晓棠',time:'周一',abs:'10月12日 16:47',
+   text:'<b>苏晓棠</b> 回复了你的走查意见：<q>样机那版阴影我按你说的降到 8% 了，顺眼多了。</q>',
+   proj:'临渊 App 3.0',read:true},
+  {id:'n8',type:'reply',actor:'何叔衡',time:'周一',abs:'10月12日 14:12',
+   text:'<b>何叔衡</b> 回复了表格走查：<q>第 4 列对齐问题已修复，并入今天的发版分支。</q>',
+   proj:'数据看板 Q4',read:true},
+  {id:'n9',type:'system',actor:'栈桥助手',time:'周五',abs:'10月9日 18:02',
+   text:'「数据看板 Q4」存储用量已达配额 <b>80%</b>，可升级空间或清理历史附件。',
+   proj:'数据看板 Q4',read:true},
+  {id:'n10',type:'system',actor:'栈桥助手',time:'周五',abs:'10月9日 09:00',
+   text:'工作区将于本周日 <b>02:00–04:00</b> 例行维护，期间只读，请提前安排发布。',
+   proj:'系统通告',read:true},
+];
+const ARRIVALS = [
+  {id:'a1',type:'mention',actor:'陆一鸣',time:'刚刚',abs:'10月14日 10:31',
+   text:'<b>陆一鸣</b> 在「Q4 排期」里提到你：<q>设计侧资源我按你说的优先级排了，今天 17:00 前确认一下？</q>',
+   proj:'数据看板 Q4',read:false},
+  {id:'a2',type:'reply',actor:'白蔚',time:'刚刚',abs:'10月14日 10:47',
+   text:'<b>白蔚</b> 回复了你：<q>unread_count 的边界 case 我补了两个测试，都过了。</q>',
+   proj:'数据看板 Q4',read:false},
+  {id:'a3',type:'assign',actor:'何叔衡',time:'刚刚',abs:'10月14日 11:05',
+   text:'<b>何叔衡</b> 把任务指派给你：<b>T-236</b>「发版前回归走查」——回归清单在评审文档附录 B。',
+   proj:'桅杆设计系统',due:'截止 今天 20:00',read:false},
+];
+let ORDER = ITEMS.map(i=>i.id);          // 原始顺序快照（撤销恢复原位用，K12④）
+let pendingMarkAll = null;               // 延迟提交句柄（撤销竞态守卫）
+
+const bell=$('#bell'), badge=$('#badge'), panel=$('#panel'), pBody=$('#pBody'),
+      listU=$('#listUnread'), listR=$('#listRead'), ghU=$('#ghUnread'), ghR=$('#ghRead'),
+      nU=$('#nUnread'), nR=$('#nRead'), pCount=$('#pCount'), gClear=$('#gClear'),
+      nEmpty=$('#nEmpty'), pFade=$('#pFade'), markAllBtn=$('#markAll'),
+      clearBtn=$('#clearRead'), toastRoot=$('#toastRoot'), announcer=$('#announcer'),
+      wlUnread=$('#wlUnread'), wlTasks=$('#wlTasks'), watchLine=$('#watchLine');
+
+/* ── 计数（唯一数据源：ITEMS，不从 DOM 数）────────────── */
+const unread = () => ITEMS.filter(i=>!i.read);
+const read   = () => ITEMS.filter(i=> i.read);
+
+function updateCounts(){
+  const u = unread().length, r = read().length;
+  /* K14·徽标：99+ 封顶；0 时徽标整体隐藏；aria-label 同步 */
+  badge.textContent = u>99 ? '99+' : u;
+  badge.hidden = u===0;
+  bell.setAttribute('aria-label', u? `通知，${u} 条未读` : '通知，无未读');
+  nU.textContent = u; nR.textContent = r;
+  pCount.textContent = u ? `未读 ${u}` : '未读 0';
+  /* 组头/清零条/空态 三态（B52：已清空型空态用庆祝语气） */
+  const total = ITEMS.length;
+  ghU.hidden   = !(u>0);
+  listU.hidden = !(u>0);
+  gClear.hidden= !(u===0 && r>0);          // 未读清零·组内小空态
+  ghR.hidden   = !(r>0 && total>0);
+  listR.hidden = !(r>0);
+  nEmpty.hidden= !(total===0);             // 全空·大海面空态
+  markAllBtn.disabled = u===0;
+  markAllBtn.title    = u===0 ? '没有未读通知' : '把全部通知标为已读';
+  clearBtn.hidden = r===0;                 // K14·权限可见性：无已读时隐藏
+  wlUnread.textContent = u;
+  wlTasks.textContent = document.querySelectorAll('.t-item:not(.is-done)').length;
+  watchLine.innerHTML = `<b>${document.querySelectorAll('.t-item:not(.is-done)').length}</b> 项任务今日到港，` +
+    (u ? `<b class="hl">${u}</b> 条通知在等你。` : `通知已全部清零。`);
+  requestAnimationFrame(updateFade);
+}
+function updateFade(){
+  const el = pBody;
+  pFade.hidden = !(el.scrollHeight > el.clientHeight + 4 &&
+                   el.scrollTop + el.clientHeight < el.scrollHeight - 8);
+}
+pBody.addEventListener('scroll', updateFade, {passive:true});
+
+/* ── 条目渲染（值更日志行）───────────────────────────── */
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>';
+const UNDO_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 5 3.5 10l5 5"/><path d="M3.5 10h11a6 6 0 0 1 0 12h-3"/></svg>';
+
+function itemEl(it){
+  const li = document.createElement('li');
+  li.className = 'n-item ' + (it.read ? 'is-read' : 'is-unread');
+  li.dataset.id = it.id;
+  const t = TYPE[it.type];
+  const icon = (it.read ? UNDO_SVG : CHECK_SVG).replace('<svg','<svg aria-hidden="true"');
+  li.innerHTML =
+    `<span class="n-time" title="${it.abs}">${it.time}</span>` +
+    `<span class="n-ava" style="--ac:${AVA[it.actor]||'#59627A'}" aria-hidden="true">${it.actor==='栈桥助手'?'助':it.actor[0]}</span>` +
+    `<div class="n-main"><p class="n-text">${it.text}</p>` +
+    `<p class="n-meta"><span class="chip ${t.cls}">${t.label}</span><span class="n-proj">${it.proj}</span>` +
+    (it.due?`<span class="n-due">${it.due}</span>`:'') + `</p></div>` +
+    /* 指示器即操作（K14·徽标实现注）：方钉本体即按钮，常驻 */
+    `<button class="n-peg" type="button" data-act="${it.read?'unread':'read'}" ` +
+    `aria-label="${it.read?'标为未读':'标为已读'}：${it.text.replace(/<[^>]+>/g,'').slice(0,24)}…" ` +
+    `title="${it.read?'标为未读':'标为已读'}"><span class="peg" aria-hidden="true"></span>${icon}</button>`;
+  return li;
+}
+function renderLists(){
+  listU.innerHTML=''; listR.innerHTML='';
+  for(const it of ITEMS) (it.read?listR:listU).appendChild(itemEl(it));
+  updateCounts();
+}
+
+/* ── 播报（读屏分道：polite；toast 通道到达时跳过独立播报）── */
+function announce(msg){ announcer.textContent=''; requestAnimationFrame(()=>announcer.textContent=msg); }
+
+/* ── 单条已读：就地收起 → 移入已读顶（模型与 DOM 一致）── */
+function collapseThen(li, cb){
+  if(RM || !li.isConnected){ cb(); return; }
+  let done = false;
+  const once = ()=>{ if(done) return; done = true; cb(); };
+  li.classList.add('n-li-leave');
+  li.style.height = li.offsetHeight + 'px';
+  li.getBoundingClientRect();                     /* 读→写分离 */
+  li.style.height = '0px'; li.style.opacity = '0';
+  /* 只认 height 的 transitionend（opacity 更短会抢跑），+ 超时兜底 */
+  const onEnd = e=>{ if(e.propertyName==='height'){ li.removeEventListener('transitionend',onEnd); once(); } };
+  li.addEventListener('transitionend',onEnd);
+  setTimeout(once, 340);
+}
+function markRead(it, li){
+  if(it.read) return;
+  it.read = true;
+  announce('已标为已读');
+  const hadFocus = !!(li && li.contains(document.activeElement));
+  const finish = ()=>{
+    ITEMS.splice(ITEMS.indexOf(it),1);
+    const ri = firstReadIndex();
+    ITEMS.splice(ri<0 ? ITEMS.length : ri, 0, it);   /* 已读区顶（无已读则末尾） */
+    renderLists();
+    const nl = listR.querySelector(`[data-id="${it.id}"]`);
+    if(nl && !RM){ nl.classList.add('n-li-enter'); nl.addEventListener('animationend',()=>nl.classList.remove('n-li-enter'),{once:true}); }
+    /* 焦点不丢失（B76）：键盘操作后焦点跟随条目到已读区 */
+    if(hadFocus && nl) nl.querySelector('.n-peg').focus();
+  };
+  if(li && !RM) collapseThen(li, finish); else finish();
+}
+const firstReadIndex = ()=> ITEMS.findIndex(i=>i.read);
+function markUnread(it){
+  if(!it.read) return;
+  it.read = false;
+  ITEMS.splice(ITEMS.indexOf(it),1);
+  ITEMS.unshift(it);                        // 标未读 → 回到未读区顶
+  renderLists();
+  announce('已标为未读');
+}
+/* 条目点击（指针路径）：未读=标已读；已读=回看定位 flash（K14·回看链路） */
+panel.addEventListener('click', e=>{
+  const peg = e.target.closest('.n-peg');
+  const li  = e.target.closest('.n-item');
+  if(peg){
+    const it = ITEMS.find(i=>i.id===li.dataset.id);
+    peg.dataset.act==='read' ? markRead(it, li) : markUnread(it);
+    return;
+  }
+  if(li){
+    const it = ITEMS.find(i=>i.id===li.dataset.id);
+    if(!it.read) markRead(it, li);
+    else flashItem(it.id);
+  }
+});
+function flashItem(id){
+  const li = panel.querySelector(`[data-id="${id}"]`);
+  if(!li) return;
+  li.scrollIntoView({block:'nearest', behavior: RM?'auto':'smooth'});
+  li.classList.remove('is-flash'); void li.offsetWidth;
+  if(!RM){ li.classList.add('is-flash'); li.addEventListener('animationend',()=>li.classList.remove('is-flash'),{once:true}); }
+}
+
+/* ── 全部已读：延迟提交 + 快照撤销（K12）──────────────── */
+/* 新批量操作作废旧撤销 toast：旧快照指向的条目可能已被新操作移除，
+   留着它点"撤销"会静默失败（撤销承诺不能是空头支票） */
+const dismissStaleUndos = ()=> toastRoot.querySelectorAll('.toast[data-kind="undo"]').forEach(dismissToast);
+
+markAllBtn.addEventListener('click', ()=>{
+  const u = unread(); if(!u.length || pendingMarkAll) return;
+  dismissStaleUndos();
+  const snapshot = new Set(u.map(i=>i.id));
+  /* 先视觉收起（stagger 编排），到点才提交模型——撤销窗口内可取消；
+     提交只覆盖快照内条目：动画期间新到达的未读不被误吞 */
+  [...listU.children].forEach((li,i)=> setTimeout(()=>collapseThen(li,()=>{}), RM?0:i*45));
+  pendingMarkAll = setTimeout(()=>{
+    pendingMarkAll = null;
+    for(const it of ITEMS) if(snapshot.has(it.id)) it.read = true;
+    renderLists();
+  }, RM?0 : u.length*45 + 240);
+  showUndoToast(`已把 ${u.length} 条通知标为已读`, ()=>{
+    if(pendingMarkAll){ clearTimeout(pendingMarkAll); pendingMarkAll = null; }
+    else for(const it of ITEMS) if(snapshot.has(it.id)) it.read = false;
+    restoreOrder(); renderLists();          /* 无论哪条路径都重建——收回收起动画的 DOM 态 */
+    announce('已撤销，恢复未读');
+  });
+});
+clearBtn.addEventListener('click', ()=>{
+  const r = read(); if(!r.length) return;
+  dismissStaleUndos();
+  const snapshot = [...r];                  /* 快照存条目本体，不存 id 反查（到达项亦安全） */
+  ITEMS = ITEMS.filter(i=>!i.read);
+  renderLists();
+  showUndoToast(`已清除 ${r.length} 条已读通知`, ()=>{
+    ITEMS.push(...snapshot);
+    restoreOrder(); renderLists();
+    announce('已撤销，恢复已读列表');
+  });
+});
+function restoreOrder(){
+  ITEMS.sort((a,b)=>ORDER.indexOf(a.id)-ORDER.indexOf(b.id));
+}
+
+/* ── Toast 计时：setTimeout 承担 deadline，rAF 只画进度条（同一 remain 数据源）──
+   暂停 = clearTimeout + 冻结剩余时长；RM 下进度条不渲染但暂停语义一致。 */
+function armTimer(el, ms, onExpire){
+  const bar = el.querySelector('.toast-bar i');
+  let remain = ms, started = Date.now(), timer = null, raf = null, paused = false;
+  function schedule(){
+    started = Date.now();
+    timer = setTimeout(()=>{ dismiss(); onExpire && onExpire(); }, remain);
+  }
+  function paint(){       /* 进度条只是计时数据的可视化，不做第二计时器 */
+    const left = paused ? remain : Math.max(0, remain - (Date.now() - started));
+    if(bar) bar.style.transform = `scaleX(${left/ms})`;
+    raf = requestAnimationFrame(paint);
+  }
+  /* hover / focusin 双通道暂停，leave 恢复剩余时长（不清零重计） */
+  const hold = ()=>{ if(paused) return; paused = true;
+    clearTimeout(timer); remain = Math.max(0, remain - (Date.now() - started)); };
+  const go   = ()=>{ if(!paused) return; paused = false; schedule(); };
+  el.addEventListener('pointerenter', hold);
+  el.addEventListener('focusin',      hold);
+  el.addEventListener('pointerleave', go);
+  el.addEventListener('focusout',     go);
+  el._cleanup = ()=>{ clearTimeout(timer); cancelAnimationFrame(raf); };
+  function dismiss(){ el._cleanup(); dismissToast(el); }
+  el._dismiss = dismiss;
+  schedule();
+  if(!RM && bar) raf = requestAnimationFrame(paint);
+  /* 合并重臂：剩余时长清零重计；若指针/焦点恰在内部，保持暂停态 */
+  el._rearm = ()=>{
+    el._cleanup(); remain = ms;
+    paused = !!(el.matches(':hover') || el.contains(document.activeElement));
+    if(!paused) schedule();
+  };
+  return dismiss;
+}
+function dismissToast(el){
+  if(!el.isConnected) return;
+  if(el._cleanup) el._cleanup();           /* Esc/按钮直关也清计时器，杜绝僵尸回调 */
+  if(el._arrival) ARRIVAL_POOL.length=0;
+  if(RM){ el.remove(); return; }
+  el.classList.add('is-leaving');
+  el.addEventListener('animationend',()=>el.remove(),{once:true});
+}
+function makeToast({title,desc,act,kind,ms,onAct,onExpire}){
+  const el = document.createElement('div');
+  el.className='toast'+(kind==='undo'?' undo':'');
+  el.dataset.kind=kind; el.setAttribute('role','status');
+  el.innerHTML =
+    `<div class="toast-in"><span class="toast-sig" aria-hidden="true"></span>` +
+    `<div class="toast-body"><p class="toast-title">${title}</p>` +
+    (desc?`<p class="toast-desc">${desc}</p>`:'') + `</div>` +
+    (act?`<button type="button" class="toast-act">${act}</button>`:'') +
+    `<button type="button" class="toast-x" aria-label="关闭提示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>` +
+    (RM?'':'<div class="toast-bar" aria-hidden="true"><i></i></div>');
+  if(act) el.querySelector('.toast-act').addEventListener('click',()=>{onAct&&onAct();el._dismiss&&el._dismiss();});
+  el.querySelector('.toast-x').addEventListener('click',()=>el._dismiss&&el._dismiss());
+  toastRoot.appendChild(el);
+  el._dismiss = armTimer(el, ms, onExpire);
+  return el;
+}
+function showUndoToast(text, undo){
+  makeToast({title:text, act:'撤销', kind:'undo', ms:6000, onAct:undo});
+}
+/* 到达 toast：合并非叠加（K14·队列②），存活窗内同类到达更新同一条 */
+const ARRIVAL_POOL = [];
+function showArrivalToast(it){
+  ARRIVAL_POOL.push(it);
+  const existing = toastRoot.querySelector('.toast[data-kind="arrival"]');
+  if(existing){
+    existing.querySelector('.toast-title').textContent =
+      `${ARRIVAL_POOL[0].actor} 等 ${ARRIVAL_POOL.length} 条新通知`;
+    existing.querySelector('.toast-desc').innerHTML = it.text;
+    existing._ids.push(it.id);
+    existing._rearm && existing._rearm();
+    return;
+  }
+  const el = makeToast({
+    title:`${it.actor} · 新${TYPE[it.type].label}`,
+    desc:it.text, act:'查看', kind:'arrival', ms:5000,
+    onAct:()=>{ openPanel(); requestAnimationFrame(()=>flashItem(it.id)); },
+  });
+  el._arrival = true; el._ids=[it.id];
+}
+
+/* ── 面板开合（非模态 Disclosure + 焦点栈）────────────── */
+let panelOpen = false;
+function openPanel(){
+  if(panelOpen) return;
+  panelOpen = true;
+  bell.setAttribute('aria-expanded','true');
+  panel.classList.add('is-open');
+  requestAnimationFrame(updateFade);
+}
+function closePanel(restoreFocus){
+  if(!panelOpen) return;
+  panelOpen = false;
+  bell.setAttribute('aria-expanded','false');
+  panel.classList.remove('is-open');
+  if(restoreFocus) bell.focus();
+}
+bell.addEventListener('click', ()=> panelOpen ? closePanel(true) : openPanel());
+document.addEventListener('pointerdown', e=>{
+  if(panelOpen && !e.target.closest('.panel') && !e.target.closest('.bell')) closePanel(false);
+});
+/* Esc 分层：先关栈顶 toast，再关面板（K14·浮层③） */
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  const t = toastRoot.lastElementChild;      /* 栈顶=最新 append 的那条 */
+  if(t && t.classList.contains('toast')){ dismissToast(t); return; }
+  if(panelOpen){ closePanel(true); }
+});
+$('#emptyBack').addEventListener('click', ()=>closePanel(true));
+
+/* ── 新通知到达（K14·打断分级）────────────────────────── */
+const TOAST_TYPES = new Set(['mention','assign']);  // 需要本人回应 → 轻打断
+function arrive(it){
+  ITEMS.unshift(it); ORDER.unshift(it.id);
+  updateCounts();
+  const li = itemEl(it);
+  listU.prepend(li);
+  if(!RM){ li.classList.add('n-li-enter'); }
+  /* 徽标弹跳 + 铃铛摆动（语义动效：到达=铃响） */
+  if(!RM){
+    badge.classList.remove('is-pop'); void badge.offsetWidth; badge.classList.add('is-pop');
+    bell.classList.remove('is-swing'); void bell.offsetWidth; bell.classList.add('is-swing');
+  }
+  /* 三分支：面板已开 → 列表内滑入（零打断，注意力已在场）；
+     需回应类型 → toast；其余 → 仅徽标+播报 */
+  if(panelOpen){ announce(`新通知：${it.actor}`); return; }
+  if(TOAST_TYPES.has(it.type)){ showArrivalToast(it); }
+  else announce(`新通知：${it.actor}`);
+}
+/* 模拟推送节律：mention → reply → assign（合并进到达 toast） */
+const ARRIVE_PLAN = [[5200,0],[21000,1],[34000,2]];
+for(const [delay,idx] of ARRIVE_PLAN) setTimeout(()=>{ const a=ARRIVALS[idx]; a&&arrive(a); }, delay);
+
+/* ── 面板内行为杂项 ─────────────────────────────────── */
+searchPillInit();
+function searchPillInit(){
+  $('#searchPill').addEventListener('click',()=>{
+    makeToast({title:'⌘K 检索在演示版未接入',desc:'正式版将支持跨项目/任务/通知的全局检索',kind:'undo',ms:4000});
+  });
+  $('#avatarBtn').addEventListener('click',()=>{
+    makeToast({title:'已登录为 沈澜 · 产品设计师',desc:'账户与偏好设置在演示版未展开',kind:'undo',ms:4000});
+  });
+}
+
+/* ── 工作台任务勾选（真实 aria-pressed/aria-checked 切换）── */
+document.querySelectorAll('.t-check').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const on = btn.getAttribute('aria-checked')==='true';
+    btn.setAttribute('aria-checked', String(!on));
+    btn.closest('.t-item').classList.toggle('is-done', !on);
+    updateCounts();        /* 水位数字与问候语同步重算 */
+    announce(!on ? '任务已标记完成' : '任务已恢复待办');
+  });
+});
+
+renderLists();
+updateCounts();
+</script>
+</body>
+</html>
